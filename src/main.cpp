@@ -1,5 +1,6 @@
 #include "Drv_Gpio.h"
 #include "Drv_Uart.h"
+#include "main.h"
 
 // ----------------------------------------------------------------------------
 //
@@ -12,14 +13,136 @@
 // (currently OS_USE_TRACE_ITM, OS_USE_TRACE_SEMIHOSTING_DEBUG/_STDOUT).
 //
 
-// ----- main() ---------------------------------------------------------------
+/* #global variables -----------------------------------------*/
+RCC_ClocksTypeDef RCC_Clocks; // structure used for setting up the SysTick Interrupt
+
+// Unused global variables that have to be included to ensure correct compiling
+// ###### DO NOT CHANGE ######
+// ===============================================================================
+__IO uint32_t TimingDelay = 0; // used with the Delay function
+__IO uint8_t DataReady = 0;
+__IO uint32_t USBConnectTimeOut = 100;
+__IO uint32_t UserButtonPressed = 0;
+__IO uint8_t PrevXferComplete = 1;
+// ===============================================================================
+void LedsInit(void);
+void Toggle_Leds(void);	
+	 
+void Delay(__IO uint32_t nTime);
+void TimingDelay_Decrement(void);
+// ===============================================================================
 
 int main()
+{
+    __disable_irq();
+    __enable_irq();
+
+	RCC_GetClocksFreq(&RCC_Clocks);
+	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
+		while(1);																										//will end up in this infinite loop if there was an error with Systick_Config
+	
+
+    LedsInit();
+    Toggle_Leds();
+
+    uint8_t num = 1;
+
+    InitGPIO();
+    InitUart(115200);
+    GPIO_SetBits(GPIOE, GPIO_Pin_14);
+    while (1)
+    {
+        for (int i = 0; i < 256; i++)
+        {
+            UartSendBuff((unsigned char *)&num, sizeof(num));
+        }
+        Delay(1000);
+    }
+}
+
+#pragma GCC diagnostic pop
+
+// -------------------------------------------------------------------------------
+void LedsInit(void)
+{
+    STM_EVAL_LEDInit(LED4);
+    STM_EVAL_LEDInit(LED3);
+    STM_EVAL_LEDInit(LED5);
+    STM_EVAL_LEDInit(LED7);
+    STM_EVAL_LEDInit(LED9);
+    STM_EVAL_LEDInit(LED10);
+    STM_EVAL_LEDInit(LED8);
+    STM_EVAL_LEDInit(LED6);
+}
+
+void Toggle_Leds(void)
+{
+    STM_EVAL_LEDOn(LED3);
+    Delay(100);
+    STM_EVAL_LEDOff(LED3);
+    STM_EVAL_LEDOn(LED4);
+    Delay(100);
+    STM_EVAL_LEDOff(LED4);
+    STM_EVAL_LEDOn(LED6);
+    Delay(100);
+    STM_EVAL_LEDOff(LED6);
+    STM_EVAL_LEDOn(LED8);
+    Delay(100);
+    STM_EVAL_LEDOff(LED8);
+    STM_EVAL_LEDOn(LED10);
+    Delay(100);
+    STM_EVAL_LEDOff(LED10);
+    STM_EVAL_LEDOn(LED9);
+    Delay(100);
+    STM_EVAL_LEDOff(LED9);
+    STM_EVAL_LEDOn(LED7);
+    Delay(100);
+    STM_EVAL_LEDOff(LED7);
+    STM_EVAL_LEDOn(LED5);
+    Delay(100);
+    STM_EVAL_LEDOff(LED5);
+}
+
+void Error_Handler(void)
+{
+    /* Turn LED10/3 (RED) on */
+    STM_EVAL_LEDOn(LED10);
+    STM_EVAL_LEDOn(LED3);
+    while (1)
+    {
+    }
+}
+
+// Function to insert a timing delay of nTime
+// ###### DO NOT CHANGE ######
+void Delay(__IO uint32_t nTime)
+{
+    TimingDelay = nTime;
+
+    while (TimingDelay != 0)
+        ;
+}
+
+// Function to Decrement the TimingDelay variable.
+// ###### DO NOT CHANGE ######
+void TimingDelay_Decrement(void)
+{
+    if (TimingDelay != 0x00)
+    {
+        TimingDelay--;
+    }
+}
+
+// Unused functions that have to be included to ensure correct compiling
+// ###### DO NOT CHANGE ######
+// =======================================================================
+uint32_t L3GD20_TIMEOUT_UserCallback(void)
 {
     return 0;
 }
 
-
-#pragma GCC diagnostic pop
-
-// ----------------------------------------------------------------------------
+uint32_t LSM303DLHC_TIMEOUT_UserCallback(void)
+{
+    return 0;
+}
+// =======================================================================

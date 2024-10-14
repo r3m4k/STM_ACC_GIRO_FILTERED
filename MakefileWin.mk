@@ -17,7 +17,9 @@ INCLUDES = \
 -I"include" \
 -I"system/include" \
 -I"system/include/cmsis" \
--I"system/include/stm32f3-stdperiph"
+-I"system/include/stm32f3-stdperiph" \
+-I"system/include/additionally" \
+-I"system/USB_LIB/include"
 
 # общие флаги компиллятора
 COMPILER_FLAGS = \
@@ -41,7 +43,10 @@ GPP_FLAGS = -std=gnu++11 ${COMPILER_FLAGS} -c -fabi-version=0 -fno-exceptions -f
 
 # флаги для линковщика
 LINK_FLAGS = ${COMPILER_FLAGS} \
--T mem.ld -T libs.ld -T sections.ld -L"${PROJ}ldscripts" \
+-T "ldscripts/mem.ld" \
+-T "ldscripts/libs.ld" \
+-T "ldscripts/sections.ld" \
+-L"${PROJ}ldscripts" \
 -nostartfiles -Xlinker --gc-sections -Wl,-Map,${BIN_PLACE}${PROGRAM_NAME}.map # --specs=nano.specs 
 
 # библиотеки компоновщика - должны быть последними в списке команды компоновщика
@@ -51,23 +56,30 @@ LINK_FLAGS = ${COMPILER_FLAGS} \
 
 
 OBJECTS = \
+${BIN_PLACE}stm32f30x_usart.o \
+${BIN_PLACE}stm32f30x_tim.o \
+${BIN_PLACE}stm32f30x_rcc.o  \
+${BIN_PLACE}stm32f30x_misc.o \
+${BIN_PLACE}stm32f30x_gpio.o  \
+${BIN_PLACE}stm32f3_discovery.o \
+${BIN_PLACE}stm32f3_discovery_lsm303dlhc.o  \
+${BIN_PLACE}stm32f3_discovery_l3gd20.o \
 ${BIN_PLACE}system_stm32f30x.o \
 ${BIN_PLACE}vectors_stm32f30x.o  \
-${BIN_PLACE}_initialize_hardware.o \
-${BIN_PLACE}_reset_hardware.o \
-${BIN_PLACE}exception_handlers.o \
+${BIN_PLACE}_cxx.opp \
 ${BIN_PLACE}_exit.o \
 ${BIN_PLACE}_sbrk.o \
 ${BIN_PLACE}_startup.o \
 ${BIN_PLACE}_syscalls.o \
-${BIN_PLACE}stm32f30x_gpio.o  \
-${BIN_PLACE}stm32f30x_misc.o \
-${BIN_PLACE}stm32f30x_rcc.o  \
-${BIN_PLACE}stm32f30x_tim.o \
-${BIN_PLACE}stm32f30x_usart.o \
+${BIN_PLACE}assert.o \
+${BIN_PLACE}_initialize_hardware.o \
+${BIN_PLACE}_reset_hardware.o \
+${BIN_PLACE}exception_handlers.o \
 ${BIN_PLACE}Drv_Gpio.opp \
 ${BIN_PLACE}Drv_Uart.opp \
-${BIN_PLACE}main.opp
+${BIN_PLACE}main.opp \
+${BIN_PLACE}Sensors.o \
+${BIN_PLACE}COM_IO.opp
 
 ${BIN_PLACE}$(BINARY) : $(OBJECTS)
 	echo "BUILD "${BIN_PLACE}${BINARY}", MEMORY CARD "${BIN_PLACE}${PROGRAM_NAME}.map
@@ -90,6 +102,11 @@ ${BIN_PLACE}stm32f30x_tim.o : system/src/stm32f3-stdperiph/stm32f30x_tim.c
 ${BIN_PLACE}stm32f30x_rcc.o : system/src/stm32f3-stdperiph/stm32f30x_rcc.c
 ${BIN_PLACE}stm32f30x_misc.o : system/src/stm32f3-stdperiph/stm32f30x_misc.c
 ${BIN_PLACE}stm32f30x_gpio.o : system/src/stm32f3-stdperiph/stm32f30x_gpio.c
+${BIN_PLACE}stm32f3_discovery.o : system/src/stm32f3-stdperiph/stm32f3_discovery.c
+${BIN_PLACE}stm32f3_discovery_lsm303dlhc.o : system/src/stm32f3-stdperiph/stm32f3_discovery_lsm303dlhc.c
+${BIN_PLACE}stm32f3_discovery_l3gd20.o : system/src/stm32f3-stdperiph/stm32f3_discovery_l3gd20.c
+${BIN_PLACE}system_stm32f30x.o : system/src/cmsis/system_stm32f30x.c
+${BIN_PLACE}vectors_stm32f30x.o  : system/src/cmsis/vectors_stm32f30x.c
 ${BIN_PLACE}_cxx.opp : system/src/newlib/_cxx.cpp
 ${BIN_PLACE}_exit.o : system/src/newlib/_exit.c
 ${BIN_PLACE}_sbrk.o : system/src/newlib/_sbrk.c
@@ -99,11 +116,12 @@ ${BIN_PLACE}assert.o  : system/src/newlib/assert.c
 ${BIN_PLACE}_initialize_hardware.o : system/src/cortexm/_initialize_hardware.c
 ${BIN_PLACE}_reset_hardware.o : system/src/cortexm/_reset_hardware.c
 ${BIN_PLACE}exception_handlers.o  : system/src/cortexm/exception_handlers.c
-${BIN_PLACE}system_stm32f30x.o : system/src/cmsis/system_stm32f30x.c
-${BIN_PLACE}vectors_stm32f30x.o  : system/src/cmsis/vectors_stm32f30x.c
 ${BIN_PLACE}Drv_Gpio.opp : src/Drv_Gpio.cpp
 ${BIN_PLACE}Drv_Uart.opp : src/Drv_Uart.cpp
 ${BIN_PLACE}main.opp : src/main.cpp
+${BIN_PLACE}Sensors.o : src/Sensors.c
+${BIN_PLACE}COM_IO.opp : src/COM_IO.cpp
+
 
 clean:
 	@echo "CLEANING PROJECT"
