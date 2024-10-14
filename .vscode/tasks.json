@@ -1,0 +1,70 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "сборка проекта Win",
+            "command": "mingw32-make",
+            "args": [
+                "-s",
+                "-C",
+                "${workspaceFolder}",
+                "-j8",
+                "-f",
+                "MakefileWin.mk"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "имитатора ДПП"
+        },
+        {
+            "type": "cppbuild",
+            "label": "очистка проекта Win",
+            "command": "mingw32-make",
+            "args": [
+                "-s",
+                "-C",
+                "${workspaceFolder}",
+                "-f",
+                "MakefileWin.mk",
+                "clean"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "имитатора ДПП"
+        },
+
+        {
+            "type": "shell",
+            "label": "Загрузить программу через OPENOCD",
+            "command": "cd C:/tool-openocd_from_Philip/tool-openocd/scripts;C:/tool-openocd_from_Philip/tool-openocd/bin/openOCD -f C:/SysGCC/OpenOCD-Win/0.9.0-201505190955/bin/stm32f3discovery.cfg -c 'program D:/Job/STM_DPP_IMIT/Debug_Win/STM_IMIT_DPP_RA.elf verify reset exit';cd ${workspaceFolder}",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "для stm32f4"
+        },
+
+    ],
+    "version": "2.0.0"
+}

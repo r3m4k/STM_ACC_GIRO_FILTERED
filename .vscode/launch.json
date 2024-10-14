@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cortex-debug",
+            "name": "openocd_Lin",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceFolder}/Debug_Lin/STM_IMIT_DPP_RA.elf",
+            "servertype": "openocd",
+            "request": "launch",
+            "configFiles": [
+                "/usr/share/openocd/scripts/board/stm32f3discovery.cfg"
+            ],
+            "svdFile":"${workspaceFolder}/STM32F303.svd",
+        },
+        {
+            "type": "cortex-debug",
+            "name": "openocd_Win",
+            "cwd": "C:\\tool-openocd_from_Philip\\tool-openocd\\scripts",
+            "executable": "${workspaceFolder}/Debug_Win/STM_IMIT_DPP_RA.elf",
+            "servertype": "openocd",
+            "request": "launch",
+            "configFiles": [
+                // "c:\\OpenOCD-20211118-0.11.0\\share\\openocd\\scripts\\board\\stm32f3discovery.cfg"
+                // "C:\\OpenOCD-20170821-win\\share\\openocd\\scripts\\board\\stm32f3discovery.cfg"
+                "C:\\SysGCC\\OpenOCD-Win\\0.9.0-201505190955\\bin\\stm32f3discovery.cfg"
+            ],
+            "svdFile":"${workspaceFolder}/STM32F303.svd",
+        }
+    ]
+}
