@@ -19,17 +19,11 @@ RCC_ClocksTypeDef RCC_Clocks; // structure used for setting up the SysTick Inter
 // Unused global variables that have to be included to ensure correct compiling
 // ###### DO NOT CHANGE ######
 // ===============================================================================
-__IO uint32_t TimingDelay = 0; // used with the Delay function
+__IO uint32_t TimingDelay = 0;                     // used with the Delay function
 __IO uint8_t DataReady = 0;
 __IO uint32_t USBConnectTimeOut = 100;
 __IO uint32_t UserButtonPressed = 0;
 __IO uint8_t PrevXferComplete = 1;
-// ===============================================================================
-void LedsInit(void);
-void Toggle_Leds(void);	
-	 
-void Delay(__IO uint32_t nTime);
-void TimingDelay_Decrement(void);
 // ===============================================================================
 
 int main()
@@ -39,24 +33,23 @@ int main()
 
 	RCC_GetClocksFreq(&RCC_Clocks);
 	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
-		while(1);																										//will end up in this infinite loop if there was an error with Systick_Config
+		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
 	
-
+    // Иницилизируем перифирию
     LedsInit();
-    Toggle_Leds();
-
-    uint8_t num = 1;
-
+    
     InitGPIO();
-    InitUart(115200);
+    GYRO_INIT();
+    MAG_INIT();
+    ACC_INIT();
+    InitUart(115200);   
+    
+    // Поморгаем светодиодами
+    Toggle_Leds();
     GPIO_SetBits(GPIOE, GPIO_Pin_14);
     while (1)
     {
-        for (int i = 0; i < 256; i++)
-        {
-            UartSendBuff((unsigned char *)&num, sizeof(num));
-        }
-        Delay(1000);
+        
     }
 }
 
@@ -119,8 +112,8 @@ void Delay(__IO uint32_t nTime)
 {
     TimingDelay = nTime;
 
-    while (TimingDelay != 0)
-        ;
+    while (TimingDelay != 0){}
+    // for (int i = 0; i < 1000000; i++){}
 }
 
 // Function to Decrement the TimingDelay variable.

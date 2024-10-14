@@ -4,7 +4,7 @@
             "name": "ARM",            
             // "includePath": [],// здесь не требуются, т.к. работает configurationProvider
             //"defines": [], // здесь не требуются, т.к. работает configurationProvider
-            "compilerPath": "/usr/bin/arm-none-eabi-g++",
+            "compilerPath": "C:/SysGCC/arm-eabi/bin/arm-none-eabi-g++.exe",
             "cStandard": "c11",
             "intelliSenseMode": "gcc-arm",
             "configurationProvider": "ms-vscode.makefile-tools" // при включении конфигурации ms-vscode.makefile-tools - 
