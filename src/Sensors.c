@@ -1,6 +1,6 @@
 #include "Sensors.h"
 
-#define FilterDepth 30000
+// #define FilterDepth 30000
 
 void GYRO_INIT(void)
 {
@@ -24,42 +24,42 @@ void GYRO_INIT(void)
     L3GD20_FilterConfig(&FilterStruct);
 }
 
-void GyroCorrect(float *pfOffset)
-{
-    float GyroBuff[3] = {0.0f};
-    double GyroSum[3] = {0.0f};
-    int CNT = 0;
-    int cnt_zero_send = 0;
-    uint8_t i = 0;
-    int16_t SendV = 0;
+// void GyroCorrect(float *pfOffset)
+// {
+//     float GyroBuff[3] = {0.0f};
+//     double GyroSum[3] = {0.0f};
+//     int CNT = 0;
+//     int cnt_zero_send = 0;
+//     uint8_t i = 0;
+//     int16_t SendV = 0;
 
-    while (CNT < FilterDepth)
-    {
-        ReadGyro(GyroBuff);
-        for (i = 0; i < 3; i++)
-        {
-            GyroSum[i] = GyroSum[i] + GyroBuff[i];
-        }
-        CNT++;
-        Delay(2);
+//     while (CNT < FilterDepth)
+//     {
+//         ReadGyro(GyroBuff);
+//         for (i = 0; i < 3; i++)
+//         {
+//             GyroSum[i] = GyroSum[i] + GyroBuff[i];
+//         }
+//         CNT++;
+//         Delay(2);
 
-        if (cnt_zero_send >= 20)
-        {
-            UsartSend((int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV),
-                      (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV));
-            cnt_zero_send = 0;
-        }
-        else
-            cnt_zero_send++;
-    }
+//         if (cnt_zero_send >= 20)
+//         {
+//             UsartSend((int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV),
+//                       (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV), (int16_t)(SendV));
+//             cnt_zero_send = 0;
+//         }
+//         else
+//             cnt_zero_send++;
+//     }
 
-    for (i = 0; i < 3; i++)
-    {
-        pfOffset[i] = (GyroSum[i] / FilterDepth);
-    }
-}
+//     for (i = 0; i < 3; i++)
+//     {
+//         pfOffset[i] = (GyroSum[i] / FilterDepth);
+//     }
+// }
 
-void ReadGyro(float *pfData)
+void ReadGyro(uint16_t *pfData)
 {
 
     static uint8_t buffer[6] = {0};
@@ -72,11 +72,10 @@ void ReadGyro(float *pfData)
     L3GD20_Read(buffer + 4, L3GD20_OUT_Z_H_ADDR, 1);
     L3GD20_Read(buffer + 5, L3GD20_OUT_Z_L_ADDR, 1);
 
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < 3; i++)
     {
-        pfData[i] = ((float)((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1])));
+        pfData[i] = (uint16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1]);
     }
-    pfData[2] = ((float)((int16_t)((((int16_t)buffer[4]) << 8) + buffer[5])));
 }
 
 void MAG_INIT(void)
@@ -90,12 +89,12 @@ void MAG_INIT(void)
     LSM303DLHC_MagInit(&InitStruct);
 }
 
-void ReadMag(float *pfData)
+void ReadMag(uint16_t *pfData)
 {
     static uint8_t buffer[6] = {0};
     uint8_t CTRLB = 0;
-    uint16_t Magn_Sensitivity_XY = 0, Magn_Sensitivity_Z = 0;
     uint8_t i = 0;
+
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_CRB_REG_M, &CTRLB, 1);
 
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_H_M, buffer, 1);
@@ -104,6 +103,7 @@ void ReadMag(float *pfData)
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_M, buffer + 3, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_M, buffer + 4, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_M, buffer + 5, 1);
+
     /* Switch the sensitivity set in the CRTLB*/
     switch (CTRLB & 0xE0)
     {
@@ -139,9 +139,9 @@ void ReadMag(float *pfData)
 
     for (i = 0; i < 2; i++)
     {
-        pfData[i] = ((((float)((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1]))) / 1000) / Magn_Sensitivity_XY) * (-1);
+        pfData[i] = ((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1]));
     }
-    pfData[2] = ((((float)((int16_t)((((int16_t)buffer[4]) << 8) + buffer[5]))) / 1000) / Magn_Sensitivity_Z) * (-1);
+    pfData[2] = ((int16_t)((((int16_t)buffer[4]) << 8) + buffer[5]));
 }
 
 void ACC_INIT(void)
@@ -173,38 +173,12 @@ void ACC_INIT(void)
     LSM303DLHC_AccFilterConfig(&FInitStructure);
 }
 
-/*void AccCorrect(float* pfOffset)
+
+void ReadAcc(uint16_t *pfData)
 {
-    float AccCBuff[3] = {0.0f};
-    double AccCSum[3] = {0.0f};
-    int CNT = 0;
-    uint8_t i =0;
-
-    while (CNT <FilterDepth)
-    {
-        ReadAcc(AccCBuff);
-        for(i=0; i<3; i++)
-        {
-            if (AccCBuff[i]>60000)
-                AccCBuff[i]=AccCBuff[i]-63524;
-            AccCSum[i]=AccCSum[i]+AccCBuff[i];
-        }
-        CNT++;
-    }
-
-    for(i=0; i<3; i++)
-    {
-        pfOffset[i]=(AccCSum[i]/FilterDepth);
-    }
-}*/
-
-void ReadAcc(float *pfData)
-{
-    int16_t pnRawData[3];
     uint8_t ctrlx[2];
-    uint8_t buffer[6], cDivider;
+    uint8_t buffer[6];
     uint8_t i = 0;
-    float LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_2g;
 
     /* Read the register content */
     LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_CTRL_REG4_A, ctrlx, 2);
@@ -220,13 +194,13 @@ void ReadAcc(float *pfData)
     {
         for (i = 0; i < 3; i++)
         {
-            pnRawData[i] = ((int16_t)((uint16_t)buffer[2 * i + 1] << 8) + buffer[2 * i]) / cDivider; //       pfData[i]=(float)((int16_t)((((int16_t)buffer[2*i]) << 8) + buffer[2*i+1]));
+            pfData[i] = ((int16_t)((uint16_t)buffer[2 * i + 1] << 8) + buffer[2 * i]) / cDivider; //       pfData[i]=(float)((int16_t)((((int16_t)buffer[2*i]) << 8) + buffer[2*i+1]));
         }
     }
     else /* Big Endian Mode */
     {
         for (i = 0; i < 3; i++)
-            pnRawData[i] = ((int16_t)((uint16_t)buffer[2 * i] << 8) + buffer[2 * i + 1]) / cDivider;
+            pfData[i] = ((int16_t)((uint16_t)buffer[2 * i] << 8) + buffer[2 * i + 1]) / cDivider;
     }
     /* Read the register content */
     LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_CTRL_REG4_A, ctrlx, 2);
@@ -255,12 +229,6 @@ void ReadAcc(float *pfData)
             LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_16g;
             break;
         }
-    }
-
-    /* Obtain the mg value for the three axis */
-    for (i = 0; i < 3; i++)
-    {
-        pfData[i] = (float)pnRawData[i] / LSM_Acc_Sensitivity;
     }
 }
 
