@@ -34,20 +34,19 @@
 #include "main.h"		 
 	 
 void MAG_INIT(void);
-void ReadMag (float* pfData); 
+void ReadMag (uint16_t* pfData); 
 void ReadMagTemp (float* pfTData);
 
 void ACC_INIT(void);
 //void AccCorrect(float* pfOffset);
-void ReadAcc (float* pfData); 
+void ReadAcc (uint16_t* pfData); 
 	 
 void GYRO_INIT (void);
-void GyroCorrect(float* pfOffset);
-void ReadGyro (float* pfData);
+// void GyroCorrect(float* pfOffset);
+void ReadGyro (uint16_t* pfData);
 
 void ADC_Config(void);	 
-	 
-	 
+	  
 	 
 #ifdef __cplusplus
 }

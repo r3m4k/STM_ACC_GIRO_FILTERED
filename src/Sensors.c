@@ -1,5 +1,13 @@
 #include "Sensors.h"
 
+// ===============================================================================
+extern float LSM_Acc_Sensitivity;  
+extern uint16_t Magn_Sensitivity_XY;
+extern uint16_t Magn_Sensitivity_Z;
+
+extern uint16_t cDivider;
+// ===============================================================================
+
 // #define FilterDepth 30000
 
 void GYRO_INIT(void)

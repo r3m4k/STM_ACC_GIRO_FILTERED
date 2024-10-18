@@ -26,23 +26,20 @@ __IO uint32_t UserButtonPressed = 0;
 __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
-
 // Вынесем чувствительность акселерометра и магнитометра в отдельную переменную, чтобы максимально долго была возможность не работать с float
 // Они будут заполняться при чтении данных с датчиков
-#define LSM_Acc_Sensitivity  
-#define Magn_Sensitivity_XY
-#define Magn_Sensitivity_Z
+float LSM_Acc_Sensitivity = 0;  
+uint16_t Magn_Sensitivity_XY = 0;
+uint16_t Magn_Sensitivity_Z = 0;
 
-#define cDiveder // Число на которое надо разделить значения с акселерометра
-
+uint16_t cDivider; // Число на которое надо разделить значения с акселерометра
+// ===============================================================================
 struct MeasureFrame
 {
 	uint16_t X;
 	uint16_t Y;
 	uint16_t Z;
 };
-
-// ===============================================================================
 
 void Read_Acc(struct MeasureFrame *Frame);
 void Read_Gyro(struct MeasureFrame *Frame);
@@ -90,7 +87,7 @@ int main()
 void Read_Acc(struct MeasureFrame *Frame)
 {
     uint16_t AccBuffer[3];
-    ReadAcc(&AccBuffer);
+    ReadAcc(AccBuffer);
     // AccBuffer /= сDiveder
     // Что не учитывается при хранении данных в угоду производительности
     // тк процессор медленно обрабатывает числа с плавающей точкой 
@@ -102,7 +99,7 @@ void Read_Acc(struct MeasureFrame *Frame)
 void Read_Gyro(struct MeasureFrame *Frame)
 {
     uint16_t GyroBuffer[3];
-    ReadGyro(&GyroBuffer);
+    ReadGyro(GyroBuffer);
     Frame->X = GyroBuffer[0];
     Frame->Y = GyroBuffer[1];
     Frame->Z = GyroBuffer[2];
@@ -111,7 +108,7 @@ void Read_Gyro(struct MeasureFrame *Frame)
 void Read_Mag(struct MeasureFrame *Frame)
 {
     uint16_t MagBuffer[3];
-    ReadMag(&MagBuffer);
+    ReadMag(MagBuffer);
     // MagBuffer = -1 * ((MagBuffer / 1000) / Magn_Sensitivity_XYZ)
     // Что не учитывается при хранении данных в угоду производительности
     // тк процессор медленно обрабатывает числа с плавающей точкой  

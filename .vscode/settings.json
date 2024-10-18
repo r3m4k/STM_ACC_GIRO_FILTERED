@@ -1,7 +1,8 @@
 {
     "telemetry.telemetryLevel": "off",
     "files.associations": {
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "sensors.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "cortex-debug.openocdPath": "openocd",
