@@ -34,16 +34,6 @@ uint16_t Magn_Sensitivity_Z = 0;
 
 uint16_t cDivider; // Число на которое надо разделить значения с акселерометра
 // ===============================================================================
-struct MeasureFrame
-{
-	uint16_t X;
-	uint16_t Y;
-	uint16_t Z;
-};
-
-void Read_Acc(struct MeasureFrame *Frame);
-void Read_Gyro(struct MeasureFrame *Frame);
-void Read_Mag(struct MeasureFrame *Frame);
 
 int main()
 {
