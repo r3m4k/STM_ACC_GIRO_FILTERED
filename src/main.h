@@ -5,6 +5,9 @@
 
 #include "COM_IO.h"
 #include "Sensors.h"
+// #include <cmath>
+// #include "Measure.hpp"
+
 //#include "stm32f30x_iwdg.h"
 
 // ===============================================================================
@@ -14,19 +17,10 @@
  extern "C" {
 #endif 
 
-struct MeasureFrame
-{
-	uint16_t X;
-	uint16_t Y;
-	uint16_t Z;
-};
-
-void Read_Acc(struct MeasureFrame *Frame);
-void Read_Gyro(struct MeasureFrame *Frame);
-void Read_Mag(struct MeasureFrame *Frame);
-
 void LedsInit(void);
 void Toggle_Leds(void);	
+void LedsOn(void);
+void LedsOff(void);
 	 
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
