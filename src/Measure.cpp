@@ -1,6 +1,7 @@
 #include <math.h>
 #include "main.h"
 
+
 struct Frame
 {
     float X_coord;
@@ -18,42 +19,76 @@ struct Data
 class Measure
 {
 protected:
-    Data current, mean;
-    float** rotation_matrix = (float**)malloc(3 * sizeof(float*));
-    float longitude;
-    float sqrt2 = sqrt(2);
+    Data current_Data, zero_Data, buffer_Data;
+    
+    // Данные, которые будут меняться в вызываемых функциях
+    // Вынесим их в статические переменные для избежания переполнения стека процессора
+    Frame temp_Frame;     
+    Data  temp_Data;
+    float temp_matrix[9] = {0.0f};
+    float temp_vector[3] = {0.0f};
+
+    float rotation_matrix[9] = {0.0f};      // Матрица перехода от СК платы к глобальной СК, у которой ось OY направлена на север, а OZ перпендикулярно поверхности
+                                            // Будем работать с матрицей 3х3 как с массивом из 9-ти элементов 
+    float longitude;                        // Широта места, где будет находиться плата
+    float buffer[3] = {0.0f};               // Буффер, который будет использоваться при чтении данных с датчиков
+    float sqrt2 = sqrt(2);                  // Тк sqrt(2) будет использоваться довольно часто, то вынесим его значение в отдельную переменную
+    short i, j;
 
 public:
     Measure(float phi)
     {
-        set_zero_Data(current);
-        longitude = phi;
+        longitude = phi;    
+        
+        // Зададим значения для temp_Data
+        temp_Data.Acc.X_coord = 0;
+        temp_Data.Acc.Y_coord = 0;
+        temp_Data.Acc.Z_coord = 0;
+
+        temp_Data.Gyro.X_coord = 0;
+        temp_Data.Gyro.Y_coord = 0;
+        temp_Data.Gyro.Z_coord = 0;
+
+        temp_Data.Mag.X_coord = 0;
+        temp_Data.Mag.Y_coord = 0;
+        temp_Data.Mag.Z_coord = 0;
+
+        // Зададим значения для temp_Frame
+        temp_Frame.X_coord = 0;
+        temp_Frame.Y_coord = 0;
+        temp_Frame.Z_coord = 0;
+
+
     }
 
     // ########################################################################
-    // Дополнительный функционал для struct Data
-    void set_zero_Data(Data &data)
+    // Функционал для Data
+    void set_zero_Data()
     {
+        temp_Data.Acc.X_coord = 0;
+        temp_Data.Acc.Y_coord = 0;
+        temp_Data.Acc.Z_coord = 0;
 
-        data.Acc.X_coord = 0;
-        data.Acc.Y_coord = 0;
-        data.Acc.Z_coord = 0;
+        temp_Data.Gyro.X_coord = 0;
+        temp_Data.Gyro.Y_coord = 0;
+        temp_Data.Gyro.Z_coord = 0;
 
-        data.Gyro.X_coord = 0;
-        data.Gyro.Y_coord = 0;
-        data.Gyro.Z_coord = 0;
-
-        data.Mag.X_coord = 0;
-        data.Mag.Y_coord = 0;
-        data.Mag.Z_coord = 0;
+        temp_Data.Mag.X_coord = 0;
+        temp_Data.Mag.Y_coord = 0;
+        temp_Data.Mag.Z_coord = 0;
     }
+
+    // Data get_real_Data()
+    // {
+
+    // }
 
     // ########################################################################
     // Чтение данных с датчиков
 
     friend void ReadAcc(float *pfData);
     friend void ReadGyro(float *pfData);
-    friend void ReadMag(float *pfData);    
+    friend void ReadMag(float *pfData);
 
     void Read_Data(Data &data)
     {
@@ -64,55 +99,74 @@ public:
 
     void Read_Acc(Frame &frame)
     {
-        float AccBuffer[3];
-        ReadAcc(AccBuffer);
-        frame.X_coord = AccBuffer[0];
-        frame.Y_coord = AccBuffer[1];
-        frame.Z_coord = AccBuffer[2];
+        ReadAcc(buffer);
+        frame.X_coord = buffer[0];
+        frame.Y_coord = buffer[1];
+        frame.Z_coord = buffer[2];
     }
 
     void Read_Gyro(Frame &frame)
     {
-        float GyroBuffer[3];
-        ReadGyro(GyroBuffer);
-        frame.X_coord = GyroBuffer[0];
-        frame.Y_coord = GyroBuffer[1];
-        frame.Z_coord = GyroBuffer[2];
+        ReadGyro(buffer);
+        frame.X_coord = buffer[0];
+        frame.Y_coord = buffer[1];
+        frame.Z_coord = buffer[2];
     }
 
     void Read_Mag(Frame &frame)
     {
-        float MagBuffer[3];
-        ReadMag(MagBuffer);
-        frame.X_coord = MagBuffer[0];
-        frame.Y_coord = MagBuffer[1];
-        frame.Z_coord = MagBuffer[2];
+        ReadMag(buffer);
+        frame.X_coord = buffer[0];
+        frame.Y_coord = buffer[1];
+        frame.Z_coord = buffer[2];
     }
 
     // ########################################################################
     // Математические операции с Data и Frame
-    Data Data_summ(Data &data1, Data &data2)
+
+    // Сложение Data
+    void Data_summ(Data &data1, Data &data2)
     {
-        Data result;
+        Frame_summ(data1.Acc, data2.Acc);
+        temp_Data.Acc = temp_Frame; 
 
-        result.Acc = Frame_sum(data1.Acc, data2.Acc);
-        result.Gyro = Frame_sum(data1.Gyro, data2.Gyro);
-        result.Mag = Frame_sum(data1.Mag, data2.Mag);
-
-        return result;
+        Frame_summ(data1.Gyro, data2.Gyro);
+        temp_Data.Gyro = temp_Frame;
+        
+        Frame_summ(data1.Mag, data2.Mag);
+        temp_Data.Mag = temp_Frame;
+    }
+    
+    // Сложение Frame
+    void Frame_summ(Frame &frame1, Frame &frame2)
+    {
+        temp_Frame.X_coord = frame1.X_coord + frame2.X_coord;
+        temp_Frame.Y_coord = frame1.Y_coord + frame2.Y_coord;
+        temp_Frame.Z_coord = frame1.Z_coord + frame2.Z_coord;
     }
 
-    Frame Frame_sum(Frame &frame1, Frame &frame2)
+    // Вычитание Data
+    void Data_diff(Data &data1, Data &data2)
     {
-        Frame result;
+        Frame_diff(data1.Acc, data2.Acc);
+        temp_Data.Acc = temp_Frame; 
 
-        result.X_coord = frame1.X_coord + frame2.X_coord;
-        result.Y_coord = frame1.Y_coord + frame2.Y_coord;
-        result.Z_coord = frame1.Z_coord + frame2.Z_coord;
-
-        return result;
+        Frame_diff(data1.Gyro, data2.Gyro);
+        temp_Data.Gyro = temp_Frame;
+        
+        Frame_diff(data1.Mag, data2.Mag);
+        temp_Data.Mag = temp_Frame;
+    }
+    
+    // Вычитание Frame
+    void Frame_diff(Frame &frame1, Frame &frame2)
+    {
+        temp_Frame.X_coord = frame1.X_coord + frame2.X_coord;
+        temp_Frame.Y_coord = frame1.Y_coord + frame2.Y_coord;
+        temp_Frame.Z_coord = frame1.Z_coord + frame2.Z_coord;
     }
 
+    // Деление Data на число
     void Data_division(Data &data, float num)
     {
         Frame_division(data.Acc, num);
@@ -120,6 +174,7 @@ public:
         Frame_division(data.Mag, num);
     }
 
+    // Деление Data на число
     void Frame_division(Frame &frame, float num)
     {
         frame.X_coord /= num;
@@ -137,48 +192,55 @@ public:
         int max = pow(2, degree - jump_mean_degree);
         int jm_max = pow(2, jump_mean_degree);
 
-        for (int i = 0; i < max; i++)
+        for (int index = 0; index < max; index++)
         {
-            Data buffer;
-            set_zero_Data(buffer);
+            set_zero_Data();
+            buffer_Data = temp_Data;
 
             for (int j = 0; j < jm_max; j++)
             {
-                Read_Data(current);
-                buffer = Data_summ(current, buffer);
+                Read_Data(current_Data);
+                Data_summ(current_Data, buffer_Data);
+                buffer_Data = temp_Data;
             }
 
-            Data_division(buffer, jm_max);
-            mean = Data_summ(mean, buffer);
+            Data_division(buffer_Data, jm_max);
+
+            Data_summ(zero_Data, buffer_Data);
+            zero_Data = temp_Data; 
         }
 
-        Data_division(mean, max);
+        Data_division(zero_Data, max);
     }
 
     void set_rotationMatrix()
     {
         // Вывод коэффицентов матрицы поворота, а также описание используемых систем координат можно посмотреть в файле Documentation/Rotation_matrix.pdf
-        float** matrix = (float**)malloc(3 * sizeof(float*));   // матрица перехода от системы координат x'y'z' к xyz
-        float *G_x, *G_y, *G_z, *W_x, *W_y, *W_z, *H_x, *H_y, *H_z; // Координаты векторов G, W, H в системе координат, связанной с платой
+        float matrix[9] = {0.0f};  // матрица перехода от системы координат x'y'z' к xyz
+        
+        /* 
+        Координаты векторов G, W, H в системе координат, связанной с платой
 
-        G_x = &mean.Acc.X_coord;
-        G_y = &mean.Acc.Y_coord;
-        G_z = &mean.Acc.Z_coord;
+        G_x = zero_Data.Acc.X_coord;
+        G_y = zero_Data.Acc.Y_coord;
+        G_z = zero_Data.Acc.Z_coord;
 
-        W_x = &mean.Gyro.X_coord;
-        W_y = &mean.Gyro.Y_coord;
-        W_z = &mean.Gyro.Z_coord;
+        W_x = zero_Data.Gyro.X_coord;
+        W_y = zero_Data.Gyro.Y_coord;
+        W_z = zero_Data.Gyro.Z_coord;
 
-        H_x = &mean.Mag.X_coord;
-        H_y = &mean.Mag.Y_coord;
-        H_z = &mean.Mag.Z_coord;
+        H_x = zero_Data.Mag.X_coord;
+        H_y = zero_Data.Mag.Y_coord;
+        H_z = zero_Data.Mag.Z_coord;
+        */
 
-        float G = sqrt((*G_x) * (*G_x) + (*G_y) * (*G_y) + (*G_z) * (*G_z)); // Получаем значение всемирных констант таким способом для того, чтобы не переводить
-        float W = sqrt((*W_x) * (*W_x) + (*W_y) * (*W_y) + (*W_z) * (*W_z)); // значение этих констант из системы СИ в систему измерений датчиков.
-        float H = sqrt((*H_x) * (*H_x) + (*H_y) * (*H_y) + (*H_z) * (*H_z));
+        // Получаем значение всемирных констант способом ниже для того, чтобы не переводить значение этих констант из системы СИ в систему измерений датчиков.
+        float G = sqrt(zero_Data.Acc.X_coord * zero_Data.Acc.X_coord + zero_Data.Acc.Y_coord * zero_Data.Acc.Y_coord + zero_Data.Acc.Z_coord * zero_Data.Acc.Z_coord); 
+        float W = sqrt(zero_Data.Gyro.X_coord * zero_Data.Gyro.X_coord + zero_Data.Gyro.Y_coord * zero_Data.Gyro.Y_coord + zero_Data.Gyro.Z_coord * zero_Data.Gyro.Z_coord); 
+        float H = sqrt(zero_Data.Mag.X_coord * zero_Data.Mag.X_coord + zero_Data.Acc.Y_coord * zero_Data.Mag.Y_coord + zero_Data.Mag.Z_coord * zero_Data.Mag.Z_coord);
 
-        float W_X, W_Y, W_Z, H_X, H_Y;      // Координаты векторов W, H в системе координат, связанной с Землёй
-                                            // и повёрнутой относительно направления на север на -45 градусов вокруг оси OZ (т.е. по часовой стрелке)
+        float W_X, W_Y, W_Z, H_X, H_Y; // Координаты векторов W, H в системе координат, связанной с Землёй
+                                       // и повёрнутой относительно направления на север на -45 градусов вокруг оси OZ (т.е. по часовой стрелке)
 
         W_X = W * cos(longitude) / sqrt2;
         W_Y = W * cos(longitude) / sqrt2;
@@ -187,163 +249,91 @@ public:
         H_X = H / sqrt2;
         H_Y = H / sqrt2;
 
+        matrix[0] = (H_Y * (zero_Data.Gyro.X_coord - W_Z * zero_Data.Acc.X_coord / G) - W_Y * zero_Data.Mag.X_coord) / (W_X * H_Y - W_Y * H_X);     // matrix[0][0]
+        matrix[1] = (H_Y * (zero_Data.Gyro.Y_coord - W_Z * zero_Data.Acc.Y_coord / G) - W_Y * zero_Data.Mag.Y_coord) / (W_X * H_Y - W_Y * H_X);     // matrix[0][1]
+        matrix[2] = (H_Y * (zero_Data.Gyro.Z_coord - W_Z * zero_Data.Acc.Z_coord / G) - W_Y * zero_Data.Mag.Z_coord) / (W_X * H_Y - W_Y * H_X);     // matrix[0][2]
 
-        matrix[0][0] = (H_Y * ((*W_x) - W_Z * (*G_x) / G) - W_Y * (*H_x)) / (W_X * H_Y - W_Y * H_X);
-        matrix[0][1] = (H_Y * ((*W_y) - W_Z * (*G_y) / G) - W_Y * (*H_y)) / (W_X * H_Y - W_Y * H_X);
-        matrix[0][2] = (H_Y * ((*W_z) - W_Z * (*G_z) / G) - W_Y * (*H_z)) / (W_X * H_Y - W_Y * H_X);
+        matrix[3] = (H_X * (zero_Data.Gyro.X_coord - W_Z * zero_Data.Acc.X_coord / G) - W_X * zero_Data.Mag.X_coord) / (W_X * H_Y - W_Y * H_X);     // matrix[1][0]
+        matrix[4] = (H_X * (zero_Data.Gyro.Y_coord - W_Z * zero_Data.Acc.Y_coord / G) - W_X * zero_Data.Mag.Y_coord) / (W_X * H_Y - W_Y * H_X);     // matrix[1][1]
+        matrix[5] = (H_X * (zero_Data.Gyro.Z_coord - W_Z * zero_Data.Acc.Z_coord / G) - W_X * zero_Data.Mag.Z_coord) / (W_X * H_Y - W_Y * H_X);     // matrix[1][2]
 
-        matrix[1][0] = (H_X * ((*W_x) - W_Z * (*G_x) / G) - W_X * (*H_x)) / (W_X * H_Y - W_Y * H_X);
-        matrix[1][1] = (H_X * ((*W_y) - W_Z * (*G_y) / G) - W_X * (*H_y)) / (W_X * H_Y - W_Y * H_X);
-        matrix[1][2] = (H_X * ((*W_z) - W_Z * (*G_z) / G) - W_X * (*H_z)) / (W_X * H_Y - W_Y * H_X);
+        matrix[6] = zero_Data.Gyro.X_coord / G;     // matrix[2][0]
+        matrix[7] = zero_Data.Gyro.Y_coord / G;     // matrix[2][1]
+        matrix[8] = zero_Data.Gyro.Z_coord / G;     // matrix[2][2]
+        
+        Mreverse(matrix);
+        for (i = 0; i < 9; i++){
+            matrix[i] = temp_matrix[i];
+        }
 
-        matrix[2][0] = *G_x / G;
-        matrix[2][1] = *G_y / G;
-        matrix[2][2] = *G_z / G;
+        // Матрица перехода от xyz к XYZ
+        float Matrix[9] = {0.0f};
 
-        matrix = Mreverse(matrix, 3);
+        Matrix[0] = 1 / sqrt2;      // Matrix[0][0]
+        Matrix[1] = -1 / sqrt2;     // Matrix[0][1]
+        Matrix[2] = 0.0f;           // Matrix[0][2]
 
-        // Матрица перехода от xyz к XYZ 
-        float** Matrix = (float**)malloc(3 * sizeof(float*));
+        Matrix[3] = 1 / sqrt2;      // Matrix[1][0]
+        Matrix[4] = 1 / sqrt2;      // Matrix[1][1]
+        Matrix[5] = 0.0f;           // Matrix[1][2]
 
-        Matrix[0][0] = 1/sqrt2;
-        Matrix[0][1] = -1/sqrt2;
-        Matrix[0][2] = 0.0f;
-
-        Matrix[1][0] = 1/sqrt2;
-        Matrix[1][1] = 1/sqrt2;
-        Matrix[1][2] = 0.0f;
-
-        Matrix[2][0] = 0.0f;
-        Matrix[2][1] = 0.0f;
-        Matrix[2][2] = 1.0f;
-
-        rotation_matrix = M_multiplication(matrix, Matrix, 3);
+        Matrix[6] = 0.0f;           // Matrix[2][0]
+        Matrix[7] = 0.0f;           // Matrix[2][1]
+        Matrix[8] = 1.0f;           // Matrix[2][2]
+        
+        Matrix_Matrix_mult(matrix, Matrix);        
+        for (i = 0; i < 9; i++){
+            rotation_matrix[i] = temp_matrix[i];
+        }
     }
 
     // ########################################################################
     // Математические операции с матрицами
 
-    // Транспонирование матрицы
-    float **Transpone(float **matrix, int rows, int cols)
+    // Вычисление определителя
+    float Determinant(float matrix[])        // Не уверен, что & сработает, тк эта функция получает как бы указатель на указатель
     {
-        float **result;
-        result = (float **)malloc(cols * sizeof(float *));
-        for (int i = 0; i < cols; i++)
-        {
-            result[i] = (float *)malloc(rows * sizeof(float));
-            for (int j = 0; j < rows; j++)
-                result[i][j] = matrix[j][i];
-        }
-        return result;
+        return matrix[0] * (matrix[4] * matrix[8] - matrix[7] * matrix[5]) - matrix[1] * (matrix[3] * matrix[8] - matrix[6] * matrix[5]) + matrix[2] * (matrix[3] * matrix[7] - matrix[6] * matrix[4]);
     }
 
-    // Функция освобождения памяти, выделенной под матрицу
-    void Free(float **matrix, int rows)
-    {
-        if (matrix == 0)
-            return; // если память не была выделена, выходим
-        for (int i = 0; i < rows; i++)
-            free(matrix[i]);
-        free(matrix);
+    // Нахождение обратной матрицы размерности 3х3
+    void Mreverse(float matrix[]){
+        float det = Determinant(matrix);
+        
+        // Заполним temp_matrix алгебраическими дополнениями матрицы matrix и транспонируем её
+        temp_matrix[0] =  (matrix[4] * matrix[8] - matrix[7] * matrix[5]) / det;    //temp_matrix[0][0]
+        temp_matrix[3] = -(matrix[3] * matrix[8] - matrix[6] * matrix[5]) / det;    //temp_matrix[1][0]
+        temp_matrix[6] =  (matrix[3] * matrix[7] - matrix[6] * matrix[4]) / det;    //temp_matrix[2][0]
+
+        temp_matrix[1] = -(matrix[1] * matrix[8] - matrix[7] * matrix[2]) / det;    //temp_matrix[0][1]
+        temp_matrix[4] =  (matrix[0] * matrix[8] - matrix[6] * matrix[2]) / det;    //temp_matrix[1][1]
+        temp_matrix[7] = -(matrix[0] * matrix[7] - matrix[6] * matrix[1]) / det;    //temp_matrix[2][1]
+
+        temp_matrix[2] =  (matrix[1] * matrix[5] - matrix[4] * matrix[2]) / det;    //temp_matrix[0][2]
+        temp_matrix[5] = -(matrix[0] * matrix[5] - matrix[3] * matrix[2]) / det;    //temp_matrix[1][2]
+        temp_matrix[8] =  (matrix[0] * matrix[4] - matrix[3] * matrix[1]) / det;    //temp_matrix[2][2]
     }
 
-    // Получение матрицы без i-й строки и j-го столбца
-    // (функция нужна для вычисления определителя и миноров)
-    float **GetMatr(float **matrix, int rows, int cols, int row, int col)
-    {
-        int di, dj;
-        float **p = (float **)malloc((rows - 1) * sizeof(float *));
-        di = 0;
-        for (int i = 0; i < rows - 1; i++)
-        {                 // проверка индекса строки
-            if (i == row) // строка совпала с вычеркиваемой
-                di = 1;   // - дальше индексы на 1 больше
-            dj = 0;
-            p[i] = (float *)malloc((cols - 1) * sizeof(float));
-            for (int j = 0; j < cols - 1; j++)
-            {                 // проверка индекса столбца
-                if (j == col) // столбец совпал с вычеркиваемым
-                    dj = 1;   // - дальше индексы на 1 больше
-                p[i][j] = matrix[i + di][j + dj];
-            }
-        }
-        return p;
+    // Умножение  матриц размерности 3х3
+    void Matrix_Matrix_mult(float matrix1[], float matrix2[]){
+        temp_matrix[0] = matrix1[0] * matrix2[0] + matrix1[1] * matrix2[3] + matrix1[2] * matrix2[6];
+        temp_matrix[1] = matrix1[0] * matrix2[1] + matrix1[1] * matrix2[4] + matrix1[2] * matrix2[7];
+        temp_matrix[2] = matrix1[0] * matrix2[2] + matrix1[1] * matrix2[5] + matrix1[2] * matrix2[8];
+        
+        temp_matrix[3] = matrix1[3] * matrix2[0] + matrix1[4] * matrix2[3] + matrix1[5] * matrix2[6];
+        temp_matrix[4] = matrix1[3] * matrix2[1] + matrix1[4] * matrix2[4] + matrix1[5] * matrix2[7];
+        temp_matrix[5] = matrix1[3] * matrix2[2] + matrix1[4] * matrix2[5] + matrix1[5] * matrix2[8];
+
+        temp_matrix[6] = matrix1[6] * matrix2[0] + matrix1[7] * matrix2[3] + matrix1[8] * matrix2[6];
+        temp_matrix[7] = matrix1[6] * matrix2[1] + matrix1[7] * matrix2[4] + matrix1[8] * matrix2[7];
+        temp_matrix[8] = matrix1[6] * matrix2[2] + matrix1[7] * matrix2[5] + matrix1[8] * matrix2[8];
     }
 
-    // Рекурсивное вычисление определителя
-    float Determinant(float **matrix, int m)
-    {
-        int k;
-        float **p = 0;
-        float d = 0;
-        k = 1; //(-1) в степени i
-
-        // if (m < 1)
-        // {
-        //     printf("Определитель вычислить невозможно!");
-        //     return 0;
-        // }
-
-        if (m == 1)
-        {
-            d = matrix[0][0];
-            return (d);
-        }
-        if (m == 2)
-        {
-            d = matrix[0][0] * matrix[1][1] - (matrix[1][0] * matrix[0][1]);
-            return (d);
-        }
-        if (m > 2)
-        {
-            for (int i = 0; i < m; i++)
-            {
-                p = GetMatr(matrix, m, m, i, 0);
-                d = d + k * matrix[i][0] * Determinant(p, m - 1);
-                k = -k;
-            }
-        }
-        Free(p, m - 1);
-        return (d);
-    }
-
-    // Обратная матрица
-    float **Mreverse(float **matrix, int m)
-    {
-        float **result = (float **)malloc(m * sizeof(float *));
-        float det = Determinant(matrix, m); // находим определитель исходной матрицы
-        for (int i = 0; i < m; i++)
-        {
-            result[i] = (float *)malloc(m * sizeof(float));
-            for (int j = 0; j < m; j++)
-            {
-                result[i][j] = Determinant(GetMatr(matrix, m, m, i, j), m - 1);
-                if ((i + j) % 2 == 1)       // если сумма индексов строки и столбца нечетная
-                    result[i][j] = -result[i][j]; // меняем знак минора
-                result[i][j] = result[i][j] / det;
-            }
-        }
-        return Transpone(result, m, m);
-    }
-
-    // Умножение квадратных матриц размерности m
-    float **M_multiplication(float **matrix1, float **matrix2, int m)
-    {
-        float **result = (float **)malloc(m * sizeof(float *));
-
-        for (int i = 0; i < m; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                result[i][j] = 0;
-                for (int k = 0; k < m; k++)
-                {
-                    result[i][j] += matrix1[i][k] * matrix2[k][j];
-                }
-            }
-        }
-
-        return result;
+    // Умножение квадратной матрицы размерности 3х3 на вектор размерности 3
+    void Matrix_Vector_mult(float matrix[], float vector[]){
+        temp_vector[0] = matrix[0] * vector[0] + matrix[1] * vector[1] + matrix[2] * vector[2];
+        temp_vector[1] = matrix[3] * vector[0] + matrix[4] * vector[1] + matrix[5] * vector[2];
+        temp_vector[2] = matrix[6] * vector[0] + matrix[7] * vector[1] + matrix[8] * vector[2];
     }
     // ########################################################################
 };
