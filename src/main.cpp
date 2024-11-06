@@ -2,6 +2,8 @@
 #include "Drv_Uart.h"
 #include "main.h"
 
+#define PI 3.14159
+
 // ----------------------------------------------------------------------------
 //
 // Standalone STM32F3 empty sample (trace via NONE).
@@ -26,6 +28,8 @@ __IO uint32_t UserButtonPressed = 0;
 __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
+
+measure = Measure(55.7522 * PI / 180);
 
 int main()
 {

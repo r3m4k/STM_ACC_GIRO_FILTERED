@@ -39,6 +39,8 @@ public:
     Measure(float phi)
     {
         longitude = phi;    
+
+        // Нужно ли делать нижеперечисленное или это делает компилятор при иницилизации структуры?
         
         // Зададим значения для temp_Data
         temp_Data.Acc.X_coord = 0;
@@ -57,8 +59,6 @@ public:
         temp_Frame.X_coord = 0;
         temp_Frame.Y_coord = 0;
         temp_Frame.Z_coord = 0;
-
-
     }
 
     // ########################################################################
@@ -78,10 +78,23 @@ public:
         temp_Data.Mag.Z_coord = 0;
     }
 
-    // Data get_real_Data()
-    // {
+    void get_real_Data()
+    {
+        Read_Data(current_Data);
 
-    // }
+        Data_diff(current_Data, zero_Data);
+        current_Data = temp_Data;
+                
+        Matrix_Vector_mult(rotation_matrix, current_Data.Acc);
+        current_Data.Acc = temp_vector;
+
+        Matrix_Vector_mult(rotation_matrix, current_Data.Gyro);
+        current_Data.Gyro = temp_vector;
+
+        Matrix_Vector_mult(rotation_matrix, current_Data.Mag);
+        current_Data.Mag = temp_vector;
+
+    }
 
     // ########################################################################
     // Чтение данных с датчиков
