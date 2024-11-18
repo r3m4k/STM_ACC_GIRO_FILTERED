@@ -97,8 +97,7 @@ ${BIN_PLACE}user/Drv_Gpio.opp \
 ${BIN_PLACE}user/Drv_Uart.opp \
 ${BIN_PLACE}user/main.opp \
 ${BIN_PLACE}user/Sensors.o \
-${BIN_PLACE}user/COM_IO.opp \
-${BIN_PLACE}user/Measure.opp 
+${BIN_PLACE}user/COM_IO.opp
 
 ${BIN_PLACE}$(BINARY) : $(OBJECTS)
 	echo "BUILD "${BIN_PLACE}${BINARY}", MEMORY CARD "${BIN_PLACE}${PROGRAM_NAME}.map
@@ -166,7 +165,6 @@ ${BIN_PLACE}user/Drv_Uart.opp : src/Drv_Uart.cpp
 ${BIN_PLACE}user/main.opp : src/main.cpp
 ${BIN_PLACE}user/Sensors.o : src/Sensors.c
 ${BIN_PLACE}user/COM_IO.opp : src/COM_IO.cpp
-${BIN_PLACE}user/Measure.opp : src/Measure.cpp
 
 
 clean:

@@ -1,12 +1,26 @@
-  
+#include <math.h>
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
 
 #include "COM_IO.h"
 #include "Sensors.h"
-// #include <cmath>
-// #include "Measure.hpp"
+
+
+struct Frame
+{
+    float X_coord;
+    float Y_coord;
+    float Z_coord;
+};
+
+struct Data
+{
+    struct Frame Acc;
+    struct Frame Gyro;
+    struct Frame Mag;
+};
 
 //#include "stm32f30x_iwdg.h"
 

@@ -2,6 +2,11 @@
 #include "Drv_Uart.h"
 #include "main.h"
 
+#ifndef __MEASURE_H
+#define __MEASURE_H
+#include "Measure.hpp"
+#endif
+
 #define PI 3.14159
 
 // ----------------------------------------------------------------------------
@@ -29,7 +34,7 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 
-measure = Measure(55.7522 * PI / 180);
+Measure measure(55.7522 * PI / 180);
 
 int main()
 {
@@ -48,6 +53,11 @@ int main()
     MAG_INIT();
     ACC_INIT();
     InitUart(115200);   
+    Toggle_Leds();
+    
+    measure.average_Data();
+    measure.set_rotationMatrix();
+    measure.send_rotation_matrix();
 
     while (1) 
     {
