@@ -7,6 +7,8 @@
 #include "COM_IO.h"
 #include "Sensors.h"
 
+#define ARM_MATH_CM4
+#include "../system/include/cmsis/arm_math.h"
 
 struct Frame
 {

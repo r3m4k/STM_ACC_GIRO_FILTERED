@@ -7,7 +7,7 @@
 #include "Measure.hpp"
 #endif
 
-#define PI 3.14159
+// #define PI 3.14159
 
 // ----------------------------------------------------------------------------
 //
@@ -34,7 +34,10 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 
-Measure measure(55.7522 * PI / 180);
+// Measure measure(55.7522 * PI / 180);
+
+float a = 99;
+float b;
 
 int main()
 {
@@ -54,10 +57,18 @@ int main()
     ACC_INIT();
     InitUart(115200);   
     Toggle_Leds();
+
+    if (arm_sqrt_f32(a, &b)){
+        while (1)
+        {
+            /* code */
+        }
+        
+    }
     
-    measure.average_Data();
-    measure.set_rotationMatrix();
-    measure.send_rotation_matrix();
+    // measure.average_Data();
+    // measure.set_rotationMatrix();
+    // measure.send_rotation_matrix();
 
     while (1) 
     {

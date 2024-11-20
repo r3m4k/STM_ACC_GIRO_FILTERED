@@ -14,6 +14,7 @@ CP = ${GCC_PLACE}bin/arm-none-eabi-g++
 
 #включаемые директории
 INCLUDES = \
+-I"${GCC_PLACE}arm-none-eabi/include" \
 -I"include" \
 -I"src" \
 -I"system/include" \
@@ -162,9 +163,11 @@ ${BIN_PLACE}usb/usb_endp.o : system/USB_LIB/src/usb_endp.c
 # user
 ${BIN_PLACE}user/Drv_Gpio.opp : src/Drv_Gpio.cpp
 ${BIN_PLACE}user/Drv_Uart.opp : src/Drv_Uart.cpp
-${BIN_PLACE}user/main.opp : src/main.cpp
+${BIN_PLACE}user/main.opp : src/main.cpp	
 ${BIN_PLACE}user/Sensors.o : src/Sensors.c
 ${BIN_PLACE}user/COM_IO.opp : src/COM_IO.cpp
+
+${BIN_PLACE}complex.opp : C:/SysGCC/arm-eabi/arm-none-eabi/include/c++/10.3.1/complex
 
 
 clean:
