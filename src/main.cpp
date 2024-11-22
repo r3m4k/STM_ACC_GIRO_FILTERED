@@ -143,6 +143,14 @@ float my_pow(float num, int n){
     else return result;
 }
 
+float my_cos(float num){
+    return 1.0f;
+}
+
+float my_sin(float num){
+    return 1.0f;
+}
+
 // -------------------------------------------------------------------------------
 
 void Error_Handler(void)

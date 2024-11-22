@@ -1,52 +1,92 @@
 #include "Frame.hpp"
 
-class Measure;
 
-class Data
+class Data : public Frame
 {
 public:
+    Frame Acc;
+    Frame Gyro;
+    Frame Mag;
 
-    Frame Acc(measure);
-    Frame Gyro(measure);
-    Frame Mag(measure);
-
-    Data(Measure& _measure){ measure = _measure; }
+    // Frame, который будет меняться в вызываемых функциях
+    Frame temp_Frame;    
+    // Буферы, в которые будет сохраняться временная информация
+    Frame x_Buffer, y_Buffer, z_Buffer; 
 
     // ########################################################################
     // Перегрузка операторов
 
     void operator+(const Data& data){
+        // Сохранение результата в x_Buffer, y_Buffer, z_Buffer первого слагаемого
         Acc + data.Acc;
-        measure.temp_Data.Acc = measure.temp_Frame;
-        
+        x_Buffer = Acc.frame_Buffer;
+
         Gyro + data.Gyro;
-        measure.temp_Data.Gyro = measure.temp_Frame;
-        
+        y_Buffer = Gyro.frame_Buffer;
+
         Mag + data.Mag;
-        measure.temp_Data.Mag = measure.temp_Frame;
+        z_Buffer = Mag.frame_Buffer;
+    }
+
+    void operator+=(const Data& data){
+        // Изменение значений Acc, Gyro, Mag первого слагаемого
+        Acc + data.Acc;
+        Acc = Acc.frame_Buffer;
+
+        Gyro + data.Gyro;
+        Gyro = Gyro.frame_Buffer;
+
+        Mag + data.Mag;
+        Mag = Mag.frame_Buffer;
     }
 
     void operator-(const Data& data){
+        // Сохранение результата в x_Buffer, y_Buffer, z_Buffer уменьшаемого
         Acc - data.Acc;
-        measure.temp_Data.Acc = measure.temp_Frame;
-        
+        x_Buffer = Acc.frame_Buffer;
+
         Gyro - data.Gyro;
-        measure.temp_Data.Gyro = measure.temp_Frame;
-        
+        y_Buffer = Gyro.frame_Buffer;
+
         Mag - data.Mag;
-        measure.temp_Data.Mag = measure.temp_Frame;
+        z_Buffer = Mag.frame_Buffer;
+    }
+
+    void operator-=(const Data& data){
+        // Изменение значений Acc, Gyro, Mag уменьшаемого
+        Acc - data.Acc;
+        Acc = Acc.frame_Buffer;
+
+        Gyro - data.Gyro;
+        Gyro = Gyro.frame_Buffer;
+
+        Mag - data.Mag;
+        Mag = Mag.frame_Buffer;
     }
 
     void operator/(const float& num){
+        // Сохранение результата в x_Buffer, y_Buffer, z_Buffer делимого
         Acc / num;
-        measure.temp_Data.Acc = measure.temp_Frame;
+        x_Buffer = Acc.frame_Buffer;
         
         Gyro / num;
-        measure.temp_Data.Gyro = measure.temp_Frame;
+        y_Buffer = Gyro.frame_Buffer;
         
         Mag / num;
-        measure.temp_Data.Mag = measure.temp_Frame;
+        z_Buffer = Mag.frame_Buffer;
     }   
+
+    void operator/=(const float& num){
+        // Изменение значений Acc, Gyro, Mag делимого
+        Acc / num;
+        Acc = Acc.frame_Buffer;
+        
+        Gyro / num;
+        Gyro = Gyro.frame_Buffer;
+        
+        Mag / num;
+        Mag = Mag.frame_Buffer;
+    }  
 
     void operator=(const Data& data){
         Acc =  data.Acc;
@@ -73,16 +113,8 @@ public:
     // Функционал для Data
     void set_zero_Data()
     {
-        Acc.X_coord = 0;
-        Acc.Y_coord = 0;
-        Acc.Z_coord = 0;
-
-        Gyro.X_coord = 0;
-        Gyro.Y_coord = 0;
-        Gyro.Z_coord = 0;
-
-        Mag.X_coord = 0;
-        Mag.Y_coord = 0;
-        Mag.Z_coord = 0;
+        Acc.set_zero_Frame();
+        Gyro.set_zero_Frame();
+        Mag.set_zero_Frame();
     }
 };

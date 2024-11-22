@@ -3,11 +3,10 @@
 class Measure : public Data 
 {
 public:
-    Data current_Data(this), zero_Data(this), buffer_Data(this);
+    Data current_Data, zero_Data, buffer_Data;
 
     // Данные, которые будут меняться в вызываемых функциях
     // Вынесим их в статические переменные для избежания переполнения стека процессора
-    Frame temp_Frame;     
     Data  temp_Data;
     float temp_matrix[9] = {0.0f};
     float temp_vector[3] = {0.0f};
@@ -37,20 +36,16 @@ public:
         {
             buffer_Data.set_zero_Data();
 
-            for (int j = 0; j < jm_max; j++)
+            for (int _index = 0; _index < jm_max; _index++)
             {
                 current_Data.Read_Data();
-                current_Data + buffer_Data;
-                buffer_Data = temp_Data;
+                buffer_Data += current_Data;
             }
-            buffer_Data / jm_max;
-            buffer_Data = temp_Data;
+            buffer_Data /= jm_max;
             
-            zero_Data + buffer_Data;
-            zero_Data = temp_Data;
+            zero_Data += buffer_Data;
         }
-        zero_Data / max;
-        zero_Data = temp_Data;
+        zero_Data /= max;
     }
 
     void set_rotationMatrix()
@@ -82,9 +77,9 @@ public:
         float W_X, W_Y, W_Z, H_X, H_Y; // Координаты векторов W, H в системе координат, связанной с Землёй
                                     // и повёрнутой относительно направления на север на -45 градусов вокруг оси OZ (т.е. по часовой стрелке)
 
-        W_X = W * cos(longitude) / sqrt2;
-        W_Y = W * cos(longitude) / sqrt2;
-        W_Z = W * sin(longitude);
+        W_X = W * my_cos(longitude) / sqrt2;
+        W_Y = W * my_cos(longitude) / sqrt2;
+        W_Z = W * my_sin(longitude);
 
         H_X = H / sqrt2;
         H_Y = H / sqrt2;

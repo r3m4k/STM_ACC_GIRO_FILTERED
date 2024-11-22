@@ -1,5 +1,3 @@
-class Measure;
-
 class Frame
 {
 public:
@@ -8,50 +6,69 @@ public:
     float Y_coord;
     float Z_coord;
 
-    float buffer[3] = {0.0f};               // Буффер, который будет использоваться при чтении данных с датчиков
+    float frame_Buffer[3] = {0.0f};               // Буфер, в который будет заполняться временная информация
 
-    Measure measure;
-
-    Frame(Measure _measure) {measure = _measure}
+    Frame(){
+        X_coord = 0;
+        Y_coord = 0;
+        Z_coord = 0;
+    }
 
     // ########################################################################
     // Перегрузка операторов
-    void operator+(const Frame& frame2){
-        measure.temp_Frame.X_coord = X_coord + frame2.X_coord;
-        measure.temp_Frame.X_coord = Y_coord + frame2.Y_coord;
-        measure.temp_Frame.X_coord = Z_coord + frame2.Z_coord;
+
+    void operator+(const Frame& frame){
+        // Сохранение результата в frame_Buffer первого слагаемого
+        frame_Buffer[0] = X_coord + frame.X_coord;
+        frame_Buffer[1] = Y_coord + frame.Y_coord;
+        frame_Buffer[2] = Z_coord + frame.Z_coord;
     }
 
-    void operator-(const Frame& frame2){
-        measure.temp_Frame.X_coord = X_coord - frame2.X_coord;
-        measure.temp_Frame.X_coord = Y_coord - frame2.Y_coord;
-        measure.temp_Frame.X_coord = Z_coord - frame2.Z_coord;
+    void operator+=(const Frame& frame){
+        // Изменение значений X_coord, Y_coord, Z_coord первого слагаемого
+        X_coord += frame.X_coord;
+        Y_coord += frame.X_coord;
+        Z_coord += frame.X_coord;
     }
 
-    void operator/(const float& num){
-        measure.temp_Frame.X_coord = X_coord / num;
-        measure.temp_Frame.X_coord = Y_coord / num;
-        measure.temp_Frame.X_coord = Z_coord / num;
+    void operator-(const Frame& frame){
+        // Сохранение результата в frame_Buffer уменьшаемого
+        frame_Buffer[0] = X_coord - frame.X_coord;
+        frame_Buffer[1] = Y_coord - frame.Y_coord;
+        frame_Buffer[2] = Z_coord - frame.Z_coord;
     }
-    
+
+    void operator-=(const Frame& frame){
+        // Изменение значений X_coord, Y_coord, Z_coord уменьшаемого
+        X_coord -= frame.X_coord;
+        Y_coord -= frame.X_coord;
+        Z_coord -= frame.X_coord;
+    }
+
+    void operator/(const float num){
+        // Сохранение результата в frame_Buffer делимого
+        frame_Buffer[0] = X_coord / num;
+        frame_Buffer[1] = Y_coord / num;
+        frame_Buffer[2] = Z_coord / num;
+    }
+
     void operator=(const Frame& frame){
         X_coord = frame.X_coord;
         Y_coord = frame.Y_coord;
         Z_coord = frame.Z_coord;    
     }
 
-    float& operator[](int index){
+    void operator=(const float arr[]){
+        X_coord = arr[0];
+        Y_coord = arr[1];
+        Z_coord = arr[2];
+    }
+
+    float& operator[](const int index){
         if (index == 0) return X_coord;
         else if (index == 1) return Y_coord;
         else if (index == 2) return Z_coord;
-    }    
-
-    // Присваение значений элементов frame к значению элементов массива vector
-    void to_Vector(float vector[]){
-        X_coord = vector[0];
-        Y_coord = vector[1];
-        Z_coord = vector[2];
-    }
+    } 
 
     // ########################################################################
     // Чтение данных с датчиков
@@ -62,25 +79,41 @@ public:
 
     void Read_Acc()
     {
-        ReadAcc((float *)&buffer);
-        X_coord = buffer[0];
-        Y_coord = buffer[1];
-        Z_coord = buffer[2];
+        ReadAcc(frame_Buffer);
+        X_coord = frame_Buffer[0];
+        Y_coord = frame_Buffer[1];
+        Z_coord = frame_Buffer[2];
     }
 
     void Read_Gyro()
     {
-        ReadGyro((float *)&buffer);
-        X_coord = buffer[0];
-        Y_coord = buffer[1];
-        Z_coord = buffer[2];
+        ReadGyro(frame_Buffer);
+        X_coord = frame_Buffer[0];
+        Y_coord = frame_Buffer[1];
+        Z_coord = frame_Buffer[2];
     }
 
     void Read_Mag()
     {
-        ReadMag((float *)&buffer);
-        X_coord = buffer[0];
-        Y_coord = buffer[1];
-        Z_coord = buffer[2];
+        ReadMag(frame_Buffer);
+        X_coord = frame_Buffer[0];
+        Y_coord = frame_Buffer[1];
+        Z_coord = frame_Buffer[2];
     }
+
+    // ########################################################################
+    // Дополнительный функционал
+
+    void set_zero_frame_Buffer(){
+        frame_Buffer[0] = 0;
+        frame_Buffer[1] = 0;
+        frame_Buffer[2] = 0;
+    }
+
+    void set_zero_Frame(){
+        X_coord = 0;
+        Y_coord = 0;
+        Z_coord = 0;
+    }
+
 };

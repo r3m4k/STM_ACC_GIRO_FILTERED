@@ -30,6 +30,8 @@ void TimingDelay_Decrement(void);
 
 float my_sqrt(float num);
 float my_pow(float num, int n);
+float my_cos(float num);
+float my_sin(float num);
 
 #ifdef __cplusplus
 }
