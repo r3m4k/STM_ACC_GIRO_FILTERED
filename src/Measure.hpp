@@ -1,10 +1,10 @@
-#include <math.h>
+#include "Data.hpp"
 
-class Measure 
+class Measure : public Data 
 {
-protected:
-    Data current_Data, zero_Data, buffer_Data;
-    
+public:
+    Data current_Data(this), zero_Data(this), buffer_Data(this);
+
     // Данные, которые будут меняться в вызываемых функциях
     // Вынесим их в статические переменные для избежания переполнения стека процессора
     Frame temp_Frame;     
@@ -15,214 +15,11 @@ protected:
     float rotation_matrix[9] = {0.0f};      // Матрица перехода от СК платы к глобальной СК, у которой ось OY направлена на север, а OZ перпендикулярно поверхности
                                             // Будем работать с матрицей 3х3 как с массивом из 9-ти элементов 
     float longitude;                        // Широта места, где будет находиться плата
-    float buffer[3] = {0.0f};               // Буффер, который будет использоваться при чтении данных с датчиков
     float vector[3] = {0.0f};               // Массив, в который будет преобразовываться структура Frame и обратно в случае необходимости 
     float sqrt2 = 1.41421356237;            // Тк sqrt(2) будет использоваться довольно часто, то вынесим его значение в отдельную переменную
     short i, j;
 
-public:
-    Measure(float phi)
-    {
-        longitude = phi;    
-
-        // Нужно ли делать нижеперечисленное или это делает компилятор при иницилизации структуры?
-        
-        // Зададим значения для temp_Data
-        temp_Data.Acc.X_coord = 0;
-        temp_Data.Acc.Y_coord = 0;
-        temp_Data.Acc.Z_coord = 0;
-
-        temp_Data.Gyro.X_coord = 0;
-        temp_Data.Gyro.Y_coord = 0;
-        temp_Data.Gyro.Z_coord = 0;
-
-        temp_Data.Mag.X_coord = 0;
-        temp_Data.Mag.Y_coord = 0;
-        temp_Data.Mag.Z_coord = 0;
-
-        // Зададим значения для temp_Frame
-        temp_Frame.X_coord = 0;
-        temp_Frame.Y_coord = 0;
-        temp_Frame.Z_coord = 0;
-    }
-
-    // ########################################################################
-    friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
-
-    void send_rotation_matrix() {
-        UsartSend(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8], 0);
-    }
-
-    // ########################################################################
-    // Функционал для Data
-    void set_zero_Data()
-    {
-        temp_Data.Acc.X_coord = 0;
-        temp_Data.Acc.Y_coord = 0;
-        temp_Data.Acc.Z_coord = 0;
-
-        temp_Data.Gyro.X_coord = 0;
-        temp_Data.Gyro.Y_coord = 0;
-        temp_Data.Gyro.Z_coord = 0;
-
-        temp_Data.Mag.X_coord = 0;
-        temp_Data.Mag.Y_coord = 0;
-        temp_Data.Mag.Z_coord = 0;
-    }
-
-    void get_real_Data()
-    {
-        Read_Data(current_Data);
-
-        Data_diff(current_Data, zero_Data);
-        Data_copying(current_Data, temp_Data);
-
-        // Ускорение
-        Frame_to_Vector(current_Data.Acc, vector);               
-        Matrix_Vector_mult(rotation_matrix, vector);
-        Matrix_copying(vector, temp_vector, 3);
-        Vector_to_Frame(vector, current_Data.Acc);
-
-        // Угловая скорость
-        Frame_to_Vector(current_Data.Gyro, vector);               
-        Matrix_Vector_mult(rotation_matrix, vector);
-        Matrix_copying(vector, temp_vector, 3);
-        Vector_to_Frame(vector, current_Data.Gyro);
-
-        // Напряжённость магнитного поля
-        Frame_to_Vector(current_Data.Mag, vector);               
-        Matrix_Vector_mult(rotation_matrix, vector);
-        Matrix_copying(vector, temp_vector, 3);
-        Vector_to_Frame(vector, current_Data.Mag);
-    }
-
-    // ########################################################################
-    // Чтение данных с датчиков
-
-    friend void ReadAcc(float *pfData);
-    friend void ReadGyro(float *pfData);
-    friend void ReadMag(float *pfData);
-
-    void Read_Data(Data &data)
-    {
-        Read_Acc(data.Acc);
-        Read_Gyro(data.Gyro);
-        Read_Mag(data.Mag);
-    }
-
-    void Read_Acc(Frame &frame)
-    {
-        ReadAcc(buffer);
-        frame.X_coord = buffer[0];
-        frame.Y_coord = buffer[1];
-        frame.Z_coord = buffer[2];
-    }
-
-    void Read_Gyro(Frame &frame)
-    {
-        ReadGyro(buffer);
-        frame.X_coord = buffer[0];
-        frame.Y_coord = buffer[1];
-        frame.Z_coord = buffer[2];
-    }
-
-    void Read_Mag(Frame &frame)
-    {
-        ReadMag(buffer);
-        frame.X_coord = buffer[0];
-        frame.Y_coord = buffer[1];
-        frame.Z_coord = buffer[2];
-    }
-
-    // ########################################################################
-    // Операции с Data и Frame
-
-    // Копированние элементов из data2 в data1
-    void Data_copying(Data &data1, Data &data2){
-        Frame_copying(data1.Acc, data2.Acc);
-        Frame_copying(data1.Gyro, data2.Gyro);
-        Frame_copying(data1.Mag, data2.Mag);
-    }
-
-    // Копированние элементов из frame2 в frame1
-    void Frame_copying(Frame &frame1, Frame &frame2){
-        frame1.X_coord = frame2.X_coord;
-        frame1.Y_coord = frame2.Y_coord;
-        frame1.Z_coord = frame2.Z_coord;
-    }
-
-    // Присваение значений элементов frame к значению элементов массива vector
-    void Frame_to_Vector(Frame &frame, float vector[]){
-        frame.X_coord = vector[0];
-        frame.Y_coord = vector[1];
-        frame.Z_coord = vector[2];
-    }
-
-    // Присваение значений элементов массива vector к значению элементов frame 
-    void Vector_to_Frame(float vector[], Frame &frame){
-        vector[0] = frame.X_coord;
-        vector[1] = frame.Y_coord;
-        vector[2] = frame.Z_coord;
-    }
-
-    // Математичекие операции
-    // Сложение Data
-    void Data_summ(Data &data1, Data &data2)
-    {
-        Frame_summ(data1.Acc, data2.Acc);
-        temp_Data.Acc = temp_Frame; 
-
-        Frame_summ(data1.Gyro, data2.Gyro);
-        temp_Data.Gyro = temp_Frame;
-        
-        Frame_summ(data1.Mag, data2.Mag);
-        temp_Data.Mag = temp_Frame;
-    }
-    
-    // Сложение Frame
-    void Frame_summ(Frame &frame1, Frame &frame2)
-    {
-        temp_Frame.X_coord = frame1.X_coord + frame2.X_coord;
-        temp_Frame.Y_coord = frame1.Y_coord + frame2.Y_coord;
-        temp_Frame.Z_coord = frame1.Z_coord + frame2.Z_coord;
-    }
-
-    // Вычитание Data
-    void Data_diff(Data &data1, Data &data2)
-    {
-        Frame_diff(data1.Acc, data2.Acc);
-        temp_Data.Acc = temp_Frame; 
-
-        Frame_diff(data1.Gyro, data2.Gyro);
-        temp_Data.Gyro = temp_Frame;
-        
-        Frame_diff(data1.Mag, data2.Mag);
-        temp_Data.Mag = temp_Frame;
-    }
-    
-    // Вычитание Frame
-    void Frame_diff(Frame &frame1, Frame &frame2)
-    {
-        temp_Frame.X_coord = frame1.X_coord + frame2.X_coord;
-        temp_Frame.Y_coord = frame1.Y_coord + frame2.Y_coord;
-        temp_Frame.Z_coord = frame1.Z_coord + frame2.Z_coord;
-    }
-
-    // Деление Data на число
-    void Data_division(Data &data, float num)
-    {
-        Frame_division(data.Acc, num);
-        Frame_division(data.Gyro, num);
-        Frame_division(data.Mag, num);
-    }
-
-    // Деление Data на число
-    void Frame_division(Frame &frame, float num)
-    {
-        frame.X_coord /= num;
-        frame.Y_coord /= num;
-        frame.Z_coord /= num;
-    }
+    Measure(float phi) { longitude = phi; }
 
     // ########################################################################
     // Выставка датчиков
@@ -231,33 +28,29 @@ public:
         char degree = 16;
         char jump_mean_degree = 6; // Степень глубины прыгающего среднего
 
-        int max = pow(2, degree - jump_mean_degree);
-        int jm_max = pow(2, jump_mean_degree);
+        int max = my_pow(2, degree - jump_mean_degree);
+        int jm_max = my_pow(2, jump_mean_degree);
         // int max = 1024;
         // int jm_max = 64;
 
-        set_zero_Data();
-        zero_Data = temp_Data;
-
         for (int index = 0; index < max; index++)
         {
-            set_zero_Data();
-            buffer_Data = temp_Data;
+            buffer_Data.set_zero_Data();
 
             for (int j = 0; j < jm_max; j++)
             {
-                Read_Data(current_Data);
-                Data_summ(current_Data, buffer_Data);
+                current_Data.Read_Data();
+                current_Data + buffer_Data;
                 buffer_Data = temp_Data;
             }
-
-            Data_division(buffer_Data, jm_max);
-
-            Data_summ(zero_Data, buffer_Data);
-            zero_Data = temp_Data; 
+            buffer_Data / jm_max;
+            buffer_Data = temp_Data;
+            
+            zero_Data + buffer_Data;
+            zero_Data = temp_Data;
         }
-
-        Data_division(zero_Data, max);
+        zero_Data / max;
+        zero_Data = temp_Data;
     }
 
     void set_rotationMatrix()
@@ -282,12 +75,12 @@ public:
         */
 
         // Получаем значение всемирных констант способом ниже для того, чтобы не переводить значение этих констант из системы СИ в систему измерений датчиков.
-        float G = sqrt(zero_Data.Acc.X_coord * zero_Data.Acc.X_coord + zero_Data.Acc.Y_coord * zero_Data.Acc.Y_coord + zero_Data.Acc.Z_coord * zero_Data.Acc.Z_coord); 
-        float W = sqrt(zero_Data.Gyro.X_coord * zero_Data.Gyro.X_coord + zero_Data.Gyro.Y_coord * zero_Data.Gyro.Y_coord + zero_Data.Gyro.Z_coord * zero_Data.Gyro.Z_coord); 
-        float H = sqrt(zero_Data.Mag.X_coord * zero_Data.Mag.X_coord + zero_Data.Acc.Y_coord * zero_Data.Mag.Y_coord + zero_Data.Mag.Z_coord * zero_Data.Mag.Z_coord);
+        float G = my_sqrt(zero_Data.Acc.X_coord * zero_Data.Acc.X_coord + zero_Data.Acc.Y_coord * zero_Data.Acc.Y_coord + zero_Data.Acc.Z_coord * zero_Data.Acc.Z_coord); 
+        float W = my_sqrt(zero_Data.Gyro.X_coord * zero_Data.Gyro.X_coord + zero_Data.Gyro.Y_coord * zero_Data.Gyro.Y_coord + zero_Data.Gyro.Z_coord * zero_Data.Gyro.Z_coord); 
+        float H = my_sqrt(zero_Data.Mag.X_coord * zero_Data.Mag.X_coord + zero_Data.Acc.Y_coord * zero_Data.Mag.Y_coord + zero_Data.Mag.Z_coord * zero_Data.Mag.Z_coord);
 
         float W_X, W_Y, W_Z, H_X, H_Y; // Координаты векторов W, H в системе координат, связанной с Землёй
-                                       // и повёрнутой относительно направления на север на -45 градусов вокруг оси OZ (т.е. по часовой стрелке)
+                                    // и повёрнутой относительно направления на север на -45 градусов вокруг оси OZ (т.е. по часовой стрелке)
 
         W_X = W * cos(longitude) / sqrt2;
         W_Y = W * cos(longitude) / sqrt2;
@@ -328,6 +121,30 @@ public:
         
         Matrix_Matrix_mult(matrix, Matrix);        
         Matrix_copying(rotation_matrix, temp_matrix, 9);
+    }
+
+    // ########################################################################
+    // Чтение данных и перевод их в СК Земли
+    void measuring(){
+        current_Data.Read_Data();
+        current_Data - zero_Data;
+        current_Data = temp_Data;
+
+        Matrix_Frame_mult(rotation_matrix, current_Data.Acc);
+        current_Data.Acc = temp_Frame;
+
+        Matrix_Frame_mult(rotation_matrix, current_Data.Gyro);
+        current_Data.Gyro = temp_Frame;
+        
+        Matrix_Frame_mult(rotation_matrix, current_Data.Mag);
+        current_Data.Mag = temp_Frame;
+    }
+
+    // ########################################################################
+    friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
+
+    void send_rotation_matrix() {
+        UsartSend(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8], 0);
     }
 
     // ########################################################################
@@ -381,11 +198,17 @@ public:
         temp_matrix[8] = matrix1[6] * matrix2[2] + matrix1[7] * matrix2[5] + matrix1[8] * matrix2[8];
     }
 
-    // Умножение квадратной матрицы размерности 3х3 на frame
+    // Умножение квадратной матрицы размерности 3х3 на vector
     void Matrix_Vector_mult(float matrix[], float vector[]){
         temp_vector[0] = matrix[0] * vector[0] + matrix[1] * vector[1] + matrix[2] * vector[2];
         temp_vector[1] = matrix[3] * vector[0] + matrix[4] * vector[1] + matrix[5] * vector[2];
         temp_vector[2] = matrix[6] * vector[0] + matrix[7] * vector[1] + matrix[8] * vector[2];
     }
-    // ########################################################################
+
+    // Умножение квадратной матрицы размерности 3х3 на frame
+    void Matrix_Frame_mult(float matrix[], Frame& frame){
+        temp_Frame[0] = matrix[0] * frame[0] + matrix[1] * frame[1] + matrix[2] * frame[2];
+        temp_Frame[1] = matrix[3] * frame[0] + matrix[4] * frame[1] + matrix[5] * frame[2];
+        temp_Frame[2] = matrix[6] * frame[0] + matrix[7] * frame[1] + matrix[8] * frame[2];
+    }
 };

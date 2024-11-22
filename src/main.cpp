@@ -1,13 +1,11 @@
 #include "Drv_Gpio.h"
 #include "Drv_Uart.h"
+
 #include "main.h"
 
-#ifndef __MEASURE_H
-#define __MEASURE_H
 #include "Measure.hpp"
-#endif
 
-// #define PI 3.14159
+#define PI 3.14159265358979f
 
 // ----------------------------------------------------------------------------
 //
@@ -34,10 +32,7 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 
-// Measure measure(55.7522 * PI / 180);
-
-float a = 99;
-float b;
+Measure measure(55.7522 * PI / 180);
 
 int main()
 {
@@ -57,18 +52,10 @@ int main()
     ACC_INIT();
     InitUart(115200);   
     Toggle_Leds();
-
-    if (arm_sqrt_f32(a, &b)){
-        while (1)
-        {
-            /* code */
-        }
-        
-    }
     
-    // measure.average_Data();
-    // measure.set_rotationMatrix();
-    // measure.send_rotation_matrix();
+    measure.average_Data();
+    measure.set_rotationMatrix();
+    measure.send_rotation_matrix();
 
     while (1) 
     {
@@ -139,6 +126,21 @@ void LedsOff(){
     STM_EVAL_LEDOff(LED8);
     STM_EVAL_LEDOff(LED9);
     STM_EVAL_LEDOff(LED10);
+}
+
+float my_sqrt(float num){
+    return 1.0f;
+}
+
+float my_pow(float num, int n){
+    float result = num;
+    if (n) {
+        for(int i = 0; i < n; i++){
+            result *= num;
+        }
+        return result;
+    }
+    else return result;
 }
 
 // -------------------------------------------------------------------------------

@@ -7,22 +7,9 @@
 #include "COM_IO.h"
 #include "Sensors.h"
 
-#define ARM_MATH_CM4
-#include "../system/include/cmsis/arm_math.h"
+// #define ARM_MATH_CM4
+// #include "../system/include/cmsis/arm_math.h"
 
-struct Frame
-{
-    float X_coord;
-    float Y_coord;
-    float Z_coord;
-};
-
-struct Data
-{
-    struct Frame Acc;
-    struct Frame Gyro;
-    struct Frame Mag;
-};
 
 //#include "stm32f30x_iwdg.h"
 
@@ -40,6 +27,9 @@ void LedsOff(void);
 	 
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
+
+float my_sqrt(float num);
+float my_pow(float num, int n);
 
 #ifdef __cplusplus
 }
