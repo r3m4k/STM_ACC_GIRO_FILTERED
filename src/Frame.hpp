@@ -17,36 +17,36 @@ public:
     // ########################################################################
     // Перегрузка операторов
 
+    // Сохранение результата в frame_Buffer первого слагаемого
     void operator+(const Frame& frame){
-        // Сохранение результата в frame_Buffer первого слагаемого
         frame_Buffer[0] = X_coord + frame.X_coord;
         frame_Buffer[1] = Y_coord + frame.Y_coord;
         frame_Buffer[2] = Z_coord + frame.Z_coord;
     }
 
+    // Изменение значений X_coord, Y_coord, Z_coord первого слагаемого
     void operator+=(const Frame& frame){
-        // Изменение значений X_coord, Y_coord, Z_coord первого слагаемого
         X_coord += frame.X_coord;
         Y_coord += frame.X_coord;
         Z_coord += frame.X_coord;
     }
 
+    // Сохранение результата в frame_Buffer уменьшаемого
     void operator-(const Frame& frame){
-        // Сохранение результата в frame_Buffer уменьшаемого
         frame_Buffer[0] = X_coord - frame.X_coord;
         frame_Buffer[1] = Y_coord - frame.Y_coord;
         frame_Buffer[2] = Z_coord - frame.Z_coord;
     }
 
+    // Изменение значений X_coord, Y_coord, Z_coord уменьшаемого
     void operator-=(const Frame& frame){
-        // Изменение значений X_coord, Y_coord, Z_coord уменьшаемого
         X_coord -= frame.X_coord;
         Y_coord -= frame.X_coord;
         Z_coord -= frame.X_coord;
     }
 
+    // Сохранение результата в frame_Buffer делимого
     void operator/(const float num){
-        // Сохранение результата в frame_Buffer делимого
         frame_Buffer[0] = X_coord / num;
         frame_Buffer[1] = Y_coord / num;
         frame_Buffer[2] = Z_coord / num;

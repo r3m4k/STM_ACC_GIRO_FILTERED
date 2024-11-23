@@ -7,29 +7,27 @@ public:
     Frame Acc;
     Frame Gyro;
     Frame Mag;
-
-    // Frame, который будет меняться в вызываемых функциях
-    Frame temp_Frame;    
+  
     // Буферы, в которые будет сохраняться временная информация
-    Frame x_Buffer, y_Buffer, z_Buffer; 
+    Frame Acc_Buffer, Gyro_Buffer, Mag_Buffer; 
 
     // ########################################################################
     // Перегрузка операторов
 
+    // Сохранение результата в Acc_Buffer, y_Buffer, Mag_Buffer первого слагаемого
     void operator+(const Data& data){
-        // Сохранение результата в x_Buffer, y_Buffer, z_Buffer первого слагаемого
         Acc + data.Acc;
-        x_Buffer = Acc.frame_Buffer;
+        Acc_Buffer = Acc.frame_Buffer;
 
         Gyro + data.Gyro;
         y_Buffer = Gyro.frame_Buffer;
 
         Mag + data.Mag;
-        z_Buffer = Mag.frame_Buffer;
+        Mag_Buffer = Mag.frame_Buffer;
     }
 
+    // Изменение значений Acc, Gyro, Mag первого слагаемого
     void operator+=(const Data& data){
-        // Изменение значений Acc, Gyro, Mag первого слагаемого
         Acc + data.Acc;
         Acc = Acc.frame_Buffer;
 
@@ -40,20 +38,20 @@ public:
         Mag = Mag.frame_Buffer;
     }
 
+    // Сохранение результата в Acc_Buffer, y_Buffer, Mag_Buffer уменьшаемого
     void operator-(const Data& data){
-        // Сохранение результата в x_Buffer, y_Buffer, z_Buffer уменьшаемого
         Acc - data.Acc;
-        x_Buffer = Acc.frame_Buffer;
+        Acc_Buffer = Acc.frame_Buffer;
 
         Gyro - data.Gyro;
         y_Buffer = Gyro.frame_Buffer;
 
         Mag - data.Mag;
-        z_Buffer = Mag.frame_Buffer;
+        Mag_Buffer = Mag.frame_Buffer;
     }
 
+    // Изменение значений Acc, Gyro, Mag уменьшаемого
     void operator-=(const Data& data){
-        // Изменение значений Acc, Gyro, Mag уменьшаемого
         Acc - data.Acc;
         Acc = Acc.frame_Buffer;
 
@@ -64,20 +62,20 @@ public:
         Mag = Mag.frame_Buffer;
     }
 
+    // Сохранение результата в Acc_Buffer, y_Buffer, Mag_Buffer делимого
     void operator/(const float& num){
-        // Сохранение результата в x_Buffer, y_Buffer, z_Buffer делимого
         Acc / num;
-        x_Buffer = Acc.frame_Buffer;
+        Acc_Buffer = Acc.frame_Buffer;
         
         Gyro / num;
         y_Buffer = Gyro.frame_Buffer;
         
         Mag / num;
-        z_Buffer = Mag.frame_Buffer;
+        Mag_Buffer = Mag.frame_Buffer;
     }   
 
+    // Изменение значений Acc, Gyro, Mag делимого
     void operator/=(const float& num){
-        // Изменение значений Acc, Gyro, Mag делимого
         Acc / num;
         Acc = Acc.frame_Buffer;
         
@@ -111,7 +109,7 @@ public:
 
     // ########################################################################
     // Функционал для Data
-    void set_zero_Data()
+    void set_zero_Values()
     {
         Acc.set_zero_Frame();
         Gyro.set_zero_Frame();

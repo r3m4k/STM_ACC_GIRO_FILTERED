@@ -53,9 +53,9 @@ int main()
     InitUart(115200);   
     Toggle_Leds();
     
-    measure.average_Data();
-    measure.set_rotationMatrix();
-    measure.send_rotation_matrix();
+    // measure.average_Data();
+    // measure.set_rotationMatrix();
+    // measure.send_rotation_matrix();
 
     while (1) 
     {
