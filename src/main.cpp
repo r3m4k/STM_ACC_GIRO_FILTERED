@@ -33,7 +33,7 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 
-Measure measure(55.7522 * PI / 180);
+//Measure measure(55.7522 * PI / 180);
 
 int main()
 {
@@ -46,21 +46,22 @@ int main()
 	
     // Иницилизируем перифирию
     LedsInit();
-    
     InitGPIO();
     GYRO_INIT();
     MAG_INIT();
     ACC_INIT();
     InitUart(115200);   
-    Toggle_Leds();
     
-    // float foo = 999.9;
-    // float result = sqrt(foo);
-    // for (int i = 0; i < 10000; i++){ 
-    //     result += sqrt(i); 
-    // }
+    Toggle_Leds();
 
-    // measure.initial_setting();
+    float foo = 999.9;
+    float result = sin(foo);
+    for (int i = 0; i < 1000000; i++){ 
+        result = sin(i); 
+    }
+    result -= 1000; 
+
+//    measure.initial_setting();
 
     while (1) 
     {

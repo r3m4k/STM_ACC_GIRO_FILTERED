@@ -28,7 +28,7 @@ INCLUDES = \
 # -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char \
 # -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra -g3
 COMPILER_FLAGS = \
--mcpu=cortex-m4 -mthumb -O0 -fmessage-length=0 -fsigned-char \
+-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char \
 -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra -g3
 
 # предопределенные константы
@@ -57,8 +57,7 @@ LINK_FLAGS = ${COMPILER_FLAGS} \
 
 # библиотеки компоновщика - должны быть последними в списке команды компоновщика
 # C:\SysGCC\arm-eabi\arm-none-eabi\lib\libm.a
-LIBS = -L${GCC_PLACE}arm-none-eabi/lib -lm
-
+# LIBS = -L${GCC_PLACE}arm-none-eabi/lib/arm/v5te/hard -lm 
 
 OBJECTS = \
 ${BIN_PLACE}stm32f30x/stm32f30x_usart.o \
@@ -105,7 +104,7 @@ ${BIN_PLACE}user/COM_IO.opp
 
 ${BIN_PLACE}$(BINARY) : $(OBJECTS)
 	echo "BUILD "${BIN_PLACE}${BINARY}", MEMORY CARD "${BIN_PLACE}${PROGRAM_NAME}.map
-	$(CC) ${LINK_FLAGS} -o ${BIN_PLACE}$(BINARY) $(OBJECTS) ${LIBS}
+	$(CC) ${LINK_FLAGS} -o ${BIN_PLACE}$(BINARY) $(OBJECTS) ${LIBS} -lm
 	${GCC_PLACE}bin/arm-none-eabi-size --format=berkeley ${BIN_PLACE}${BINARY}
 	@echo "FORMING "${BIN_PLACE}${PROGRAM_NAME}.hex 
 	${GCC_PLACE}bin/arm-none-eabi-objcopy -O ihex ${BIN_PLACE}${BINARY} ${BIN_PLACE}${PROGRAM_NAME}.hex 
