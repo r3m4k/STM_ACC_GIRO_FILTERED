@@ -1,3 +1,5 @@
+extern float sqrt2;
+
 class Frame
 {
 public:
@@ -18,54 +20,61 @@ public:
     // Перегрузка операторов
 
     // Сохранение результата в frame_Buffer первого слагаемого
-    void operator+(const Frame& frame){
+    void operator+(Frame& frame){
         frame_Buffer[0] = X_coord + frame.X_coord;
         frame_Buffer[1] = Y_coord + frame.Y_coord;
         frame_Buffer[2] = Z_coord + frame.Z_coord;
     }
 
     // Изменение значений X_coord, Y_coord, Z_coord первого слагаемого
-    void operator+=(const Frame& frame){
+    void operator+=(Frame& frame){
         X_coord += frame.X_coord;
         Y_coord += frame.X_coord;
         Z_coord += frame.X_coord;
     }
 
     // Сохранение результата в frame_Buffer уменьшаемого
-    void operator-(const Frame& frame){
+    void operator-(Frame& frame){
         frame_Buffer[0] = X_coord - frame.X_coord;
         frame_Buffer[1] = Y_coord - frame.Y_coord;
         frame_Buffer[2] = Z_coord - frame.Z_coord;
     }
 
     // Изменение значений X_coord, Y_coord, Z_coord уменьшаемого
-    void operator-=(const Frame& frame){
+    void operator-=(Frame& frame){
         X_coord -= frame.X_coord;
         Y_coord -= frame.X_coord;
         Z_coord -= frame.X_coord;
     }
 
     // Сохранение результата в frame_Buffer делимого
-    void operator/(const float num){
+    void operator/(float num){
         frame_Buffer[0] = X_coord / num;
         frame_Buffer[1] = Y_coord / num;
         frame_Buffer[2] = Z_coord / num;
     }
 
-    void operator=(const Frame& frame){
+    // Изменение значений X_coord, Y_coord, Z_coord делимого
+    void operator/=(Frame& frame){
+        X_coord /= frame.X_coord;
+        Y_coord /= frame.X_coord;
+        Z_coord /= frame.X_coord;
+    }
+
+    void operator=(Frame& frame){
         X_coord = frame.X_coord;
         Y_coord = frame.Y_coord;
         Z_coord = frame.Z_coord;    
     }
 
-    void operator=(const float arr[]){
+    void operator=(float arr[]){
         X_coord = arr[0];
         Y_coord = arr[1];
         Z_coord = arr[2];
     }
 
-    float& operator[](const int index){
-        if (index == 0) return X_coord;
+    float& operator[](int index){
+        if      (index == 0) return X_coord;
         else if (index == 1) return Y_coord;
         else if (index == 2) return Z_coord;
     } 

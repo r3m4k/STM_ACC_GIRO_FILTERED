@@ -24,8 +24,11 @@ INCLUDES = \
 -I"system/USB_LIB/include"
 
 # общие флаги компиллятора
+# COMPILER_FLAGS = \
+# -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char \
+# -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra -g3
 COMPILER_FLAGS = \
--mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char \
+-mcpu=cortex-m4 -mthumb -O0 -fmessage-length=0 -fsigned-char \
 -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra -g3
 
 # предопределенные константы
@@ -41,7 +44,8 @@ DEFINES= \
 GCC_FLAGS = -std=gnu11 ${COMPILER_FLAGS} -c
 
 # флаги для g++
-GPP_FLAGS = -std=gnu++11 ${COMPILER_FLAGS} -c -fabi-version=0 -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
+# GPP_FLAGS = -std=gnu++11 ${COMPILER_FLAGS} -c -fabi-version=0 -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
+GPP_FLAGS = -std=gnu++11 ${COMPILER_FLAGS} -c -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
 
 # флаги для линковщика
 LINK_FLAGS = ${COMPILER_FLAGS} \
@@ -52,9 +56,8 @@ LINK_FLAGS = ${COMPILER_FLAGS} \
 -nostartfiles -Xlinker --gc-sections -Wl,-Map,${BIN_PLACE}${PROGRAM_NAME}.map # --specs=nano.specs 
 
 # библиотеки компоновщика - должны быть последними в списке команды компоновщика
-#LIBS = ${GCC_PLACE}arm-none-eabi/lib/thumb/v7e-m+fp/hard/libm.a
-#LIBS = -L${GCC_PLACE}arm-none-eabi/lib/thumb/v7e-m+fp/hard -lm
-#/home/mike/gcc-arm-none-eabi-8-2019-q3-update/arm-none-eabi/lib/thumb/v7e-m+dp/hard/libm.a
+# C:\SysGCC\arm-eabi\arm-none-eabi\lib\libm.a
+LIBS = -L${GCC_PLACE}arm-none-eabi/lib -lm
 
 
 OBJECTS = \

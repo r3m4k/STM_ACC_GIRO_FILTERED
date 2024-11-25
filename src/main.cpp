@@ -6,6 +6,7 @@
 #include "Measure.hpp"
 
 #define PI 3.14159265358979f
+float sqrt2 = 1.41421356237f;    // Тк sqrt(2) будет использоваться довольно часто, то вынесим его значение в отдельную переменную
 
 // ----------------------------------------------------------------------------
 //
@@ -53,9 +54,13 @@ int main()
     InitUart(115200);   
     Toggle_Leds();
     
-    // measure.average_Data();
-    // measure.set_rotationMatrix();
-    // measure.send_rotation_matrix();
+    // float foo = 999.9;
+    // float result = sqrt(foo);
+    // for (int i = 0; i < 10000; i++){ 
+    //     result += sqrt(i); 
+    // }
+
+    // measure.initial_setting();
 
     while (1) 
     {
@@ -128,28 +133,28 @@ void LedsOff(){
     STM_EVAL_LEDOff(LED10);
 }
 
-float my_sqrt(float num){
-    return 1.0f;
-}
+// float my_sqrt(float num){
+//     return 1.0f;
+// }
 
-float my_pow(float num, int n){
-    float result = num;
-    if (n) {
-        for(int i = 0; i < n; i++){
-            result *= num;
-        }
-        return result;
-    }
-    else return result;
-}
+// float my_pow(float num, int n){
+//     float result = num;
+//     if (n) {
+//         for(int i = 0; i < n; i++){
+//             result *= num;
+//         }
+//         return result;
+//     }
+//     else return result;
+// }
 
-float my_cos(float num){
-    return 1.0f;
-}
+// float my_cos(float num){
+//     return 1.0f;
+// }
 
-float my_sin(float num){
-    return 1.0f;
-}
+// float my_sin(float num){
+//     return 1.0f;
+// }
 
 // -------------------------------------------------------------------------------
 

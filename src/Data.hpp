@@ -1,7 +1,7 @@
 #include "Frame.hpp"
 
 
-class Data : public Frame
+class Data
 {
 public:
     Frame Acc;
@@ -14,20 +14,20 @@ public:
     // ########################################################################
     // Перегрузка операторов
 
-    // Сохранение результата в Acc_Buffer, y_Buffer, Mag_Buffer первого слагаемого
-    void operator+(const Data& data){
+    // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer первого слагаемого
+    void operator+(Data& data){
         Acc + data.Acc;
         Acc_Buffer = Acc.frame_Buffer;
 
         Gyro + data.Gyro;
-        y_Buffer = Gyro.frame_Buffer;
+        Gyro_Buffer = Gyro.frame_Buffer;
 
         Mag + data.Mag;
         Mag_Buffer = Mag.frame_Buffer;
     }
 
     // Изменение значений Acc, Gyro, Mag первого слагаемого
-    void operator+=(const Data& data){
+    void operator+=(Data& data){
         Acc + data.Acc;
         Acc = Acc.frame_Buffer;
 
@@ -38,20 +38,20 @@ public:
         Mag = Mag.frame_Buffer;
     }
 
-    // Сохранение результата в Acc_Buffer, y_Buffer, Mag_Buffer уменьшаемого
-    void operator-(const Data& data){
+    // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer уменьшаемого
+    void operator-(Data& data){
         Acc - data.Acc;
         Acc_Buffer = Acc.frame_Buffer;
 
         Gyro - data.Gyro;
-        y_Buffer = Gyro.frame_Buffer;
+        Gyro_Buffer = Gyro.frame_Buffer;
 
         Mag - data.Mag;
         Mag_Buffer = Mag.frame_Buffer;
     }
 
     // Изменение значений Acc, Gyro, Mag уменьшаемого
-    void operator-=(const Data& data){
+    void operator-=(Data& data){
         Acc - data.Acc;
         Acc = Acc.frame_Buffer;
 
@@ -62,20 +62,20 @@ public:
         Mag = Mag.frame_Buffer;
     }
 
-    // Сохранение результата в Acc_Buffer, y_Buffer, Mag_Buffer делимого
-    void operator/(const float& num){
+    // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer делимого
+    void operator/(float num){
         Acc / num;
         Acc_Buffer = Acc.frame_Buffer;
         
         Gyro / num;
-        y_Buffer = Gyro.frame_Buffer;
+        Gyro_Buffer = Gyro.frame_Buffer;
         
         Mag / num;
         Mag_Buffer = Mag.frame_Buffer;
     }   
 
     // Изменение значений Acc, Gyro, Mag делимого
-    void operator/=(const float& num){
+    void operator/=(float num){
         Acc / num;
         Acc = Acc.frame_Buffer;
         
@@ -86,14 +86,14 @@ public:
         Mag = Mag.frame_Buffer;
     }  
 
-    void operator=(const Data& data){
-        Acc =  data.Acc;
+    void operator=(Data& data){
+        Acc  = data.Acc;
         Gyro = data.Gyro;
-        Mag =  data.Mag;
+        Mag  = data.Mag;
     } 
 
     Frame& operator[](int index){
-        if (index == 0) return Acc;
+        if      (index == 0) return Acc;
         else if (index == 1) return Gyro;
         else if (index == 2) return Mag;
     } 
