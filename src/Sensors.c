@@ -115,12 +115,12 @@ void ACC_INIT(void)
     LSM303DLHCAcc_FilterConfigTypeDef FInitStructure;
 
     /* Fill the accelerometer structure */
-    AInitStruct.Power_Mode = LSM303DLHC_NORMAL_MODE;              // NORMAL or LOWPOWER MODE (CTRL_REG1 ODR[3])
-    AInitStruct.AccOutput_DataRate = LSM303DLHC_ODR_400_HZ;       // output data rate				(CTRL_REG1) //400Hz - less zero values
-    AInitStruct.Axes_Enable = LSM303DLHC_AXES_ENABLE;             // enable x, y and z axes	(CTRL_REG1)
-    AInitStruct.AccFull_Scale = LSM303DLHC_FULLSCALE_16G;         // full scale - "polnaya shkala"   (CTRL_REG4)
-    AInitStruct.BlockData_Update = LSM303DLHC_BlockUpdate_Single; // Block data update. Default value: 0; (0: continuous update, 1: output registers not updated until MSB and LSB have been read (CTRL_REG4)
-    AInitStruct.Endianness = LSM303DLHC_BLE_LSB;                  //??? Big/little endian data selection. Default value 0.(0: data LSB @ lower address, 1: data MSB @ lower address) AInitStruct.High_Resolution=LSM303DLHC_HR_ENABLE; (CTRL_REG4)
+    AInitStruct.Power_Mode = LSM303DLHC_NORMAL_MODE;                    // NORMAL or LOWPOWER MODE (CTRL_REG1 ODR[3])
+    AInitStruct.AccOutput_DataRate = LSM303DLHC_ODR_400_HZ;             // output data rate				(CTRL_REG1) //400Hz - less zero values
+    AInitStruct.Axes_Enable = LSM303DLHC_AXES_ENABLE;                   // enable x, y and z axes	(CTRL_REG1)
+    AInitStruct.AccFull_Scale = LSM303DLHC_FULLSCALE_16G;               // full scale - "polnaya shkala"   (CTRL_REG4)
+    AInitStruct.BlockData_Update = LSM303DLHC_BlockUpdate_Continous;    // Block data update. Default value: 0; (0: continuous update, 1: output registers not updated until MSB and LSB have been read (CTRL_REG4)
+    AInitStruct.Endianness = LSM303DLHC_BLE_LSB;                        //??? Big/little endian data selection. Default value 0.(0: data LSB @ lower address, 1: data MSB @ lower address) AInitStruct.High_Resolution=LSM303DLHC_HR_ENABLE; (CTRL_REG4)
     AInitStruct.High_Resolution = LSM303DLHC_HR_ENABLE;
     /* Configure the accelerometer main parameters */
     LSM303DLHC_AccInit(&AInitStruct);
@@ -128,9 +128,9 @@ void ACC_INIT(void)
     /* Fill the accelerometer LPF structure ; CTRL_REG2 register*/
     /* mode, cutoff frquency, Filter status, Click, AOI1 and AOI2 */
 
-    FInitStructure.HighPassFilter_Mode_Selection = LSM303DLHC_HPM_REF_SIGNAL; //??? rejim filtra verhnih chastot 00 Normal mode (reset reading HP_RESET_FILTER) 01 Reference signal for filtering 10 Normal mode 11 Autoreset on interrupt event
-    FInitStructure.HighPassFilter_CutOff_Frequency = LSM303DLHC_HPFCF_32;     // vybor chastoty sreza (8, 16, 32, 64)
-    FInitStructure.HighPassFilter_FDS = LSM303DLHC_HIGHPASSFILTER_ENABLE;     // LSM303DLHC_HIGHPASSFILTER_DISABLE;
+    FInitStructure.HighPassFilter_Mode_Selection = LSM303DLHC_HPM_NORMAL_MODE;      //??? rejim filtra verhnih chastot 00 Normal mode (reset reading HP_RESET_FILTER) 01 Reference signal for filtering 10 Normal mode 11 Autoreset on interrupt event
+    FInitStructure.HighPassFilter_CutOff_Frequency = LSM303DLHC_HPFCF_32;           // vybor chastoty sreza (8, 16, 32, 64)
+    FInitStructure.HighPassFilter_FDS = LSM303DLHC_HIGHPASSFILTER_ENABLE;           // LSM303DLHC_HIGHPASSFILTER_DISABLE;
     FInitStructure.HighPassFilter_AOI1 = LSM303DLHC_HPF_AOI1_ENABLE;
     FInitStructure.HighPassFilter_AOI2 = LSM303DLHC_HPF_AOI2_ENABLE;
 
