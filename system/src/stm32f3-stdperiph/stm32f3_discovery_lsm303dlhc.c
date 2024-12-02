@@ -522,7 +522,7 @@ uint16_t LSM303DLHC_Read(uint8_t DeviceAddr, uint8_t RegAddr, uint8_t *pBuffer, 
             return LSM303DLHC_TIMEOUT_UserCallback();
     }
 
-    if (NumByteToRead > 1)
+    if (NumByteToRead > 1)      
         RegAddr |= 0x80;
 
     /* Send Register address */

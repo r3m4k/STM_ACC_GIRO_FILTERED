@@ -57,7 +57,6 @@ void MAG_INIT(void)
 
 void ReadMag(float *pfData)
 {
-
     static uint8_t buffer[6] = {0};
     uint8_t CTRLB = 0;
     uint16_t Magn_Sensitivity_XY = 0, Magn_Sensitivity_Z = 0;
@@ -144,13 +143,22 @@ void ReadAcc(float *pfData)
 {
     int16_t pnRawData[3];
     uint8_t ctrlx[2];
-    uint8_t buffer[6], cDivider;
+    uint8_t buffer[6] = {0.0f};
+    uint8_t cDivider;
     uint8_t i = 0;
     float LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_2g;
+    // uint8_t single_buffer = 0;
 
     /* Read the register content */
     LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_CTRL_REG4_A, ctrlx, 2);
-    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_X_L_A, buffer, 6);
+    // LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_X_L_A, buffer, 6);
+    
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_X_L_A, buffer, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_X_H_A, buffer + 1, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_A, buffer + 2, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Y_H_A, buffer + 3, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_A, buffer + 4, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_A, buffer + 5, 1);
 
     if (ctrlx[1] & 0x40)
         cDivider = 64;

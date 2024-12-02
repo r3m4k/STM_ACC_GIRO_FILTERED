@@ -33,7 +33,7 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 
-//Measure measure(55.7522 * PI / 180);
+Measure measure(55.7522 * PI / 180);
 
 int main()
 {
@@ -54,14 +54,7 @@ int main()
     
     Toggle_Leds();
 
-    float foo = 999.9;
-    float result = sin(foo);
-    for (int i = 0; i < 1000000; i++){ 
-        result = sin(i); 
-    }
-    result -= 1000; 
-
-//    measure.initial_setting();
+   measure.initial_setting();
 
     while (1) 
     {

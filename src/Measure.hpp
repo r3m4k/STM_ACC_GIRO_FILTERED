@@ -12,7 +12,6 @@ public:
 
     Matrix rotation_matrix;         // Матрица перехода от СК платы к глобальной СК, у которой ось OY направлена на север, а OZ перпендикулярно поверхности
     float longitude;                // Широта места, где будет находиться плата
-    short i, j;
 
     Measure(float phi) { longitude = phi; }
 
@@ -26,8 +25,8 @@ public:
     // Нахождение нулевых значений
     void set_zero_Data()
     {
-        char degree = 16;
-        char jump_mean_degree = 6; // Степень глубины прыгающего среднего
+        int degree = 12;
+        int jump_mean_degree = 6; // Степень глубины прыгающего среднего
 
         int max = pow(2, degree - jump_mean_degree);
         int jm_max = pow(2, jump_mean_degree);
@@ -97,6 +96,7 @@ public:
 
         // Получаем значение всемирных констант способом ниже для того, чтобы не переводить значение этих констант из системы СИ в систему измерений датчиков.
         float G = sqrt(zero_Data.Acc.X_coord * zero_Data.Acc.X_coord + zero_Data.Acc.Y_coord * zero_Data.Acc.Y_coord + zero_Data.Acc.Z_coord * zero_Data.Acc.Z_coord); 
+        G = 1;      // Тк пока что акселерометр считывает только нули, поэтому во избежание деления на нуль зададим значение G = 1
         float W = sqrt(zero_Data.Gyro.X_coord * zero_Data.Gyro.X_coord + zero_Data.Gyro.Y_coord * zero_Data.Gyro.Y_coord + zero_Data.Gyro.Z_coord * zero_Data.Gyro.Z_coord); 
         float H = sqrt(zero_Data.Mag.X_coord * zero_Data.Mag.X_coord + zero_Data.Acc.Y_coord * zero_Data.Mag.Y_coord + zero_Data.Mag.Z_coord * zero_Data.Mag.Z_coord);
 
