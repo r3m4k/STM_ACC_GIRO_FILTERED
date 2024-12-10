@@ -2,7 +2,8 @@
 
 class Matrix{
 public:
-    float matrix[9] = {0.0f};
+    // float matrix[9] = {0.0f};
+    float matrix[9] = {1, 2, 3, 4, 5, 6, 7, 8};
     float matrix_Buffer[9] = {0.0f};
     short matrix_Index = 0;
 
@@ -13,7 +14,7 @@ public:
     void operator*(Frame& frame){
         frame.frame_Buffer[0] = matrix[0] * frame[0] + matrix[1] * frame[1] + matrix[2] * frame[2];
         frame.frame_Buffer[1] = matrix[3] * frame[0] + matrix[4] * frame[1] + matrix[5] * frame[2];
-        frame.frame_Buffer[0] = matrix[6] * frame[0] + matrix[7] * frame[1] + matrix[8] * frame[2];
+        frame.frame_Buffer[2] = matrix[6] * frame[0] + matrix[7] * frame[1] + matrix[8] * frame[2];
     }
 
     // Умножение data.Acc, data.Gyro, data.Mag на матрицу, поэлементно, как умножение векторов на матрицу, с сохранением 
@@ -24,9 +25,6 @@ public:
 
         *this * data.Gyro;
         data.Gyro_Buffer = data.Gyro.frame_Buffer;
-
-        *this * data.Mag;
-        data.Mag_Buffer = data.Mag.frame_Buffer;
     }
 
     // Умножение data.Acc, data.Gyro, data.Mag на матрицу с изменением значений data.Acc, data.Gyro, data.Mag
@@ -35,7 +33,6 @@ public:
 
         data.Acc = data.Acc_Buffer;
         data.Gyro = data.Gyro_Buffer;
-        data.Mag = data.Mag_Buffer;
     }
 
     // Умножение матриц с сохренением информации в matrix_Buffer первой матрицы
@@ -64,10 +61,13 @@ public:
         for (matrix_Index = 0; matrix_Index < 9; matrix_Index++){ matrix[matrix_Index] = _matrix[matrix_Index]; }
     }
 
-    // Итератор
+    // Итераторы
     float& operator[](int index){ return matrix[index]; }    
+    
+    float& operator()(int index_1, int index_2){ return matrix[3 * index_1 + index_2]; }
 
     // ########################################################################
+    // Копирование значений из matrix_Buffer
     void copying_from_Buffer(){
         for (matrix_Index = 0; matrix_Index < 9; matrix_Index++){ matrix[matrix_Index] = matrix_Buffer[matrix_Index]; }
     }
@@ -97,5 +97,12 @@ public:
         matrix_Buffer[2] =  (matrix[1] * matrix[5] - matrix[4] * matrix[2]) / det;    //matrix_Buffer[0][2]
         matrix_Buffer[5] = -(matrix[0] * matrix[5] - matrix[3] * matrix[2]) / det;    //matrix_Buffer[1][2]
         matrix_Buffer[8] =  (matrix[0] * matrix[4] - matrix[3] * matrix[1]) / det;    //matrix_Buffer[2][2]
+    }
+
+    // ########################################################################
+    friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
+
+    void sending() {
+        UsartSend(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], matrix[6], matrix[7], matrix[8], 0);
     }
 };

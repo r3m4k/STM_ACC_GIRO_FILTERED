@@ -8,6 +8,7 @@
 #define PI 3.14159265358979f
 float sqrt2 = 1.41421356237f;    // Тк sqrt(2) будет использоваться довольно часто, то вынесим его значение в отдельную переменную
 
+
 // ----------------------------------------------------------------------------
 //
 // Standalone STM32F3 empty sample (trace via NONE).
@@ -45,20 +46,34 @@ int main()
 		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
 	
     // Иницилизируем перифирию
+    InitUart(115200);   
     LedsInit();
     InitGPIO();
     GYRO_INIT();
     MAG_INIT();
     ACC_INIT();
-    InitUart(115200);   
-    
+
     Toggle_Leds();
 
-   measure.initial_setting();
+    LedOn(LED4);
+    LedOn(LED9);
+
+    measure.initial_setting();
+
+    LedOff(LED4);
+    LedOff(LED9);
+
+    Toggle_Leds();
+
+    LedOn(LED6);
+    LedOn(LED7);
 
     while (1) 
     {
-        Toggle_Leds();
+        LedOn(LED8);
+        measure.measuring();
+        LedOff(LED8);
+        Delay(10);
     }
 }
 
@@ -127,28 +142,9 @@ void LedsOff(){
     STM_EVAL_LEDOff(LED10);
 }
 
-// float my_sqrt(float num){
-//     return 1.0f;
-// }
+void LedOn(Led_TypeDef Led){   STM_EVAL_LEDOn(Led);   }
 
-// float my_pow(float num, int n){
-//     float result = num;
-//     if (n) {
-//         for(int i = 0; i < n; i++){
-//             result *= num;
-//         }
-//         return result;
-//     }
-//     else return result;
-// }
-
-// float my_cos(float num){
-//     return 1.0f;
-// }
-
-// float my_sin(float num){
-//     return 1.0f;
-// }
+void LedOff(Led_TypeDef Led){  STM_EVAL_LEDOff(Led);  }
 
 // -------------------------------------------------------------------------------
 

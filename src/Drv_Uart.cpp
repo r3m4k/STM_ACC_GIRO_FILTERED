@@ -6,9 +6,9 @@
 
 #include "Drv_Gpio.h"
 
-CBuffer<unsigned char> TxBuff;
+CBuffer <unsigned char> TxBuff;
 unsigned char TXBUFF[256];
-CBuffer<unsigned char> RxBuff;
+CBuffer <unsigned char> RxBuff;
 unsigned char RXBUFF[256];
 
 extern bool pc8;

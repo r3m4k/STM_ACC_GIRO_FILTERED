@@ -3,6 +3,14 @@ extern float sqrt2;
 class Frame
 {
 public:
+    /*
+    XYZ - оси платы 
+    xyz - оси МЕМС-датчиков
+    Будем считать, что оси платы расположены следующим образом:
+        OX - от процессора вправо
+        OY - от процесора в сторону usb-портов
+        OZ - вертикально
+    */
 
     float X_coord;
     float Y_coord;
@@ -84,27 +92,30 @@ public:
     
     friend void ReadAcc(float *pfData);
     friend void ReadGyro(float *pfData);
-    friend void ReadMag(float *pfData);
 
     void Read_Acc()
     {
+        /*
+        В соответствии с документацией на LSM303DLHC:
+        OX =  oy
+        OY = -ox
+        OZ =  oz
+        */
         ReadAcc(frame_Buffer);
-        X_coord = frame_Buffer[0];
-        Y_coord = frame_Buffer[1];
-        Z_coord = frame_Buffer[2];
+        X_coord =  frame_Buffer[1];
+        Y_coord = -frame_Buffer[0];
+        Z_coord =  frame_Buffer[2];
     }
 
     void Read_Gyro()
     {
+        /*
+        В соответствии с документацией на L3GD20:
+        OX = ox
+        OY = oy
+        OZ = oz
+        */
         ReadGyro(frame_Buffer);
-        X_coord = frame_Buffer[0];
-        Y_coord = frame_Buffer[1];
-        Z_coord = frame_Buffer[2];
-    }
-
-    void Read_Mag()
-    {
-        ReadMag(frame_Buffer);
         X_coord = frame_Buffer[0];
         Y_coord = frame_Buffer[1];
         Z_coord = frame_Buffer[2];

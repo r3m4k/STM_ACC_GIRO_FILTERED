@@ -24,14 +24,12 @@ void LedsInit(void);
 void Toggle_Leds(void);	
 void LedsOn(void);
 void LedsOff(void);
+
+void LedOn(Led_TypeDef Led);
+void LedOff(Led_TypeDef Led);
 	 
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
-
-float my_sqrt(float num);
-float my_pow(float num, int n);
-float my_cos(float num);
-float my_sin(float num);
 
 #ifdef __cplusplus
 }

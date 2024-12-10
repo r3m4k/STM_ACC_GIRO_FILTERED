@@ -4,12 +4,11 @@
 class Data
 {
 public:
-    Frame Acc;
-    Frame Gyro;
-    Frame Mag;
+    Frame Acc;          // Класс для хранения данных с акселерометра
+    Frame Gyro;         // Класс для хранения данных с гироскопа
   
     // Буферы, в которые будет сохраняться временная информация
-    Frame Acc_Buffer, Gyro_Buffer, Mag_Buffer; 
+    Frame Acc_Buffer, Gyro_Buffer;
 
     // ########################################################################
     // Перегрузка операторов
@@ -21,9 +20,6 @@ public:
 
         Gyro + data.Gyro;
         Gyro_Buffer = Gyro.frame_Buffer;
-
-        Mag + data.Mag;
-        Mag_Buffer = Mag.frame_Buffer;
     }
 
     // Изменение значений Acc, Gyro, Mag первого слагаемого
@@ -33,9 +29,6 @@ public:
 
         Gyro + data.Gyro;
         Gyro = Gyro.frame_Buffer;
-
-        Mag + data.Mag;
-        Mag = Mag.frame_Buffer;
     }
 
     // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer уменьшаемого
@@ -45,9 +38,6 @@ public:
 
         Gyro - data.Gyro;
         Gyro_Buffer = Gyro.frame_Buffer;
-
-        Mag - data.Mag;
-        Mag_Buffer = Mag.frame_Buffer;
     }
 
     // Изменение значений Acc, Gyro, Mag уменьшаемого
@@ -57,9 +47,6 @@ public:
 
         Gyro - data.Gyro;
         Gyro = Gyro.frame_Buffer;
-
-        Mag - data.Mag;
-        Mag = Mag.frame_Buffer;
     }
 
     // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer делимого
@@ -69,9 +56,6 @@ public:
         
         Gyro / num;
         Gyro_Buffer = Gyro.frame_Buffer;
-        
-        Mag / num;
-        Mag_Buffer = Mag.frame_Buffer;
     }   
 
     // Изменение значений Acc, Gyro, Mag делимого
@@ -81,21 +65,16 @@ public:
         
         Gyro / num;
         Gyro = Gyro.frame_Buffer;
-        
-        Mag / num;
-        Mag = Mag.frame_Buffer;
     }  
 
     void operator=(Data& data){
         Acc  = data.Acc;
         Gyro = data.Gyro;
-        Mag  = data.Mag;
     } 
 
     Frame& operator[](int index){
         if      (index == 0) return Acc;
         else if (index == 1) return Gyro;
-        else if (index == 2) return Mag;
     } 
 
     // ########################################################################
@@ -104,15 +83,21 @@ public:
     {
         Acc.Read_Acc();
         Gyro.Read_Gyro();
-        Mag.Read_Mag();
     }
 
     // ########################################################################
     // Функционал для Data
+
+    // Установка нулевых значений
     void set_zero_Values()
     {
         Acc.set_zero_Frame();
         Gyro.set_zero_Frame();
-        Mag.set_zero_Frame();
+    }
+
+    friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
+    // Отправка элементов Data по COM порту
+    void sending(){
+        UsartSend(Acc.X_coord, Acc.Y_coord, Acc.Z_coord, Gyro.X_coord, Gyro.Y_coord, Gyro.Z_coord, 0, 0, 0, 0);
     }
 };
