@@ -35,7 +35,14 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 void USB_Init(void);
+#ifdef __cplusplus
+ }
+#endif
 
 /* External variables --------------------------------------------------------*/
 /*  The number of current endpoint, it will be used to specify an endpoint */

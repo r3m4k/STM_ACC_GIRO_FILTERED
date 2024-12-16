@@ -1,7 +1,5 @@
 #include "Matrix.hpp"
 
-extern float sqrt2;
-
 class Measure 
 {
 public:
@@ -52,11 +50,11 @@ public:
     // Чтение данных и перевод их в СК Земли
     void measuring(){
         current_Data.Read_Data();
-        current_Data -= zero_Data;
+        // current_Data -= zero_Data;
 
         // Переведём данные из СК датчика в СК Земли
-        rotation_matrix *= current_Data;
-        // rotation_matrix.sending();
+        // rotation_matrix *= current_Data;
+        current_Data.sending_USB();
     }
 
     // ########################################################################

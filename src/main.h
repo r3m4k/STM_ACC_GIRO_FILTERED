@@ -1,19 +1,20 @@
-#include <math.h>
-
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
 
-#include "COM_IO.h"
+#include <math.h>
+#include <stdlib.h>
+#include "diag/Trace.h"
 #include "Sensors.h"
 
-// #define ARM_MATH_CM4
-// #include "../system/include/cmsis/arm_math.h"
-
-
-//#include "stm32f30x_iwdg.h"
-
 // ===============================================================================
+// Sample pragmas to cope with warnings. Please note the related line at
+// the end of this function, used to pop the compiler diagnostics status.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
+#pragma GCC diagnostic ignored "-Wreturn-type"
+#pragma GCC diagnostic ignored "-Wunused-variable"
 
 /* Exported functions ------------------------------------------------------- */
 #ifdef __cplusplus

@@ -6,7 +6,6 @@
 #include "Measure.hpp"
 
 #define PI 3.14159265358979f
-float sqrt2 = 1.41421356237f;    // Тк sqrt(2) будет использоваться довольно часто, то вынесим его значение в отдельную переменную
 
 
 // ----------------------------------------------------------------------------
@@ -34,6 +33,7 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 
+
 Measure measure(55.7522 * PI / 180);
 
 int main()
@@ -46,12 +46,16 @@ int main()
 		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
 	
     // Иницилизируем перифирию
-    InitUart(115200);   
     LedsInit();
+    Toggle_Leds();
+    // InitUart(115200);   
     InitGPIO();
     GYRO_INIT();
     MAG_INIT();
     ACC_INIT();
+
+    VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной индефикации
+    VCP_Init();
 
     Toggle_Leds();
 
@@ -70,10 +74,9 @@ int main()
 
     while (1) 
     {
-        LedOn(LED8);
-        measure.measuring();
         LedOff(LED8);
-        Delay(10);
+        measure.measuring();
+        LedOn(LED8);
     }
 }
 

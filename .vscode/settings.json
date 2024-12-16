@@ -15,7 +15,8 @@
         "limits": "cpp",
         "new": "cpp",
         "*.tcc": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "leds.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "cortex-debug.openocdPath": "openocd",

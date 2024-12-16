@@ -19,9 +19,6 @@
 #include <stdio.h>
 #include "stm32f3_discovery_lsm303dlhc.h"
 #include "stm32f3_discovery_l3gd20.h"
-#include "usb_lib.h"
-#include "hw_config.h"
-#include "usb_pwr.h"
 #include "platform_config.h"
 #include "stm32f30x_tim.h"
 #include "stm32f30x_gpio.h"
@@ -29,6 +26,11 @@
 #include "stm32f30x_misc.h"
 #include "stm32f30x_exti.h"
 #include "stm32f30x_syscfg.h"
+#include "hw_config.h"
+#include "usb_lib.h"
+#include "usb_desc.h"
+#include "usb_pwr.h"
+#include "usb_prop.h"
 #include "VCP_F3.h"														//for the UART4 functions on the STM32F3-Discovery	 
 #include "COM_IO.h"
 #include "main.h"		 

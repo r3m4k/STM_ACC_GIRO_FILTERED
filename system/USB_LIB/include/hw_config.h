@@ -48,6 +48,10 @@
 
 
 /* Exported functions ------------------------------------------------------- */
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 void Set_System(void);
 void Set_USBClock(void);
 void GPIO_AINConfig(void);
@@ -58,10 +62,11 @@ void USB_Cable_Config (FunctionalState NewState);
 void Joystick_Send(uint8_t Keys);
 uint8_t JoyState(void);
 void Get_SerialNum(void);
-uint32_t CDC_Send_DATA(uint8_t *ptrBuffer, uint8_t Send_length);
+uint32_t CDC_Send_DATA (uint8_t *ptrBuffer, uint8_t Send_length);
 uint32_t CDC_Receive_DATA(void);
-
-
+#ifdef __cplusplus
+ }
+#endif
 #endif  /*__HW_CONFIG_H*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/ 

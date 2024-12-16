@@ -96,6 +96,7 @@ ${BIN_PLACE}usb/usb_core.o \
 ${BIN_PLACE}usb/usb_int.o \
 ${BIN_PLACE}usb/usb_mem.o \
 ${BIN_PLACE}usb/usb_endp.o \
+${BIN_PLACE}usb/VCP_F3.opp \
 ${BIN_PLACE}user/Drv_Gpio.opp \
 ${BIN_PLACE}user/Drv_Uart.opp \
 ${BIN_PLACE}user/main.opp \
@@ -147,7 +148,7 @@ ${BIN_PLACE}system/assert.o  : system/src/newlib/assert.c
 ${BIN_PLACE}system/_initialize_hardware.o : system/src/cortexm/_initialize_hardware.c
 ${BIN_PLACE}system/_reset_hardware.o : system/src/cortexm/_reset_hardware.c
 ${BIN_PLACE}system/exception_handlers.o : system/src/cortexm/exception_handlers.c
-${BIN_PLACE}system/hw_config.o : system/src/stm32f3-stdperiph\hw_config.c
+${BIN_PLACE}system/hw_config.o : system/src/stm32f3-stdperiph/hw_config.c
 
 # usb
 ${BIN_PLACE}usb/usb_istr.o : system/USB_LIB/src/usb_istr.c
@@ -161,6 +162,7 @@ ${BIN_PLACE}usb/usb_core.o : system/USB_LIB/src/usb_core.c
 ${BIN_PLACE}usb/usb_int.o : system/USB_LIB/src/usb_int.c
 ${BIN_PLACE}usb/usb_mem.o : system/USB_LIB/src/usb_mem.c
 ${BIN_PLACE}usb/usb_endp.o : system/USB_LIB/src/usb_endp.c
+${BIN_PLACE}usb/VCP_F3.opp : system/USB_LIB/src/VCP_F3.cpp
 
 # user
 ${BIN_PLACE}user/Drv_Gpio.opp : src/Drv_Gpio.cpp

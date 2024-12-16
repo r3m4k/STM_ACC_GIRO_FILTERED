@@ -25,11 +25,11 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+#include <hw_config.h>
 #include "stm32f30x.h"
 #include "usb_lib.h"
 #include "usb_conf.h"
 #include "usb_pwr.h"
-#include "hw_config.h"
 #include "stm32f30x_pwr.h"
 
 /** @addtogroup STM32F3-Discovery_Demo
