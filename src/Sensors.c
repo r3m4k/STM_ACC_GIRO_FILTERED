@@ -28,7 +28,6 @@ void ReadGyro(float *pfData)
 {
 
     static uint8_t buffer[6] = {0};
-    uint8_t i = 0;
 
     L3GD20_Read(buffer, L3GD20_OUT_X_H_ADDR, 1);
     L3GD20_Read(buffer + 1, L3GD20_OUT_X_L_ADDR, 1);
@@ -37,7 +36,7 @@ void ReadGyro(float *pfData)
     L3GD20_Read(buffer + 4, L3GD20_OUT_Z_H_ADDR, 1);
     L3GD20_Read(buffer + 5, L3GD20_OUT_Z_L_ADDR, 1);
 
-    for (i = 0; i < 2; i++)
+    for (uint8_t i = 0; i < 2; i++)
     {
         pfData[i] = ((float)((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1])));
     }
