@@ -26,9 +26,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include <hw_config.h>
-#include <hw_config.h>
 #include "stm32f30x.h"
+#include "hw_config.h"
 #include "usb_lib.h"
 #include "usb_desc.h"
 #include "usb_pwr.h"
@@ -45,6 +44,7 @@
 #include "usb_lib.h"
 #include "usb_prop.h"
 #include "usb_desc.h"
+#include "hw_config.h"
 #include "usb_pwr.h"
 
 /** @addtogroup STM32F3-Discovery_Demo
@@ -102,7 +102,7 @@ void Set_System(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 
     /* Enable the USB disconnect GPIO clock */
-    //   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIO_DISCONNECT, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIO_DISCONNECT, ENABLE);
 
     /*Set PA11,12 as IN - USB_DM,DP*/
 
@@ -139,18 +139,18 @@ void Set_System(void)
     GPIO_Init(USB_DISCONNECT, &GPIO_InitStructure);
 #endif /* USB_USE_EXTERNAL_PULLUP */
 
-    //  /* Configure the Key button in EXTI mode */
-    //  STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
-    //
-    //  /* Configure the EXTI line 18 connected internally to the USB IP */
-    //  EXTI_ClearITPendingBit(EXTI_Line18);
-    //  EXTI_InitStructure.EXTI_Line = EXTI_Line18; /*USB resume from suspend mode*/
-    //  EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-    //  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-    //  EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-    //  EXTI_Init(&EXTI_InitStructure);
-    //
-    //  EXTI_ClearITPendingBit(USER_BUTTON_EXTI_LINE);
+    /* Configure the Key button in EXTI mode */
+    STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
+
+    /* Configure the EXTI line 18 connected internally to the USB IP */
+    EXTI_ClearITPendingBit(EXTI_Line18);
+    EXTI_InitStructure.EXTI_Line = EXTI_Line18; /*USB resume from suspend mode*/
+    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
+    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+    EXTI_Init(&EXTI_InitStructure);
+
+    EXTI_ClearITPendingBit(USER_BUTTON_EXTI_LINE);
 }
 
 /**
