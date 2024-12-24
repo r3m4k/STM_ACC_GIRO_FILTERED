@@ -77,26 +77,9 @@ int main()
     int index;
     while (1) 
     {   
-        // if ((counter % 1000) == 0){
-        //     if (LED5_ON) {    
-        //         LedOff(LED5);
-        //         LED5_ON = 0;
-        //     }
-        //     else{
-        //         LedOn(LED5);
-        //         LED5_ON = 1;
-        //     }
-
-        //     counter = 0; 
-        // }
         LedOff(LED8);
         measure.measuring();
         LedOn(LED8);
-        // for (index = 0; index < 100; index++){
-        //     counter = index;
-        // }
-
-        // counter++;
     }
 }
 

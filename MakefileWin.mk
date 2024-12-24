@@ -84,7 +84,7 @@ ${BIN_PLACE}system/assert.o \
 ${BIN_PLACE}system/_initialize_hardware.o \
 ${BIN_PLACE}system/_reset_hardware.o \
 ${BIN_PLACE}system/exception_handlers.o \
-${BIN_PLACE}system/hw_config.o \
+${BIN_PLACE}usb/hw_config.o \
 ${BIN_PLACE}usb/usb_istr.o \
 ${BIN_PLACE}usb/usb_pwr.o \
 ${BIN_PLACE}usb/usb_init.o \
@@ -148,9 +148,9 @@ ${BIN_PLACE}system/assert.o  : system/src/newlib/assert.c
 ${BIN_PLACE}system/_initialize_hardware.o : system/src/cortexm/_initialize_hardware.c
 ${BIN_PLACE}system/_reset_hardware.o : system/src/cortexm/_reset_hardware.c
 ${BIN_PLACE}system/exception_handlers.o : system/src/cortexm/exception_handlers.c
-${BIN_PLACE}system/hw_config.o : system/src/stm32f3-stdperiph/hw_config.c
 
 # usb
+${BIN_PLACE}usb/hw_config.o : system/USB_LIB/src/hw_config.c
 ${BIN_PLACE}usb/usb_istr.o : system/USB_LIB/src/usb_istr.c
 ${BIN_PLACE}usb/usb_pwr.o : system/USB_LIB/src/usb_pwr.c
 ${BIN_PLACE}usb/usb_init.o : system/USB_LIB/src/usb_init.c
