@@ -75,6 +75,7 @@ RESULT Virtual_Com_Port_Get_Interface_Setting(uint8_t Interface, uint8_t Alterna
 uint8_t *Virtual_Com_Port_GetDeviceDescriptor(uint16_t );
 uint8_t *Virtual_Com_Port_GetConfigDescriptor(uint16_t);
 uint8_t *Virtual_Com_Port_GetStringDescriptor(uint16_t);
+uint8_t *Virtual_Com_Port_GetQualifierDescriptor(uint16_t);
 
 uint8_t *Virtual_Com_Port_GetLineCoding(uint16_t Length);
 uint8_t *Virtual_Com_Port_SetLineCoding(uint16_t Length);

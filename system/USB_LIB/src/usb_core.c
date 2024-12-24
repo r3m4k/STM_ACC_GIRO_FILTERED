@@ -711,7 +711,13 @@ void Data_Setup0(void)
       else if (wValue1 == STRING_DESCRIPTOR)
       {
         CopyRoutine = pProperty->GetStringDescriptor;
-      }  /* End of GET_DESCRIPTOR */
+      } 
+
+      else if (wValue1 == QUALIFIER_DESCRIPTOR)
+      {
+        CopyRoutine = pProperty->GetQualifierDescriptor;
+      }       
+      /* End of GET_DESCRIPTOR */
     }
   }
 

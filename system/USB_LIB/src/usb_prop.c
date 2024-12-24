@@ -73,6 +73,7 @@ DEVICE_PROP Device_Property =
     Virtual_Com_Port_GetDeviceDescriptor,
     Virtual_Com_Port_GetConfigDescriptor,
     Virtual_Com_Port_GetStringDescriptor,
+    Virtual_Com_Port_GetQualifierDescriptor,
     0,
     0x40 /*MAX PACKET SIZE*/
   };
@@ -100,6 +101,12 @@ ONE_DESCRIPTOR Config_Descriptor =
   {
     (uint8_t*)Virtual_Com_Port_ConfigDescriptor,
     VIRTUAL_COM_PORT_SIZ_CONFIG_DESC
+  };
+
+ONE_DESCRIPTOR Qualifier_Descriptor =
+  {
+    (uint8_t*)Virtual_Com_Port_QualifierDescriptor,
+    VIRTUAL_COM_PORT_SIZ_QUALIFIER_DESC
   };
 
 ONE_DESCRIPTOR String_Descriptor[4] =
@@ -356,6 +363,18 @@ uint8_t *Virtual_Com_Port_GetStringDescriptor(uint16_t Length)
   {
     return Standard_GetDescriptorData(Length, &String_Descriptor[wValue0]);
   }
+}
+
+/*******************************************************************************
+* Function Name  : Virtual_Com_Port_GetQualifierDescriptor.
+* Description    : get the qualifier descriptor.
+* Input          : Length.
+* Output         : None.
+* Return         : The address of the qualifier descriptor.
+*******************************************************************************/
+uint8_t *Virtual_Com_Port_GetQualifierDescriptor(uint16_t Length)
+{
+  return Standard_GetDescriptorData(Length, &Qualifier_Descriptor);
 }
 
 /*******************************************************************************

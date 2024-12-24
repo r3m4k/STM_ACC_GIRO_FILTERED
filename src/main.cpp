@@ -31,6 +31,7 @@ __IO uint32_t USBConnectTimeOut = 100;
 __IO uint32_t UserButtonPressed = 0;
 __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
+int counter = 0;
 // ===============================================================================
 
 
@@ -45,7 +46,7 @@ int main()
 	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
 		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
 	
-    // Иницилизируем перифирию
+    // Инициализируем периферию
     LedsInit();
     Toggle_Leds();
     // InitUart(115200);   
@@ -54,7 +55,7 @@ int main()
     MAG_INIT();
     ACC_INIT();
 
-    VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной индефикации
+    VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
     VCP_Init();
 
     Toggle_Leds();
@@ -72,11 +73,30 @@ int main()
     LedOn(LED6);
     LedOn(LED7);
 
+    bool LED5_ON = 0;
+    int index;
     while (1) 
-    {
+    {   
+        // if ((counter % 1000) == 0){
+        //     if (LED5_ON) {    
+        //         LedOff(LED5);
+        //         LED5_ON = 0;
+        //     }
+        //     else{
+        //         LedOn(LED5);
+        //         LED5_ON = 1;
+        //     }
+
+        //     counter = 0; 
+        // }
         LedOff(LED8);
         measure.measuring();
         LedOn(LED8);
+        // for (index = 0; index < 100; index++){
+        //     counter = index;
+        // }
+
+        // counter++;
     }
 }
 

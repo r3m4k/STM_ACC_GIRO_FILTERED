@@ -11,6 +11,21 @@ public:
     // Буферы, в которые будет сохраняться временная информация
     Frame Acc_Buffer, Gyro_Buffer;
 
+    typedef struct 
+    {
+        uint8_t Header[4] = {126, 17, 255, 201};      // Начало пакета передачи данных {0x7E, 0x11, 0xFF, 0xC9}
+        uint8_t Acc_X[2] = {0};
+        uint8_t Acc_Y[2] = {0};
+        uint8_t Acc_Z[2] = {0};
+        uint8_t Gyro_X[2] = {0};
+        uint8_t Gyro_Y[2] = {0};
+        uint8_t Gyro_Z[2] = {0};
+        uint8_t checksum = 0;
+    }outbuf;
+
+    int16_t tmp;
+    uint8_t i;  
+
     // ########################################################################
     // Перегрузка операторов
 
@@ -127,87 +142,23 @@ public:
     }
     
     void sending_USB()
-    {
-        typedef struct 
-        {
-            uint8_t Header[4] = {126, 17, 255, 201};      // Начало пакета передачи данных {0x7E, 0x11, 0xFF, 0xC9}
-            uint8_t Acc_X[2];
-            uint8_t Acc_Y[2];
-            uint8_t Acc_Z[2];
-            uint8_t Gyro_X[2];
-            uint8_t Gyro_Y[2];            
-            uint8_t Gyro_Z[2];
-            uint8_t contol_sum;
-        }outbuf;
-
+    {     
         outbuf Out_Buf;
-        int16_t tmp;
-        uint8_t i;
         
-/* 
-    //     typedef struct 
-    //     {
-    //         char Header[4];      // Начало пакета передачи данных
-    //         unsigned char Acc_X_lowBit;
-    //         unsigned char Acc_X_highBit;
-
-    //         unsigned char Acc_Y_lowBit;
-    //         unsigned char Acc_Y_highBit;
-
-    //         unsigned char Acc_Z_lowBit;
-    //         unsigned char Acc_Z_highBit;
-
-    //         unsigned char Gyro_X_lowBit;
-    //         unsigned char Gyro_X_highBit;
-
-    //         unsigned char Gyro_Y_lowBit;
-    //         unsigned char Gyro_Y_highBit;
-            
-    //         unsigned char Gyro_Z_lowBit;
-    //         unsigned char Gyro_Z_highBit;
-
-    //         unsigned char contol_sum;
-    //     }outbuf;
-        // ((unsigned char*)&Out_Buf)[0] = 0x7E; 
-        // ((unsigned char*)&Out_Buf)[1] = 0x11;
-        // ((unsigned char*)&Out_Buf)[2] = 0xFF;
-        // ((unsigned char*)&Out_Buf)[3] = 0xC9;
-        Out_Buf.Header[0] = 126;
-        Out_Buf.Header[1] = 17;
-        Out_Buf.Header[2] = 255;
-        Out_Buf.Header[3] = 201;
-
-        // Запишем в буфер данные ускорения
-        for (int i = 0; i < 2; i++){
-            // ((unsigned char*)&Out_Buf)[1 + 2 * i] = Out_Buf.Acc_X_lowBit  (т.е младший разряд Acc.X_coord)
-            // ((unsigned char*)&Out_Buf)[2 + 2 * i] = Out_Buf.Acc_X_highBit (т.е старший разряд Acc.X_coord)
+        for (i = 0; i < 3; i++){
+            // ((unsigned char*)&Out_Buf)[4 + 2 * i] = Out_Buf.Acc_XYZ_lowBit  (т.е младший разряд Acc.XYZ_coord)
+            // ((unsigned char*)&Out_Buf)[5 + 2 * i] = Out_Buf.Acc_XYZ_highBit (т.е старший разряд Acc.XYZ_coord)
             tmp = round(Acc[i]);
-            ((unsigned char*)&Out_Buf)[1 + 2 * i] = tmp;                 // Младший разряд
-            ((unsigned char*)&Out_Buf)[2 + 2 * i] = tmp >> 8;        // Старший разряд
+            ((unsigned char*)&Out_Buf)[4 + 2 * i] = tmp;                 // Младший разряд
+            ((unsigned char*)&Out_Buf)[5 + 2 * i] = tmp >> 8;            // Старший разряд
         }
 
-        // Запишем в буфер данные угловой скорости
-        for (int i = 0; i < 2; i++){
+        for (i = 0; i < 3; i++){
+            // ((unsigned char*)&Out_Buf)[10 + 2 * i] = Out_Buf.Gyro_XYZ_lowBit  (т.е младший разряд Gyro.XYZ_coord)
+            // ((unsigned char*)&Out_Buf)[11 + 2 * i] = Out_Buf.Gyro_XYZ_highBit (т.е старший разряд Gyro.XYZ_coord)
             tmp = round(Gyro[i]);
-            ((unsigned char*)&Out_Buf)[1 + 2 * i] = tmp;                 // Младший разряд
-            ((unsigned char*)&Out_Buf)[1 + 2 * i + 1] = tmp >> 8;        // Старший разряд
-        }
-*/        
-
-        for (i = 0; i < 2; i++){
-            // ((unsigned char*)&Out_Buf)[1 + 2 * i] = Out_Buf.Acc_XYZ_lowBit  (т.е младший разряд Acc.XYZ_coord)
-            // ((unsigned char*)&Out_Buf)[2 + 2 * i] = Out_Buf.Acc_XYZ_highBit (т.е старший разряд Acc.XYZ_coord)
-            tmp = round(Acc[i]);
-            ((unsigned char*)&Out_Buf)[1 + 2 * i] = tmp;                 // Младший разряд
-            ((unsigned char*)&Out_Buf)[2 + 2 * i] = tmp >> 8;            // Старший разряд
-        }
-
-        for (i = 0; i < 2; i++){
-            // ((unsigned char*)&Out_Buf)[1 + 2 * i] = Out_Buf.Gyro_XYZ_lowBit  (т.е младший разряд Gyro.XYZ_coord)
-            // ((unsigned char*)&Out_Buf)[2 + 2 * i] = Out_Buf.Gyro_XYZ_highBit (т.е старший разряд Gyro.XYZ_coord)
-            tmp = round(Gyro[i]);
-            ((unsigned char*)&Out_Buf)[1 + 2 * i] = tmp;                 // Младший разряд
-            ((unsigned char*)&Out_Buf)[2 + 2 * i] = tmp >> 8;            // Старший разряд
+            ((unsigned char*)&Out_Buf)[10 + 2 * i] = tmp;                 // Младший разряд
+            ((unsigned char*)&Out_Buf)[11 + 2 * i] = tmp >> 8;            // Старший разряд
         }
 
         // Посчитаем контрольную сумму
@@ -215,8 +166,12 @@ public:
         for (i = 0; i < sizeof(Out_Buf); i++){
             tmp += ((unsigned char*)&Out_Buf)[i];       
         }
-        Out_Buf.contol_sum = tmp;
+        Out_Buf.checksum = tmp;
 
         CDC_Send_DATA((unsigned char*)&Out_Buf, sizeof(Out_Buf));
+
+        // for(i = 0; i < 10000; i++){
+        //     tmp = i;
+        // }
     }
 };

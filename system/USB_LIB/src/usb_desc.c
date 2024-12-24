@@ -175,7 +175,7 @@ const uint8_t Virtual_Com_Port_StringProduct[VIRTUAL_COM_PORT_SIZ_STRING_PRODUCT
     /* Product name: "STM32 Virtual COM Port" */
     'S', 0, 'T', 0, 'M', 0, '3', 0, '2', 0, ' ', 0, 'V', 0, 'i', 0,
     'r', 0, 't', 0, 'u', 0, 'a', 0, 'l', 0, ' ', 0, 'C', 0, 'O', 0,
-    'M', 0, ' ', 0, 'P', 0, 'o', 0, 'r', 0, 't', 0, ' ', 0, ' ', 0
+    'M', 0, ' ', 0, 'P', 0, 'o', 0, 'r', 0, 't', 0
   };
 
 uint8_t Virtual_Com_Port_StringSerial[VIRTUAL_COM_PORT_SIZ_STRING_SERIAL] =
@@ -188,5 +188,29 @@ uint8_t Virtual_Com_Port_StringSerial[VIRTUAL_COM_PORT_SIZ_STRING_SERIAL] =
 /**
   * @}
   */
+
+ /* USB Standard Qualified Descriptor */
+ // Значения, кроме USB_DEVICE_QUALIFIER_DESCRIPTOR_TYPE, скопированы из Virtual_Com_Port_DeviceDescriptor
+const uint8_t Virtual_Com_Port_QualifierDescriptor[] =
+  {
+    0x12,   /* bLength */
+    USB_DEVICE_QUALIFIER_DESCRIPTOR_TYPE,     /* bDescriptorType */
+    0x00,
+    0x02,   /* bcdUSB = 2.00 */
+    0x02,   /* bDeviceClass: CDC */
+    0x00,   /* bDeviceSubClass */
+    0x00,   /* bDeviceProtocol */
+    0x40,   /* bMaxPacketSize0 */
+    0x83,
+    0x04,   /* idVendor = 0x0483 */
+    0x40,
+    0x57,   /* idProduct = 0x7540 */
+    0x00,
+    0x02,   /* bcdDevice = 2.00 */
+    1,              /* Index of string descriptor describing manufacturer */
+    2,              /* Index of string descriptor describing product */
+    3,              /* Index of string descriptor describing the device's serial number */
+    0x01    /* bNumConfigurations */
+  };
   
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/ 
