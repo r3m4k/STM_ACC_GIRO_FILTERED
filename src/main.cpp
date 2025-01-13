@@ -70,20 +70,20 @@ int main()
     VCP_Init();        
 
     // Инициализируем UART и датчики
-    InitUart(115200);  
+    // InitUart(115200);  
     GYRO_INIT();
     ACC_INIT();
-    InitDecoder();
+    // InitDecoder();
 
     // Инициализация таймера и его настройка
-    TimerInit();  
+    // TimerInit();  
 
     Toggle_Leds();      // Поморгаем светодиодами после успешной инициализации
 
-    // measure.initial_setting();
+    measure.initial_setting();
 
     // Запускаем таймер 
-    TIM_Cmd(TIM4, ENABLE);
+    // TIM_Cmd(TIM4, ENABLE);
 
     // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
@@ -92,8 +92,8 @@ int main()
     // Начнём работу
     while (1) 
     {   
-        // measure.measuring();        
-        continue;
+        measure.measuring();        
+        // continue;
     }
 }
 
