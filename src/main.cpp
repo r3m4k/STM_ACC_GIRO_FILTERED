@@ -31,9 +31,24 @@ __IO uint32_t USBConnectTimeOut = 100;
 __IO uint32_t UserButtonPressed = 0;
 __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
-int counter = 0;
 // ===============================================================================
+#define SyncroByte 0x53     // Флаг начала посылки от ДПП 
+#define MaxDataSize 25      // Размер данных от ДПП                 Почему 25?
 
+unsigned int stage, Index;
+bool MessageFound;
+
+enum { WantSyncro, WantSize, WantStatus, WantCommandCode, WantData, WantConsum};
+
+unsigned char ConSummIn;        // Контрольная сумма полученных данных
+int DataSize, DataIndex;
+unsigned char DppCode[MaxDataSize] = {0};
+unsigned char DataBuffer[MaxDataSize] = {0};
+unsigned char OldDppCode;
+unsigned int MCount = 0;
+int ViewTact = 0;
+// -------------------------------------------------------------------------------
+uint16_t previousState = 0;            // Переменная для таймера
 
 Measure measure(55.7522 * PI / 180);
 
@@ -45,47 +60,99 @@ int main()
 	RCC_GetClocksFreq(&RCC_Clocks);
 	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
 		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
-	
+ 
     // Инициализируем периферию
     LedsInit();
-    Toggle_Leds();
-    // InitUart(115200);   
     InitGPIO();
-    GYRO_INIT();
-    MAG_INIT();
-    ACC_INIT();
 
+    // Инициализируем Virtual Com Port
     VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
-    VCP_Init();
+    VCP_Init();        
 
-    Toggle_Leds();
+    // Инициализируем UART и датчики
+    InitUart(115200);  
+    GYRO_INIT();
+    ACC_INIT();
+    InitDecoder();
 
-    LedOn(LED4);
-    LedOn(LED9);
+    // Инициализация таймера и его настройка
+    TimerInit();  
 
-    measure.initial_setting();
+    Toggle_Leds();      // Поморгаем светодиодами после успешной инициализации
 
-    LedOff(LED4);
-    LedOff(LED9);
+    // measure.initial_setting();
 
-    Toggle_Leds();
+    // Запускаем таймер 
+    TIM_Cmd(TIM4, ENABLE);
 
+    // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
     LedOn(LED7);
 
-    bool LED5_ON = 0;
-    int index;
+    // Начнём работу
     while (1) 
     {   
-        LedOff(LED8);
-        measure.measuring();
-        LedOn(LED8);
+        // measure.measuring();        
+        continue;
     }
 }
 
-#pragma GCC diagnostic pop
-
 // -------------------------------------------------------------------------------
+// Настройка UART
+void InitDecoder()
+{
+    stage = WantSyncro;
+    Index = 0;
+    // OldDppCode = 0;
+    MessageFound = false;
+};
+
+extern "C" void ProcessInByte(unsigned char Bt) 
+{
+    LedOn(LED5);
+
+	switch (stage)
+	{
+	case WantSyncro:
+		if (Bt == SyncroByte)
+			{
+				stage=WantSize;
+				ConSummIn=Bt;
+			}	
+		break;
+	case WantSize:
+		ConSummIn += Bt;
+		DataSize = Bt;
+		stage = WantData;
+		break;
+	case WantData:
+		if ((DataIndex < DataSize) && (DataIndex < MaxDataSize))
+			{
+				ConSummIn+=Bt;
+				DataBuffer[DataIndex]=Bt;
+			}
+		if (++DataIndex==DataSize) 
+			stage=WantConsum;
+		break;
+	case WantConsum:
+        if (Bt == (ConSummIn))
+        {
+            for (int i = 0; i < DataSize; i++)
+                DppCode[i] = DataBuffer[i];
+                
+        //	DppCode=*((unsigned int*)(&DataBuffer));
+        }	
+		MessageFound = true;	
+		ConSummIn = 0;
+		DataIndex=0;
+		stage = WantSyncro;
+		break;
+	}
+
+    LedOff(LED5);
+}
+// -------------------------------------------------------------------------------
+// Настройка светодиодов
 void LedsInit(void)
 {
     STM_EVAL_LEDInit(LED4);
@@ -152,6 +219,48 @@ void LedOn(Led_TypeDef Led){   STM_EVAL_LEDOn(Led);   }
 
 void LedOff(Led_TypeDef Led){  STM_EVAL_LEDOff(Led);  }
 
+// -------------------------------------------------------------------------------
+// Настройка таймера
+void TimerInit(void){
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    /* Enable the Tim4 Interrupt */
+    NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    uint16_t TIMER_PRESCALER = 720;    // При таком предделителе получается один тик таймера на 10 мкс
+
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    TIM_TimeBaseStructure.TIM_Prescaler = TIMER_PRESCALER - 1;
+    TIM_TimeBaseStructure.TIM_Period = 50;      // Выставим максимальную задержку
+    TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
+
+    TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
+}
+
+void TIM4_IRQHandler()
+{ 
+    LedOn(LED9);
+    // Если на выходе был 0
+    if (previousState == 0)
+    {
+        // Выставляем единицу на выходе
+        previousState = 1;
+        LedOn(LED4);
+    }
+    else
+    {
+        // Выставляем ноль на выходе
+        previousState = 0;
+        LedOff(LED4);
+    }
+    
+    TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
+    LedOff(LED9);
+}
 // -------------------------------------------------------------------------------
 
 void Error_Handler(void)

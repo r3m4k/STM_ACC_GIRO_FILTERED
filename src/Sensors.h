@@ -26,6 +26,7 @@
 #include "stm32f30x_misc.h"
 #include "stm32f30x_exti.h"
 #include "stm32f30x_syscfg.h"
+#include "stm32f30x_tim.h"
 #include "hw_config.h"
 #include "usb_lib.h"
 #include "usb_desc.h"

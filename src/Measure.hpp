@@ -4,7 +4,7 @@ class Measure
 {
 public:
     // Данные, которые будут меняться в вызываемых функциях
-    // Вынесим их в статические переменные для избежания переполнения стека процессора
+    // Вынесем их в статические переменные для избежания переполнения стека процессора
     Data current_Data, zero_Data, buffer_Data;
     Matrix temp_matrix;
 
@@ -14,17 +14,28 @@ public:
     Measure(float phi) { longitude = phi; }
 
     // ########################################################################
+    // Функции для управления светодиодами    
+    friend void LedOn(Led_TypeDef Led);
+    friend void LedOff(Led_TypeDef Led);
+
+    // ########################################################################
     // Начальная выставка датчиков
     void initial_setting(){
+        LedOn(LED4);
+        LedOn(LED9);
+
         set_zero_Data();
         set_rotationMatrix();
-        rotation_matrix * zero_Data;
+        rotation_matrix *= zero_Data;
+            
+        LedOff(LED4);
+        LedOff(LED9);
     }
 
     // Нахождение нулевых значений
     void set_zero_Data()
     {
-        int degree = 10;
+        int degree = 12;
         int jump_mean_degree = 6; // Степень глубины прыгающего среднего
 
         int max = pow(2, degree - jump_mean_degree);
@@ -49,12 +60,15 @@ public:
     // ########################################################################
     // Чтение данных и перевод их в СК Земли
     void measuring(){
+        LedOff(LED8);
         current_Data.Read_Data();
-        // current_Data -= zero_Data;
 
         // Переведём данные из СК датчика в СК Земли
-        // rotation_matrix *= current_Data;
+        rotation_matrix *= current_Data;
+        current_Data -= zero_Data;
         current_Data.sending_USB();
+
+        LedOn(LED8);
     }
 
     // ########################################################################

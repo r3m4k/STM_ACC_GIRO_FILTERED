@@ -17,8 +17,8 @@ public:
         frame.frame_Buffer[2] = matrix[6] * frame[0] + matrix[7] * frame[1] + matrix[8] * frame[2];
     }
 
-    // Умножение data.Acc, data.Gyro, data.Mag на матрицу, поэлементно, как умножение векторов на матрицу, с сохранением 
-    // результата в data.Acc_Buffer, data.Gyro_Buffer, data.Mag_Buffer
+    // Умножение data.Acc, data.Gyro на матрицу, поэлементно, как умножение векторов на матрицу, с сохранением 
+    // результата в data.Acc_Buffer, data.Gyro_Buffer
     void operator*(Data& data){
         *this * data.Acc;
         data.Acc_Buffer = data.Acc.frame_Buffer;
@@ -27,7 +27,9 @@ public:
         data.Gyro_Buffer = data.Gyro.frame_Buffer;
     }
 
-    // Умножение data.Acc, data.Gyro, data.Mag на матрицу с изменением значений data.Acc, data.Gyro, data.Mag
+    // Умножение data.Acc, data.Gyro на матрицу с изменением значений data.Acc, data.Gyro
+    // Сделано именно так, чтобы избежать повторного include из Data.h
+    // Более того, в Data.h не используется функционал из Matrix.h, поэтому делать include Matrix.h в Data.h нецелесообразно 
     void operator*=(Data& data){
         *this * data;
 
@@ -35,7 +37,7 @@ public:
         data.Gyro = data.Gyro_Buffer;
     }
 
-    // Умножение матриц с сохренением информации в matrix_Buffer первой матрицы
+    // Умножение матриц с сохранением информации в matrix_Buffer первой матрицы
     void operator*(Matrix& mult_matrix){
         matrix_Buffer[0] = matrix[0] * mult_matrix.matrix[0] + matrix[1] * mult_matrix.matrix[3] + matrix[2] * mult_matrix.matrix[6];
         matrix_Buffer[1] = matrix[0] * mult_matrix.matrix[1] + matrix[1] * mult_matrix.matrix[4] + matrix[2] * mult_matrix.matrix[7];

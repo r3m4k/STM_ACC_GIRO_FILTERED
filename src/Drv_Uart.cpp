@@ -14,14 +14,15 @@ unsigned char RXBUFF[256];
 extern bool pc8;
 
 void InitUart(int Speed) // UART configuration
-{
+{   
+    // Будем использовать UART2, тк UART1 использует ножку PA12, которая необходима для работы VCP (используется как DP)
     TxBuff.Init(256, (int)&TXBUFF);
     RxBuff.Init(256, (int)&RXBUFF);
 
     NVIC_InitTypeDef NVIC_InitStructure;
 
-    /* Enable the USART1 Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+    /* Enable the USART2 Interrupt */
+    NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
@@ -33,27 +34,27 @@ void InitUart(int Speed) // UART configuration
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     /* Enable USART clock */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 
     /* Connect PXx to USARTx_Tx */
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_7);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_7);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource14, GPIO_AF_7);       // USART2_TX
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_7);        // USART2_RTS
 
     /* Connect PXx to USARTx_Rx */
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_7);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource15, GPIO_AF_7);       // USART2_RX
 
     /* Configure USART Tx as alternate function push-pull */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12; // эта нога управления направлением приемопередатчика -> RTS USART1 AF7
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1; // эта нога управления направлением приемопередатчика -> RTS USART2 AF7
     GPIO_Init(GPIOA, &GPIO_InitStructure);
     /* Configure USART Rx as alternate function push-pull */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     USART_InitTypeDef USART_InitStructure;
@@ -75,35 +76,33 @@ void InitUart(int Speed) // UART configuration
     }
 
     /* USART configuration */
-    USART_Init(USART1, &USART_InitStructure);
+    USART_Init(USART2, &USART_InitStructure);
     // Разрешаю аппаратное управление передатчиком для RS485
-    // ВНИМАНИЕ!!!! Если используется STM32F3....discovery board - необходимо закоротить
-    // на ней перемычки  SB21 и SB22 для подачи сигнала RTS/DE на краевые контакты платы.
-    USART_SetDEDeassertionTime(USART1, 5);
-    USART_SetDEAssertionTime(USART1, 5);
-    USART_DECmd(USART1, ENABLE);
+    USART_SetDEDeassertionTime(USART2, 5);
+    USART_SetDEAssertionTime(USART2, 5);
+    USART_DECmd(USART2, ENABLE);
     /* Enable USART */
-    USART_Cmd(USART1, ENABLE);
+    USART_Cmd(USART2, ENABLE);
     Uart_irq_enable();
     return;
 }
 
 void Uart_irq_enable(void)
 {
-    USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
-    USART_ITConfig(USART1, USART_IT_RXNE, DISABLE);
+    USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
+    USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
 }
 
 void Uart_irq_disable(void)
 {
-    USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
-    USART_ITConfig(USART1, USART_IT_RXNE, DISABLE);
+    USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
+    USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
 }
 
 void UartSendChar(int c)
 {
-    USART_SendData(USART1, c);
-    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
+    USART_SendData(USART2, c);
+    while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET)
     {
     } // Loop until transmit data register is empty
 }
@@ -150,8 +149,8 @@ unsigned char UartSendBuff(unsigned char *Buff, int Size)
             TxBuff.WriteTo(Buff[i]);
         }
         ConSum += Buff[0];
-        USART_SendData(USART1, Buff[0]); // а первый байт передаю сразу, от него потом пойдут прерывания
-        USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
+        USART_SendData(USART2, Buff[0]); // а первый байт передаю сразу, от него потом пойдут прерывания
+        USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
     }
     else // в буфере уже что-то есть от предыдущей жизни
         for (int i = 0; i < Size; i++)
@@ -166,22 +165,22 @@ unsigned char UartSendBuff(unsigned char *Buff, int Size)
 
 extern "C" void __attribute__((weak)) ProcessInByte(unsigned char Bt) { Bt = Bt + 1; } // затычка на случай, если это не будет определено где-то еще
 
-extern "C" void USART1_IRQHandler(void)
+extern "C" void USART2_IRQHandler(void)
 {
-    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) // было прерывание от приемника
-        ProcessInByte(USART_ReceiveData(USART1));
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) // было прерывание от приемника
+        ProcessInByte(USART_ReceiveData(USART2));
 
-    if (USART_GetITStatus(USART1, USART_IT_TXE) != RESET) // было прерывание от передатчика
+    if (USART_GetITStatus(USART2, USART_IT_TXE) != RESET) // было прерывание от передатчика
     {
         if (!TxBuff.IsEmpty()) // если есть что в буфере - то передаю
-            USART_SendData(USART1, TxBuff.ReadFrom());
+            USART_SendData(USART2, TxBuff.ReadFrom());
         else // видимо текущее прерывание от передачи-последнее
         {
-            while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
+            while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET)
             {
             } // дожидаюсь завершения выдачи текущего байта и отключаю прерывания от выдачи
-            USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
+            USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
         }
     }
-    USART_ClearITPendingBit(USART1, USART_IT_ORE);
+    USART_ClearITPendingBit(USART2, USART_IT_ORE);
 }

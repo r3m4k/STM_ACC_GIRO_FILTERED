@@ -56,7 +56,7 @@ void VCP_ResetPort(void)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;     // setup for output mode
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;    // push-pull mode; also available is GPIO_OType_OD (open drain)
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // update speed is 50Mhz; also available is GPIO_Speed_10MHz and GPIO_Speed_2MHz
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;    // output pulled down
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;    // output pulled down
     GPIO_Init(GPIOA, &GPIO_InitStructure);            // initialize GPIOA with the above structure
 
     GPIO_WriteBit(GPIOA, GPIO_Pin_12, Bit_RESET);     // pull the USB BUS+ low to reset the bus
