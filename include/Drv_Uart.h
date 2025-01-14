@@ -13,6 +13,7 @@ void SendUartByte(unsigned char B);
 #define SendUart(A)	UartSendString((unsigned char*)(A),sizeof(A))
 #define SendUartB(A)	UartSendBuff((unsigned char*)(A),sizeof((A)))
 
+extern "C" void USART2_IRQHandler(void);
 
 extern CBuffer<unsigned char> TxBuff;
 

@@ -34,17 +34,17 @@ void InitUart(int Speed) // UART configuration
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     /* Enable USART clock */
-    RCC_APB2PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 
     /* Connect PXx to USARTx_Tx */
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource14, GPIO_AF_7);       // USART2_TX
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_7);        // USART2_RTS
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_7);       // USART2_TX
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_7);       // USART2_RTS
 
     /* Connect PXx to USARTx_Rx */
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource15, GPIO_AF_7);       // USART2_RX
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_7);       // USART2_RX
 
     /* Configure USART Tx as alternate function push-pull */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -54,7 +54,7 @@ void InitUart(int Speed) // UART configuration
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1; // эта нога управления направлением приемопередатчика -> RTS USART2 AF7
     GPIO_Init(GPIOA, &GPIO_InitStructure);
     /* Configure USART Rx as alternate function push-pull */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     USART_InitTypeDef USART_InitStructure;
