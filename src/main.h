@@ -34,6 +34,7 @@ void LedOn(Led_TypeDef Led);
 void LedOff(Led_TypeDef Led);
 
 void TimerInit(void);
+void TIM4_IRQHandler(void);
 	 
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);

@@ -66,24 +66,24 @@ int main()
     InitGPIO();
 
     // Инициализируем Virtual Com Port
-    VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
-    VCP_Init();        
+    // VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
+    // VCP_Init();        
 
     // Инициализируем UART и датчики
     // InitUart(115200);  
-    GYRO_INIT();
-    ACC_INIT();
+    // GYRO_INIT();
+    // ACC_INIT();
     // InitDecoder();
 
     // Инициализация таймера и его настройка
-    // TimerInit();  
+    TimerInit();  
 
     Toggle_Leds();      // Поморгаем светодиодами после успешной инициализации
 
-    measure.initial_setting();
+    // measure.initial_setting();
 
     // Запускаем таймер 
-    // TIM_Cmd(TIM4, ENABLE);
+    TIM_Cmd(TIM4, ENABLE);
 
     // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
@@ -92,8 +92,8 @@ int main()
     // Начнём работу
     while (1) 
     {   
-        measure.measuring();        
-        // continue;
+        // measure.measuring();        
+        continue;
     }
 }
 
@@ -222,7 +222,11 @@ void LedOff(Led_TypeDef Led){  STM_EVAL_LEDOff(Led);  }
 // -------------------------------------------------------------------------------
 // Настройка таймера
 void TimerInit(void){
+
     NVIC_InitTypeDef NVIC_InitStructure;
+
+    /* Enable TIM clock */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 
     /* Enable the Tim4 Interrupt */
     NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
@@ -231,17 +235,19 @@ void TimerInit(void){
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    uint16_t TIMER_PRESCALER = 720;    // При таком предделителе получается один тик таймера на 10 мкс
+    uint16_t TIMER_PRESCALER = 10000;    // При таком предделителе получается один тик таймера на 1.25 мс
 
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    /* Set the default configuration */
+    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
     TIM_TimeBaseStructure.TIM_Prescaler = TIMER_PRESCALER - 1;
-    TIM_TimeBaseStructure.TIM_Period = 50;      // Выставим максимальную задержку
+    TIM_TimeBaseStructure.TIM_Period = 40000;      // Выставим задержку в 5 секунд
     TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
 
     TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
 }
 
-void TIM4_IRQHandler()
+void TIM4_IRQHandler(void)
 { 
     LedOn(LED9);
     // Если на выходе был 0
