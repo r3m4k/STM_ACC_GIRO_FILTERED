@@ -71,8 +71,6 @@ int main()
 
     // Начнём работу
     while (1){
-        // USART_SendData(USART2, 1);
-        // UartSendChar(1);
         continue;
     }
 }
@@ -185,6 +183,10 @@ void TIM4_IRQHandler(void)
     Out_Buf.DPP_code[2] = (uint8_t)(counter >> 16);
     Out_Buf.DPP_code[3] = (uint8_t)(counter >> 24);
     counter++;
+
+    for (uint8_t i = 0; i < sizeof(Out_Buf) - 1; i++){
+        Out_Buf.checksum += ((unsigned char*)&Out_Buf)[i];
+    }    
 
     UartSendBuff((unsigned char*)&Out_Buf, 7);
     

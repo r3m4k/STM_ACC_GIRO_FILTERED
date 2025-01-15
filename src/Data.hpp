@@ -163,7 +163,7 @@ public:
 
         // Посчитаем контрольную сумму
         tmp = 0;
-        for (i = 0; i < sizeof(Out_Buf); i++){
+        for (i = 0; i < sizeof(Out_Buf) - 1; i++){
             tmp += ((unsigned char*)&Out_Buf)[i];       
         }
         Out_Buf.checksum = tmp;
