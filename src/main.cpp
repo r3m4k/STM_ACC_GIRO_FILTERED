@@ -29,17 +29,16 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 #define SyncroByte 0x53     // Флаг начала посылки от ДПП 
+uint32_t counter = 0;
 
-uint16_t DPP_code = 0;
+// Формат посылки от ДПП
 typedef struct 
 {
-    uint8_t Header = SyncroByte;      // Начало пакета передачи данных 
-    uint8_t WLength = 4;
-    uint8_t Data[4] = {1, 2, 3, 4};
+    uint8_t Header = SyncroByte;
+    uint8_t Length = 4;
+    uint8_t DPP_code[4] = {0};
     uint8_t checksum = 0;
 }outbuf; 
-
-bool flag = 0;
 // -------------------------------------------------------------------------------
 
 int main()
@@ -63,31 +62,18 @@ int main()
 
     Toggle_Leds();      // Поморгаем светодиодами после успешной инициализации
 
-    // Запускаем таймер 
-    TIM_Cmd(TIM4, ENABLE);
-
     // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
     LedOn(LED7);
 
+    // Запускаем таймер 
+    TIM_Cmd(TIM4, ENABLE);
 
     // Начнём работу
-    while (1) 
-    {   
-        if (flag) {    
-            // USART_SendData(USART2, 1);
-            // outbuf Out_Buf;
-
-            // int16_t tmp;
-            // uint8_t i;
-            // for (i = 0; i < sizeof(Out_Buf); i++){
-            //     tmp += ((unsigned char*)&Out_Buf)[i];       
-            // }
-            // Out_Buf.checksum = tmp;
-
-            // UartSendBuff((unsigned char*)&Out_Buf, sizeof(Out_Buf));
-            flag = 0;
-        };
+    while (1){
+        // USART_SendData(USART2, 1);
+        // UartSendChar(1);
+        continue;
     }
 }
 
@@ -192,15 +178,16 @@ void TIM4_IRQHandler(void)
     LedOn(LED9);
     LedOn(LED4);
 
-    // UartSendChar(SyncroByte);
-    // UartSendChar(4);
-    // UartSendChar(DPP_code >> 8);
-    // UartSendChar(DPP_code);
-    // DPP_code++;  
-    USART_SendData(USART2, 1);
+    outbuf Out_Buf;
 
-    flag = 1;
+    Out_Buf.DPP_code[0] = (uint8_t)counter;
+    Out_Buf.DPP_code[1] = (uint8_t)(counter >> 8);
+    Out_Buf.DPP_code[2] = (uint8_t)(counter >> 16);
+    Out_Buf.DPP_code[3] = (uint8_t)(counter >> 24);
+    counter++;
 
+    UartSendBuff((unsigned char*)&Out_Buf, 7);
+    
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
     LedOff(LED4);
 }

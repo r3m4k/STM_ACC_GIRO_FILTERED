@@ -2,7 +2,7 @@
 #include "stm32f30x_usart.h"
 
 void InitUart(int Speed);// UART configuration
-void UartSendChar(int c);
+void UartSendChar(uint16_t c);
 unsigned char UartSendBuff(unsigned char *Buff, int Size);
 
 void Uart_irq_enable (void);

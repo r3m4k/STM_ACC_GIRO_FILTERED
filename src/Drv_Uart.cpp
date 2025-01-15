@@ -99,7 +99,7 @@ void Uart_irq_disable(void)
     USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
 }
 
-void UartSendChar(int c)
+void UartSendChar(uint16_t c)
 {
     USART_SendData(USART2, c);
     while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET)
