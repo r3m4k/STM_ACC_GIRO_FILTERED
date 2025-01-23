@@ -1,6 +1,8 @@
 #include "Sensors.h"
 
 #define FilterDepth 30000
+extern float gyro_multiplier;
+
 
 void GYRO_INIT(void)
 {
@@ -22,25 +24,57 @@ void GYRO_INIT(void)
     FilterStruct.HighPassFilter_CutOff_Frequency = L3GD20_HPFCF_5;       /* High pass filter cut-off frequency */
 
     L3GD20_FilterConfig(&FilterStruct);
+
+    // Зададим множитель для гироскопа в соответствии с документацией
+    // (см. документацию для L3GD20, таблица 3 "Mechanical characteristics", стр. 9)
+    switch (InitStruct.Full_Scale)
+    {
+    case L3GD20_FULLSCALE_250:
+        gyro_multiplier = 8.75;
+        break;
+
+    case L3GD20_FULLSCALE_500:
+        gyro_multiplier = 17.5;
+        break;    
+
+    case L3GD20_FULLSCALE_2000:
+        gyro_multiplier = 70.0;
+        break; 
+    }
 }
 
 void ReadGyro(float *pfData)
 {
-
     static uint8_t buffer[6] = {0};
 
-    L3GD20_Read(buffer, L3GD20_OUT_X_H_ADDR, 1);
+    L3GD20_Read(buffer,     L3GD20_OUT_X_H_ADDR, 1);
     L3GD20_Read(buffer + 1, L3GD20_OUT_X_L_ADDR, 1);
     L3GD20_Read(buffer + 2, L3GD20_OUT_Y_H_ADDR, 1);
     L3GD20_Read(buffer + 3, L3GD20_OUT_Y_L_ADDR, 1);
     L3GD20_Read(buffer + 4, L3GD20_OUT_Z_H_ADDR, 1);
     L3GD20_Read(buffer + 5, L3GD20_OUT_Z_L_ADDR, 1);
 
-    for (uint8_t i = 0; i < 2; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         pfData[i] = ((float)((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1])));
     }
-    pfData[2] = ((float)((int16_t)((((int16_t)buffer[4]) << 8) + buffer[5])));
+}
+
+void ReadGyro_int16(int16_t *pfData)
+{
+    static uint8_t buffer[6] = {0};
+
+    L3GD20_Read(buffer,     L3GD20_OUT_X_H_ADDR, 1);
+    L3GD20_Read(buffer + 1, L3GD20_OUT_X_L_ADDR, 1);
+    L3GD20_Read(buffer + 2, L3GD20_OUT_Y_H_ADDR, 1);
+    L3GD20_Read(buffer + 3, L3GD20_OUT_Y_L_ADDR, 1);
+    L3GD20_Read(buffer + 4, L3GD20_OUT_Z_H_ADDR, 1);
+    L3GD20_Read(buffer + 5, L3GD20_OUT_Z_L_ADDR, 1);
+
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        pfData[i] = ((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1]));
+    }
 }
 
 void MAG_INIT(void)
@@ -211,6 +245,74 @@ void ReadAcc(float *pfData)
     {
         pfData[i] = (float)pnRawData[i] / LSM_Acc_Sensitivity;
     }
+}
+
+void ReadAcc_int16(int16_t* pnRawData, float* sensitivity){
+    uint8_t ctrlx[2];
+    uint8_t buffer[6] = {0.0f};
+    uint8_t cDivider;
+    uint8_t i = 0;
+    float LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_2g;
+
+    /* Read the register content */
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_CTRL_REG4_A, ctrlx, 2);
+    // LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_X_L_A, buffer, 6);
+    
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_X_L_A, buffer, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_X_H_A, buffer + 1, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_A, buffer + 2, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Y_H_A, buffer + 3, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_A, buffer + 4, 1);
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_A, buffer + 5, 1);
+
+    if (ctrlx[1] & 0x40)
+        cDivider = 64;
+    else
+        cDivider = 16;
+
+    /* check in the control register4 the data alignment*/
+    if (!(ctrlx[0] & 0x40) || (ctrlx[1] & 0x40)) /* Little Endian Mode or FIFO mode */
+    {
+        for (i = 0; i < 3; i++)
+        {
+            pnRawData[i] = ((int16_t)((uint16_t)buffer[2 * i + 1] << 8) + buffer[2 * i]) / cDivider;
+        }
+    }
+    else /* Big Endian Mode */
+    {
+        for (i = 0; i < 3; i++)
+            pnRawData[i] = ((int16_t)((uint16_t)buffer[2 * i] << 8) + buffer[2 * i + 1]) / cDivider;
+    }
+    /* Read the register content */
+    LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_CTRL_REG4_A, ctrlx, 2);
+
+    if (ctrlx[1] & 0x40)
+    {
+        /* FIFO mode */
+        LSM_Acc_Sensitivity = 0.25;
+    }
+    else
+    {
+        /* normal mode */
+        /* switch the sensitivity value set in the CRTL4*/
+        switch (ctrlx[0] & 0x30)
+        {
+        case LSM303DLHC_FULLSCALE_2G:
+            LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_2g;
+            break;
+        case LSM303DLHC_FULLSCALE_4G:
+            LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_4g;
+            break;
+        case LSM303DLHC_FULLSCALE_8G:
+            LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_8g;
+            break;
+        case LSM303DLHC_FULLSCALE_16G:
+            LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_16g;
+            break;
+        }
+    }
+
+    *sensitivity = LSM_Acc_Sensitivity;
 }
 
 void ReadMagTemp(float *pfTData)

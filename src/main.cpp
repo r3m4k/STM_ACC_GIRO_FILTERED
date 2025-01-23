@@ -6,7 +6,7 @@
 #include "Measure.hpp"
 
 #define PI 3.14159265358979f
-
+#define TIM_PERIOD 4    // Количество тиков таймера с частотой 800 Гц перед вызовом прерывания
 
 // ----------------------------------------------------------------------------
 //
@@ -33,24 +33,26 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 #define SyncroByte 0x53     // Флаг начала посылки от ДПП 
-#define MaxDataSize 25      // Размер данных от ДПП                 Почему 25?
+#define MaxDataSize 25      // Максимальный размер данных передаваемый по RS232                 Почему 25?
 
-unsigned int stage, Index;
+uint32_t stage, Index;
 bool MessageFound;
 
 enum { WantSyncro, WantSize, WantStatus, WantCommandCode, WantData, WantConsum};
 
-unsigned char ConSummIn;        // Контрольная сумма полученных данных
-int DataSize, DataIndex;
-unsigned char DppCode[MaxDataSize] = {0};
-unsigned char DataBuffer[MaxDataSize] = {0};
-unsigned char OldDppCode;
-unsigned int MCount = 0;
-int ViewTact = 0;
+uint8_t  ConSummIn;        // Контрольная сумма полученных данных
+int32_t  DataSize, DataIndex;
+uint8_t  DppCode[MaxDataSize] = {0};
+uint8_t  DataBuffer[MaxDataSize] = {0};
+uint8_t  OldDppCode;
+uint32_t CurrentDppCode;
+uint32_t MCount = 0;
+int32_t  ViewTact = 0;
 // -------------------------------------------------------------------------------
-uint16_t previousState = 0;            // Переменная для таймера
+float gyro_multiplier = 0;             // Множитель для данных с гироскопа
 
-Measure measure(55.7522 * PI / 180);
+Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00125);
+// -------------------------------------------------------------------------------
 
 int main()
 {
@@ -60,41 +62,54 @@ int main()
 	RCC_GetClocksFreq(&RCC_Clocks);
 	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
 		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
- 
-    // Инициализируем периферию
-    LedsInit();
-    InitGPIO();
+    
+    // Инициализируем всё оборудования
+    InitAll();             
+    
+    // Поморгаем светодиодами после успешной инициализации
+    Toggle_Leds();      
 
-    // Инициализируем Virtual Com Port
-    // VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
-    // VCP_Init();        
-
-    // Инициализируем UART и датчики
-    // InitUart(115200);  
-    // GYRO_INIT();
-    // ACC_INIT();
-    // InitDecoder();
-
-    // Инициализация таймера и его настройка
-    TimerInit();  
-
-    Toggle_Leds();      // Поморгаем светодиодами после успешной инициализации
-
-    // measure.initial_setting();
+    // Начнём первоначальную выставку датчиков
+    measure.initial_setting();
 
     // Запускаем таймер 
     TIM_Cmd(TIM4, ENABLE);
+
+    // Включим прерывания от USART2
+    USART_Cmd(USART2, ENABLE);
+    Uart_irq_enable();
 
     // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
     LedOn(LED7);
 
     // Начнём работу
-    while (1) 
-    {   
-        // measure.measuring();        
-        continue;
-    }
+    measure.measuring();  
+
+    while (1){  continue;   }   // Затычка на всякий случай
+
+}
+
+// -------------------------------------------------------------------------------
+// Инициализация оборудования
+void InitAll(){
+
+    // Инициализируем периферию
+    LedsInit();
+    InitGPIO();
+
+    // Инициализируем Virtual Com Port
+    VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
+    VCP_Init();        
+
+    // Инициализируем UART и датчики
+    InitUart(115200);  
+    GYRO_INIT();
+    ACC_INIT();
+    InitDecoder();
+
+    // Инициализация таймера и его настройка
+    // TimerInit();  
 }
 
 // -------------------------------------------------------------------------------
@@ -118,14 +133,17 @@ extern "C" void ProcessInByte(unsigned char Bt)
 			{
 				stage=WantSize;
 				ConSummIn=Bt;
+                // LedOn(LED8);
 			}	
 		break;
 	case WantSize:
 		ConSummIn += Bt;
 		DataSize = Bt;
 		stage = WantData;
+        // LedOn(LED10);
 		break;
 	case WantData:
+        // LedOn(LED9);
 		if ((DataIndex < DataSize) && (DataIndex < MaxDataSize))
 			{
 				ConSummIn+=Bt;
@@ -135,13 +153,16 @@ extern "C" void ProcessInByte(unsigned char Bt)
 			stage=WantConsum;
 		break;
 	case WantConsum:
+        // LedOn(LED4);
         if (Bt == (ConSummIn))
         {
-            for (int i = 0; i < DataSize; i++)
+            for (int i = 0; i < DataSize; i++){
                 DppCode[i] = DataBuffer[i];
+            }               
                 
-        //	DppCode=*((unsigned int*)(&DataBuffer));
-        }	
+        	// CurrentDppCode = (uint32_t)(DppCode[0] + (DppCode[1] << 8) + (DppCode[2] << 16) + (DppCode[3] << 24));
+            // CDC_Send_DATA((uint8_t *)(&DppCode[0]), 1);
+        }
 		MessageFound = true;	
 		ConSummIn = 0;
 		DataIndex=0;
@@ -150,6 +171,10 @@ extern "C" void ProcessInByte(unsigned char Bt)
 	}
 
     LedOff(LED5);
+    // LedOff(LED8);
+    // LedOff(LED10);
+    // LedOff(LED9);
+    // LedOff(LED4);
 }
 // -------------------------------------------------------------------------------
 // Настройка светодиодов
@@ -241,7 +266,8 @@ void TimerInit(void){
     /* Set the default configuration */
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
     TIM_TimeBaseStructure.TIM_Prescaler = TIMER_PRESCALER - 1;
-    TIM_TimeBaseStructure.TIM_Period = 40000;      // Выставим задержку в 5 секунд
+    // TIM_TimeBaseStructure.TIM_Period = 40000;      // Выставим задержку в 5 секунд
+    TIM_TimeBaseStructure.TIM_Period = TIM_PERIOD;
     TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
 
     TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
@@ -250,19 +276,8 @@ void TimerInit(void){
 void TIM4_IRQHandler(void)
 { 
     LedOn(LED9);
-    // Если на выходе был 0
-    if (previousState == 0)
-    {
-        // Выставляем единицу на выходе
-        previousState = 1;
-        LedOn(LED4);
-    }
-    else
-    {
-        // Выставляем ноль на выходе
-        previousState = 0;
-        LedOff(LED4);
-    }
+    
+    measure.new_tick();
     
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
     LedOff(LED9);

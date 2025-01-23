@@ -1,4 +1,5 @@
 extern float sqrt2;
+extern float gyro_multiplier;
 
 class Frame
 {
@@ -16,7 +17,7 @@ public:
     float Y_coord;
     float Z_coord;
 
-    float frame_Buffer[3] = {0.0f};               // Буфер, в который будет заполняться временная информация
+    float frame_Buffer[3] = {0.0f};     // Буфер, в который будет заполняться временная информация с датчиков
 
     Frame(){
         X_coord = 0;
@@ -105,6 +106,7 @@ public:
         X_coord =  frame_Buffer[1];
         Y_coord = -frame_Buffer[0];
         Z_coord =  frame_Buffer[2];
+        // Домножаем на 0.1, чтобы ускорения были в mg
     }
 
     void Read_Gyro()
@@ -116,9 +118,9 @@ public:
         OZ = oz
         */
         ReadGyro(frame_Buffer);
-        X_coord = frame_Buffer[0];
-        Y_coord = frame_Buffer[1];
-        Z_coord = frame_Buffer[2];
+        X_coord = frame_Buffer[0] / gyro_multiplier;
+        Y_coord = frame_Buffer[1] / gyro_multiplier;
+        Z_coord = frame_Buffer[2] / gyro_multiplier;
     }
 
     // ########################################################################
@@ -134,6 +136,12 @@ public:
         X_coord = 0;
         Y_coord = 0;
         Z_coord = 0;
+    }
+
+    void copying_from_buffer(){
+        X_coord = frame_Buffer[0];
+        Y_coord = frame_Buffer[1];
+        Z_coord = frame_Buffer[2];
     }
 
 };

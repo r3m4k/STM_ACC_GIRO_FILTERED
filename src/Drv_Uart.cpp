@@ -34,7 +34,7 @@ void InitUart(int Speed) // UART configuration
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
 
     /* Enable USART clock */
-    RCC_APB2PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 
     /* Connect PXx to USARTx_Tx */
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource14, GPIO_AF_7);       // USART2_TX
@@ -62,7 +62,7 @@ void InitUart(int Speed) // UART configuration
     USART_InitStructure.USART_BaudRate = Speed;
     USART_InitStructure.USART_Parity = USART_Parity_No;
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    USART_InitStructure.USART_Mode = /*USART_Mode_Rx |*/ USART_Mode_Tx;
+    USART_InitStructure.USART_Mode = USART_Mode_Rx; /*USART_Mode_Tx*/
 
     if (pc8)
     {
@@ -76,21 +76,21 @@ void InitUart(int Speed) // UART configuration
     }
 
     /* USART configuration */
-    USART_Init(USART2, &USART_InitStructure);
+    USART_Init(USART2, &USART_InitStructure); 
     // Разрешаю аппаратное управление передатчиком для RS485
     USART_SetDEDeassertionTime(USART2, 5);
     USART_SetDEAssertionTime(USART2, 5);
     USART_DECmd(USART2, ENABLE);
-    /* Enable USART */
-    USART_Cmd(USART2, ENABLE);
-    Uart_irq_enable();
+    // /* Enable USART */
+    // USART_Cmd(USART2, ENABLE);
+    // Uart_irq_enable();
     return;
 }
 
 void Uart_irq_enable(void)
 {
     USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
-    USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 }
 
 void Uart_irq_disable(void)

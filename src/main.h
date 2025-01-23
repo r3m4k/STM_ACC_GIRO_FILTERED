@@ -17,11 +17,15 @@
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic pop
 
+#define FALSE 0
+#define TRUE 1
+
 /* Exported functions ------------------------------------------------------- */
 #ifdef __cplusplus
  extern "C" {
 #endif 
 
+void InitAll();
 void InitDecoder();
 void ProcessInByte(unsigned char Bt);
 

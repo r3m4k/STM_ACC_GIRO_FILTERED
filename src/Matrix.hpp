@@ -2,8 +2,7 @@
 
 class Matrix{
 public:
-    // float matrix[9] = {0.0f};
-    float matrix[9] = {1, 2, 3, 4, 5, 6, 7, 8};
+    float matrix[9] = {0.0f};
     float matrix_Buffer[9] = {0.0f};
     short matrix_Index = 0;
 
@@ -15,6 +14,12 @@ public:
         frame.frame_Buffer[0] = matrix[0] * frame[0] + matrix[1] * frame[1] + matrix[2] * frame[2];
         frame.frame_Buffer[1] = matrix[3] * frame[0] + matrix[4] * frame[1] + matrix[5] * frame[2];
         frame.frame_Buffer[2] = matrix[6] * frame[0] + matrix[7] * frame[1] + matrix[8] * frame[2];
+    }
+
+    // Умножение frame на матрицу, как умножение вектора на матрицу, с сохранением результата в frame
+    void operator*=(Frame& frame){
+        *this * frame;
+        frame.copying_from_buffer();
     }
 
     // Умножение data.Acc, data.Gyro на матрицу, поэлементно, как умножение векторов на матрицу, с сохранением 
@@ -99,6 +104,19 @@ public:
         matrix_Buffer[2] =  (matrix[1] * matrix[5] - matrix[4] * matrix[2]) / det;    //matrix_Buffer[0][2]
         matrix_Buffer[5] = -(matrix[0] * matrix[5] - matrix[3] * matrix[2]) / det;    //matrix_Buffer[1][2]
         matrix_Buffer[8] =  (matrix[0] * matrix[4] - matrix[3] * matrix[1]) / det;    //matrix_Buffer[2][2]
+    }
+
+    // Заполнение матрицы значениями, соответствущие единичной матрице
+    void IdentityMatrix(){
+        matrix[0] = 1;
+        matrix[1] = 0;
+        matrix[2] = 0;
+        matrix[3] = 0;
+        matrix[4] = 1;
+        matrix[5] = 0;
+        matrix[6] = 0;
+        matrix[7] = 0;
+        matrix[8] = 1;
     }
 
     // ########################################################################
