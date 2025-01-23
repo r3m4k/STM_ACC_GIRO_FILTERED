@@ -66,21 +66,19 @@ int main()
     InitGPIO();
 
     // Инициализируем Virtual Com Port
-    // VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
-    // VCP_Init();        
+    VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
+    VCP_Init();        
 
     // Инициализируем UART и датчики
-    // InitUart(115200);  
-    // GYRO_INIT();
-    // ACC_INIT();
-    // InitDecoder();
+    GYRO_INIT();
+    ACC_INIT();
 
     // Инициализация таймера и его настройка
     TimerInit();  
 
     Toggle_Leds();      // Поморгаем светодиодами после успешной инициализации
 
-    // measure.initial_setting();
+    measure.initial_setting();
 
     // Запускаем таймер 
     TIM_Cmd(TIM4, ENABLE);
