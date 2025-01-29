@@ -42,12 +42,9 @@ void ReadMagTemp (float* pfTData);
 
 void ACC_INIT(void);
 void ReadAcc (float *pfData); 
-void ReadAcc_int16(int16_t* pfData, float* sensitivity);
-
 	 
 void GYRO_INIT (void);
 void ReadGyro (float* pfData);
-void ReadGyro_int16(int16_t *pfData);
 
 void ADC_Config(void);	 
 	  

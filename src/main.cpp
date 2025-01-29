@@ -33,7 +33,7 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // ===============================================================================
 #define SyncroByte 0x53     // Флаг начала посылки от ДПП 
-#define MaxDataSize 25      // Максимальный размер данных передаваемый по RS232                 Почему 25?
+#define MaxDataSize 25      // Максимальный размер данных передаваемый по RS232 (25 выбрали просто так)
 
 uint32_t stage, Index;
 bool MessageFound;
@@ -109,7 +109,7 @@ void InitAll(){
     InitDecoder();
 
     // Инициализация таймера и его настройка
-    // TimerInit();  
+    TimerInit();  
 }
 
 // -------------------------------------------------------------------------------
@@ -277,7 +277,8 @@ void TIM4_IRQHandler(void)
 { 
     LedOn(LED9);
     
-    measure.new_tick();
+    measure.TickCounter++;
+    measure.new_tick_Flag = TRUE;
     
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
     LedOff(LED9);

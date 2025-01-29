@@ -207,10 +207,6 @@ Discarded input sections
  .bss           0x00000000        0x0 Debug_Win/stm32f30x/stm32f30x_tim.o
  .text.TIM_DeInit
                 0x00000000      0x14c Debug_Win/stm32f30x/stm32f30x_tim.o
- .text.TIM_TimeBaseInit
-                0x00000000       0xf0 Debug_Win/stm32f30x/stm32f30x_tim.o
- .text.TIM_TimeBaseStructInit
-                0x00000000       0x34 Debug_Win/stm32f30x/stm32f30x_tim.o
  .text.TIM_PrescalerConfig
                 0x00000000       0x28 Debug_Win/stm32f30x/stm32f30x_tim.o
  .text.TIM_CounterModeConfig
@@ -377,8 +373,6 @@ Discarded input sections
                 0x00000000       0x3a Debug_Win/stm32f30x/stm32f30x_tim.o
  .text.TIM_CCPreloadControl
                 0x00000000       0x3a Debug_Win/stm32f30x/stm32f30x_tim.o
- .text.TIM_ITConfig
-                0x00000000       0x40 Debug_Win/stm32f30x/stm32f30x_tim.o
  .text.TIM_GenerateEvent
                 0x00000000       0x1e Debug_Win/stm32f30x/stm32f30x_tim.o
  .text.TIM_GetFlagStatus
@@ -3763,9 +3757,6 @@ Discarded input sections
  .group         0x00000000        0xc Debug_Win/user/main.opp
  .group         0x00000000        0xc Debug_Win/user/main.opp
  .group         0x00000000        0xc Debug_Win/user/main.opp
- .group         0x00000000        0x8 Debug_Win/user/main.opp
- .group         0x00000000        0x8 Debug_Win/user/main.opp
- .group         0x00000000        0xc Debug_Win/user/main.opp
  .group         0x00000000        0xc Debug_Win/user/main.opp
  .group         0x00000000        0xc Debug_Win/user/main.opp
  .group         0x00000000        0xc Debug_Win/user/main.opp
@@ -3877,8 +3868,6 @@ Discarded input sections
  .bss.MCount    0x00000000        0x4 Debug_Win/user/main.opp
  .bss.ViewTact  0x00000000        0x4 Debug_Win/user/main.opp
  .text.LedsOn   0x00000000       0x38 Debug_Win/user/main.opp
- .text.TimerInit
-                0x00000000       0x64 Debug_Win/user/main.opp
  .text._Z13Error_Handlerv
                 0x00000000       0x12 Debug_Win/user/main.opp
  .debug_macro   0x00000000      0xb1a Debug_Win/user/main.opp
@@ -4491,7 +4480,7 @@ END GROUP
                 0x20009c00                __Main_Stack_Limit = (__stack - __Main_Stack_Size)
                 [!provide]                PROVIDE (_Main_Stack_Limit = __Main_Stack_Limit)
                 0x00000100                _Minimum_Stack_Size = 0x100
-                0x20000fb8                PROVIDE (_Heap_Begin = _end_noinit)
+                0x20000fa8                PROVIDE (_Heap_Begin = _end_noinit)
                 0x20009c00                PROVIDE (_Heap_Limit = (__stack - __Main_Stack_Size))
 
 .isr_vector     0x08000000      0x3c8
@@ -4578,16 +4567,16 @@ END GROUP
 
 .inits          0x080003c8       0x34
                 0x080003c8                __data_regions_array_start = .
-                0x080003c8        0x4 LONG 0x800a438 LOADADDR (.data)
+                0x080003c8        0x4 LONG 0x800a380 LOADADDR (.data)
                 0x080003cc        0x4 LONG 0x20000000 ADDR (.data)
                 0x080003d0        0x4 LONG 0x200005a4 (ADDR (.data) + SIZEOF (.data))
-                0x080003d4        0x4 LONG 0x800a438 LOADADDR (.data_CCMRAM)
+                0x080003d4        0x4 LONG 0x800a380 LOADADDR (.data_CCMRAM)
                 0x080003d8        0x4 LONG 0x10000000 ADDR (.data_CCMRAM)
                 0x080003dc        0x4 LONG 0x10000000 (ADDR (.data_CCMRAM) + SIZEOF (.data_CCMRAM))
                 0x080003e0                __data_regions_array_end = .
                 0x080003e0                __bss_regions_array_start = .
                 0x080003e0        0x4 LONG 0x200005a4 ADDR (.bss)
-                0x080003e4        0x4 LONG 0x20000fb8 (ADDR (.bss) + SIZEOF (.bss))
+                0x080003e4        0x4 LONG 0x20000fa8 (ADDR (.bss) + SIZEOF (.bss))
                 0x080003e8        0x4 LONG 0x10000000 ADDR (.bss_CCMRAM)
                 0x080003ec        0x4 LONG 0x10000000 (ADDR (.bss_CCMRAM) + SIZEOF (.bss_CCMRAM))
                 0x080003f0                __bss_regions_array_end = .
@@ -4616,7 +4605,7 @@ END GROUP
 .flashtext
  *(.flashtext .flashtext.*)
 
-.text           0x08000400     0xa038
+.text           0x08000400     0x9f80
  *(.text .text.*)
  .text.USART_Init
                 0x08000400      0x178 Debug_Win/stm32f30x/stm32f30x_usart.o
@@ -4651,853 +4640,850 @@ END GROUP
  .text.USART_ClearITPendingBit
                 0x080007e2       0x34 Debug_Win/stm32f30x/stm32f30x_usart.o
                 0x080007e2                USART_ClearITPendingBit
- .text.TIM_Cmd  0x08000816       0x40 Debug_Win/stm32f30x/stm32f30x_tim.o
-                0x08000816                TIM_Cmd
+ *fill*         0x08000816        0x2 
+ .text.TIM_TimeBaseInit
+                0x08000818       0xf0 Debug_Win/stm32f30x/stm32f30x_tim.o
+                0x08000818                TIM_TimeBaseInit
+ .text.TIM_TimeBaseStructInit
+                0x08000908       0x34 Debug_Win/stm32f30x/stm32f30x_tim.o
+                0x08000908                TIM_TimeBaseStructInit
+ .text.TIM_Cmd  0x0800093c       0x40 Debug_Win/stm32f30x/stm32f30x_tim.o
+                0x0800093c                TIM_Cmd
+ .text.TIM_ITConfig
+                0x0800097c       0x40 Debug_Win/stm32f30x/stm32f30x_tim.o
+                0x0800097c                TIM_ITConfig
  .text.TIM_ClearITPendingBit
-                0x08000856       0x24 Debug_Win/stm32f30x/stm32f30x_tim.o
-                0x08000856                TIM_ClearITPendingBit
- *fill*         0x0800087a        0x2 
+                0x080009bc       0x24 Debug_Win/stm32f30x/stm32f30x_tim.o
+                0x080009bc                TIM_ClearITPendingBit
  .text.RCC_HSEConfig
-                0x0800087c       0x28 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x0800087c                RCC_HSEConfig
+                0x080009e0       0x28 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x080009e0                RCC_HSEConfig
  .text.RCC_WaitForHSEStartUp
-                0x080008a4       0x50 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x080008a4                RCC_WaitForHSEStartUp
+                0x08000a08       0x50 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000a08                RCC_WaitForHSEStartUp
  .text.RCC_PLLCmd
-                0x080008f4       0x20 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x080008f4                RCC_PLLCmd
+                0x08000a58       0x20 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000a58                RCC_PLLCmd
  .text.RCC_SYSCLKConfig
-                0x08000914       0x38 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000914                RCC_SYSCLKConfig
+                0x08000a78       0x38 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000a78                RCC_SYSCLKConfig
  .text.RCC_GetSYSCLKSource
-                0x0800094c       0x20 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x0800094c                RCC_GetSYSCLKSource
+                0x08000ab0       0x20 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000ab0                RCC_GetSYSCLKSource
  .text.RCC_GetClocksFreq
-                0x0800096c      0x428 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x0800096c                RCC_GetClocksFreq
+                0x08000ad0      0x428 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000ad0                RCC_GetClocksFreq
  .text.RCC_USBCLKConfig
-                0x08000d94       0x20 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000d94                RCC_USBCLKConfig
+                0x08000ef8       0x20 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000ef8                RCC_USBCLKConfig
  .text.RCC_AHBPeriphClockCmd
-                0x08000db4       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000db4                RCC_AHBPeriphClockCmd
+                0x08000f18       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000f18                RCC_AHBPeriphClockCmd
  .text.RCC_APB2PeriphClockCmd
-                0x08000df4       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000df4                RCC_APB2PeriphClockCmd
+                0x08000f58       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000f58                RCC_APB2PeriphClockCmd
  .text.RCC_APB1PeriphClockCmd
-                0x08000e34       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000e34                RCC_APB1PeriphClockCmd
+                0x08000f98       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000f98                RCC_APB1PeriphClockCmd
  .text.RCC_APB2PeriphResetCmd
-                0x08000e74       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000e74                RCC_APB2PeriphResetCmd
+                0x08000fd8       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08000fd8                RCC_APB2PeriphResetCmd
  .text.RCC_APB1PeriphResetCmd
-                0x08000eb4       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000eb4                RCC_APB1PeriphResetCmd
+                0x08001018       0x40 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08001018                RCC_APB1PeriphResetCmd
  .text.RCC_GetFlagStatus
-                0x08000ef4       0x84 Debug_Win/stm32f30x/stm32f30x_rcc.o
-                0x08000ef4                RCC_GetFlagStatus
+                0x08001058       0x84 Debug_Win/stm32f30x/stm32f30x_rcc.o
+                0x08001058                RCC_GetFlagStatus
  .text.NVIC_PriorityGroupConfig
-                0x08000f78       0x28 Debug_Win/stm32f30x/stm32f30x_misc.o
-                0x08000f78                NVIC_PriorityGroupConfig
+                0x080010dc       0x28 Debug_Win/stm32f30x/stm32f30x_misc.o
+                0x080010dc                NVIC_PriorityGroupConfig
  .text.NVIC_Init
-                0x08000fa0       0xc8 Debug_Win/stm32f30x/stm32f30x_misc.o
-                0x08000fa0                NVIC_Init
+                0x08001104       0xc8 Debug_Win/stm32f30x/stm32f30x_misc.o
+                0x08001104                NVIC_Init
  .text.GPIO_Init
-                0x08001068      0x12c Debug_Win/stm32f30x/stm32f30x_gpio.o
-                0x08001068                GPIO_Init
+                0x080011cc      0x12c Debug_Win/stm32f30x/stm32f30x_gpio.o
+                0x080011cc                GPIO_Init
  .text.GPIO_ReadInputDataBit
-                0x08001194       0x38 Debug_Win/stm32f30x/stm32f30x_gpio.o
-                0x08001194                GPIO_ReadInputDataBit
+                0x080012f8       0x38 Debug_Win/stm32f30x/stm32f30x_gpio.o
+                0x080012f8                GPIO_ReadInputDataBit
  .text.GPIO_SetBits
-                0x080011cc       0x1e Debug_Win/stm32f30x/stm32f30x_gpio.o
-                0x080011cc                GPIO_SetBits
+                0x08001330       0x1e Debug_Win/stm32f30x/stm32f30x_gpio.o
+                0x08001330                GPIO_SetBits
  .text.GPIO_ResetBits
-                0x080011ea       0x1e Debug_Win/stm32f30x/stm32f30x_gpio.o
-                0x080011ea                GPIO_ResetBits
+                0x0800134e       0x1e Debug_Win/stm32f30x/stm32f30x_gpio.o
+                0x0800134e                GPIO_ResetBits
  .text.GPIO_WriteBit
-                0x08001208       0x30 Debug_Win/stm32f30x/stm32f30x_gpio.o
-                0x08001208                GPIO_WriteBit
+                0x0800136c       0x30 Debug_Win/stm32f30x/stm32f30x_gpio.o
+                0x0800136c                GPIO_WriteBit
  .text.GPIO_PinAFConfig
-                0x08001238       0x92 Debug_Win/stm32f30x/stm32f30x_gpio.o
-                0x08001238                GPIO_PinAFConfig
+                0x0800139c       0x92 Debug_Win/stm32f30x/stm32f30x_gpio.o
+                0x0800139c                GPIO_PinAFConfig
  .text.NMI_Handler
-                0x080012ca        0xe Debug_Win/stm32f30x/stm32f30x_it.o
-                0x080012ca                NMI_Handler
+                0x0800142e        0xe Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800142e                NMI_Handler
  .text.HardFault_Handler
-                0x080012d8       0x22 Debug_Win/stm32f30x/stm32f30x_it.o
-                0x080012d8                HardFault_Handler
+                0x0800143c       0x22 Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800143c                HardFault_Handler
  .text.MemManage_Handler
-                0x080012fa       0x10 Debug_Win/stm32f30x/stm32f30x_it.o
-                0x080012fa                MemManage_Handler
+                0x0800145e       0x10 Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800145e                MemManage_Handler
  .text.BusFault_Handler
-                0x0800130a       0x10 Debug_Win/stm32f30x/stm32f30x_it.o
-                0x0800130a                BusFault_Handler
+                0x0800146e       0x10 Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800146e                BusFault_Handler
  .text.UsageFault_Handler
-                0x0800131a       0x10 Debug_Win/stm32f30x/stm32f30x_it.o
-                0x0800131a                UsageFault_Handler
+                0x0800147e       0x10 Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800147e                UsageFault_Handler
  .text.SVC_Handler
-                0x0800132a        0xe Debug_Win/stm32f30x/stm32f30x_it.o
-                0x0800132a                SVC_Handler
+                0x0800148e        0xe Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800148e                SVC_Handler
  .text.DebugMon_Handler
-                0x08001338        0xe Debug_Win/stm32f30x/stm32f30x_it.o
-                0x08001338                DebugMon_Handler
+                0x0800149c        0xe Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800149c                DebugMon_Handler
  .text.PendSV_Handler
-                0x08001346        0xe Debug_Win/stm32f30x/stm32f30x_it.o
-                0x08001346                PendSV_Handler
+                0x080014aa        0xe Debug_Win/stm32f30x/stm32f30x_it.o
+                0x080014aa                PendSV_Handler
  .text.SysTick_Handler
-                0x08001354       0x2c Debug_Win/stm32f30x/stm32f30x_it.o
-                0x08001354                SysTick_Handler
+                0x080014b8       0x2c Debug_Win/stm32f30x/stm32f30x_it.o
+                0x080014b8                SysTick_Handler
  .text.EXTI0_IRQHandler
-                0x08001380       0x98 Debug_Win/stm32f30x/stm32f30x_it.o
-                0x08001380                EXTI0_IRQHandler
+                0x080014e4       0x98 Debug_Win/stm32f30x/stm32f30x_it.o
+                0x080014e4                EXTI0_IRQHandler
  .text.USB_LP_CAN1_RX0_IRQHandler
-                0x08001418        0xc Debug_Win/stm32f30x/stm32f30x_it.o
-                0x08001418                USB_LP_CAN1_RX0_IRQHandler
+                0x0800157c        0xc Debug_Win/stm32f30x/stm32f30x_it.o
+                0x0800157c                USB_LP_CAN1_RX0_IRQHandler
  .text.USBWakeUp_IRQHandler
-                0x08001424       0x14 Debug_Win/stm32f30x/stm32f30x_it.o
-                0x08001424                USBWakeUp_IRQHandler
+                0x08001588       0x14 Debug_Win/stm32f30x/stm32f30x_it.o
+                0x08001588                USBWakeUp_IRQHandler
  .text.I2C_Init
-                0x08001438       0xcc Debug_Win/stm32f30x/stm32f30x_i2c.o
-                0x08001438                I2C_Init
- .text.I2C_Cmd  0x08001504       0x38 Debug_Win/stm32f30x/stm32f30x_i2c.o
-                0x08001504                I2C_Cmd
+                0x0800159c       0xcc Debug_Win/stm32f30x/stm32f30x_i2c.o
+                0x0800159c                I2C_Init
+ .text.I2C_Cmd  0x08001668       0x38 Debug_Win/stm32f30x/stm32f30x_i2c.o
+                0x08001668                I2C_Cmd
  .text.I2C_TransferHandling
-                0x0800153c       0x58 Debug_Win/stm32f30x/stm32f30x_i2c.o
-                0x0800153c                I2C_TransferHandling
+                0x080016a0       0x58 Debug_Win/stm32f30x/stm32f30x_i2c.o
+                0x080016a0                I2C_TransferHandling
  .text.I2C_SendData
-                0x08001594       0x1e Debug_Win/stm32f30x/stm32f30x_i2c.o
-                0x08001594                I2C_SendData
+                0x080016f8       0x1e Debug_Win/stm32f30x/stm32f30x_i2c.o
+                0x080016f8                I2C_SendData
  .text.I2C_ReceiveData
-                0x080015b2       0x1a Debug_Win/stm32f30x/stm32f30x_i2c.o
-                0x080015b2                I2C_ReceiveData
+                0x08001716       0x1a Debug_Win/stm32f30x/stm32f30x_i2c.o
+                0x08001716                I2C_ReceiveData
  .text.I2C_GetFlagStatus
-                0x080015cc       0x3e Debug_Win/stm32f30x/stm32f30x_i2c.o
-                0x080015cc                I2C_GetFlagStatus
+                0x08001730       0x3e Debug_Win/stm32f30x/stm32f30x_i2c.o
+                0x08001730                I2C_GetFlagStatus
  .text.I2C_ClearFlag
-                0x0800160a       0x1c Debug_Win/stm32f30x/stm32f30x_i2c.o
-                0x0800160a                I2C_ClearFlag
- *fill*         0x08001626        0x2 
+                0x0800176e       0x1c Debug_Win/stm32f30x/stm32f30x_i2c.o
+                0x0800176e                I2C_ClearFlag
+ *fill*         0x0800178a        0x2 
  .text.EXTI_Init
-                0x08001628      0x20c Debug_Win/stm32f30x/stm32f30x_exti.o
-                0x08001628                EXTI_Init
+                0x0800178c      0x20c Debug_Win/stm32f30x/stm32f30x_exti.o
+                0x0800178c                EXTI_Init
  .text.EXTI_GetITStatus
-                0x08001834       0x70 Debug_Win/stm32f30x/stm32f30x_exti.o
-                0x08001834                EXTI_GetITStatus
+                0x08001998       0x70 Debug_Win/stm32f30x/stm32f30x_exti.o
+                0x08001998                EXTI_GetITStatus
  .text.EXTI_ClearITPendingBit
-                0x080018a4       0x34 Debug_Win/stm32f30x/stm32f30x_exti.o
-                0x080018a4                EXTI_ClearITPendingBit
+                0x08001a08       0x34 Debug_Win/stm32f30x/stm32f30x_exti.o
+                0x08001a08                EXTI_ClearITPendingBit
  .text.SPI_I2S_DeInit
-                0x080018d8       0x74 Debug_Win/stm32f30x/stm32f30x_spi.o
-                0x080018d8                SPI_I2S_DeInit
+                0x08001a3c       0x74 Debug_Win/stm32f30x/stm32f30x_spi.o
+                0x08001a3c                SPI_I2S_DeInit
  .text.SPI_Init
-                0x0800194c      0x116 Debug_Win/stm32f30x/stm32f30x_spi.o
-                0x0800194c                SPI_Init
- .text.SPI_Cmd  0x08001a62       0x40 Debug_Win/stm32f30x/stm32f30x_spi.o
-                0x08001a62                SPI_Cmd
+                0x08001ab0      0x116 Debug_Win/stm32f30x/stm32f30x_spi.o
+                0x08001ab0                SPI_Init
+ .text.SPI_Cmd  0x08001bc6       0x40 Debug_Win/stm32f30x/stm32f30x_spi.o
+                0x08001bc6                SPI_Cmd
  .text.SPI_RxFIFOThresholdConfig
-                0x08001aa2       0x38 Debug_Win/stm32f30x/stm32f30x_spi.o
-                0x08001aa2                SPI_RxFIFOThresholdConfig
+                0x08001c06       0x38 Debug_Win/stm32f30x/stm32f30x_spi.o
+                0x08001c06                SPI_RxFIFOThresholdConfig
  .text.SPI_SendData8
-                0x08001ada       0x2c Debug_Win/stm32f30x/stm32f30x_spi.o
-                0x08001ada                SPI_SendData8
+                0x08001c3e       0x2c Debug_Win/stm32f30x/stm32f30x_spi.o
+                0x08001c3e                SPI_SendData8
  .text.SPI_ReceiveData8
-                0x08001b06       0x28 Debug_Win/stm32f30x/stm32f30x_spi.o
-                0x08001b06                SPI_ReceiveData8
+                0x08001c6a       0x28 Debug_Win/stm32f30x/stm32f30x_spi.o
+                0x08001c6a                SPI_ReceiveData8
  .text.SPI_I2S_GetFlagStatus
-                0x08001b2e       0x38 Debug_Win/stm32f30x/stm32f30x_spi.o
-                0x08001b2e                SPI_I2S_GetFlagStatus
- *fill*         0x08001b66        0x2 
+                0x08001c92       0x38 Debug_Win/stm32f30x/stm32f30x_spi.o
+                0x08001c92                SPI_I2S_GetFlagStatus
+ *fill*         0x08001cca        0x2 
  .text.SYSCFG_EXTILineConfig
-                0x08001b68       0x84 Debug_Win/stm32f30x/stm32f30x_syscfg.o
-                0x08001b68                SYSCFG_EXTILineConfig
+                0x08001ccc       0x84 Debug_Win/stm32f30x/stm32f30x_syscfg.o
+                0x08001ccc                SYSCFG_EXTILineConfig
  .text.STM_EVAL_LEDInit
-                0x08001bec       0x5c Debug_Win/stm32f3/stm32f3_discovery.o
-                0x08001bec                STM_EVAL_LEDInit
+                0x08001d50       0x5c Debug_Win/stm32f3/stm32f3_discovery.o
+                0x08001d50                STM_EVAL_LEDInit
  .text.STM_EVAL_LEDOn
-                0x08001c48       0x34 Debug_Win/stm32f3/stm32f3_discovery.o
-                0x08001c48                STM_EVAL_LEDOn
+                0x08001dac       0x34 Debug_Win/stm32f3/stm32f3_discovery.o
+                0x08001dac                STM_EVAL_LEDOn
  .text.STM_EVAL_LEDOff
-                0x08001c7c       0x30 Debug_Win/stm32f3/stm32f3_discovery.o
-                0x08001c7c                STM_EVAL_LEDOff
+                0x08001de0       0x30 Debug_Win/stm32f3/stm32f3_discovery.o
+                0x08001de0                STM_EVAL_LEDOff
  .text.STM_EVAL_PBInit
-                0x08001cac       0x98 Debug_Win/stm32f3/stm32f3_discovery.o
-                0x08001cac                STM_EVAL_PBInit
+                0x08001e10       0x98 Debug_Win/stm32f3/stm32f3_discovery.o
+                0x08001e10                STM_EVAL_PBInit
  .text.STM_EVAL_PBGetState
-                0x08001d44       0x2c Debug_Win/stm32f3/stm32f3_discovery.o
-                0x08001d44                STM_EVAL_PBGetState
+                0x08001ea8       0x2c Debug_Win/stm32f3/stm32f3_discovery.o
+                0x08001ea8                STM_EVAL_PBGetState
  .text.LSM303DLHC_AccInit
-                0x08001d70       0x78 Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
-                0x08001d70                LSM303DLHC_AccInit
+                0x08001ed4       0x78 Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
+                0x08001ed4                LSM303DLHC_AccInit
  .text.LSM303DLHC_AccFilterConfig
-                0x08001de8       0x5a Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
-                0x08001de8                LSM303DLHC_AccFilterConfig
- *fill*         0x08001e42        0x2 
+                0x08001f4c       0x5a Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
+                0x08001f4c                LSM303DLHC_AccFilterConfig
+ *fill*         0x08001fa6        0x2 
  .text.LSM303DLHC_Write
-                0x08001e44      0x15c Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
-                0x08001e44                LSM303DLHC_Write
+                0x08001fa8      0x15c Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
+                0x08001fa8                LSM303DLHC_Write
  .text.LSM303DLHC_Read
-                0x08001fa0      0x188 Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
-                0x08001fa0                LSM303DLHC_Read
+                0x08002104      0x188 Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
+                0x08002104                LSM303DLHC_Read
  .text.LSM303DLHC_LowLevel_Init
-                0x08002128      0x154 Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
+                0x0800228c      0x154 Debug_Win/stm32f3/stm32f3_discovery_lsm303dlhc.o
  .text.L3GD20_Init
-                0x0800227c       0x78 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
-                0x0800227c                L3GD20_Init
+                0x080023e0       0x78 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
+                0x080023e0                L3GD20_Init
  .text.L3GD20_FilterConfig
-                0x080022f4       0x4a Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
-                0x080022f4                L3GD20_FilterConfig
- *fill*         0x0800233e        0x2 
+                0x08002458       0x4a Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
+                0x08002458                L3GD20_FilterConfig
+ *fill*         0x080024a2        0x2 
  .text.L3GD20_Write
-                0x08002340       0x60 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
-                0x08002340                L3GD20_Write
+                0x080024a4       0x60 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
+                0x080024a4                L3GD20_Write
  .text.L3GD20_Read
-                0x080023a0       0x70 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
-                0x080023a0                L3GD20_Read
+                0x08002504       0x70 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
+                0x08002504                L3GD20_Read
  .text.L3GD20_LowLevel_Init
-                0x08002410      0x154 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
+                0x08002574      0x154 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
  .text.L3GD20_SendByte
-                0x08002564       0x90 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
+                0x080026c8       0x90 Debug_Win/stm32f3/stm32f3_discovery_l3gd20.o
  .text.SystemInit
-                0x080025f4       0x94 Debug_Win/system/system_stm32f30x.o
-                0x080025f4                SystemInit
+                0x08002758       0x94 Debug_Win/system/system_stm32f30x.o
+                0x08002758                SystemInit
  .text.SystemCoreClockUpdate
-                0x08002688       0xe4 Debug_Win/system/system_stm32f30x.o
-                0x08002688                SystemCoreClockUpdate
+                0x080027ec       0xe4 Debug_Win/system/system_stm32f30x.o
+                0x080027ec                SystemCoreClockUpdate
  .text.SetSysClock
-                0x0800276c       0xe4 Debug_Win/system/system_stm32f30x.o
- .text._exit    0x08002850        0xa Debug_Win/system/_exit.o
-                0x08002850                _exit
- *fill*         0x0800285a        0x2 
+                0x080028d0       0xe4 Debug_Win/system/system_stm32f30x.o
+ .text._exit    0x080029b4        0xa Debug_Win/system/_exit.o
+                0x080029b4                _exit
+ *fill*         0x080029be        0x2 
  .text.__initialize_args
-                0x0800285c       0x28 Debug_Win/system/_syscalls.o
-                0x0800285c                __initialize_args
+                0x080029c0       0x28 Debug_Win/system/_syscalls.o
+                0x080029c0                __initialize_args
  .text.__initialize_hardware_early
-                0x08002884       0x20 Debug_Win/system/_initialize_hardware.o
-                0x08002884                __initialize_hardware_early
+                0x080029e8       0x20 Debug_Win/system/_initialize_hardware.o
+                0x080029e8                __initialize_hardware_early
  .text.__initialize_hardware
-                0x080028a4        0xc Debug_Win/system/_initialize_hardware.o
-                0x080028a4                __initialize_hardware
+                0x08002a08        0xc Debug_Win/system/_initialize_hardware.o
+                0x08002a08                __initialize_hardware
  .text.Set_System
-                0x080028b0       0xc4 Debug_Win/usb/hw_config.o
-                0x080028b0                Set_System
+                0x08002a14       0xc4 Debug_Win/usb/hw_config.o
+                0x08002a14                Set_System
  .text.Set_USBClock
-                0x08002974       0x18 Debug_Win/usb/hw_config.o
-                0x08002974                Set_USBClock
+                0x08002ad8       0x18 Debug_Win/usb/hw_config.o
+                0x08002ad8                Set_USBClock
  .text.Leave_LowPowerMode
-                0x0800298c       0x7c Debug_Win/usb/hw_config.o
-                0x0800298c                Leave_LowPowerMode
+                0x08002af0       0x7c Debug_Win/usb/hw_config.o
+                0x08002af0                Leave_LowPowerMode
  .text.USB_Interrupts_Config
-                0x08002a08       0x52 Debug_Win/usb/hw_config.o
-                0x08002a08                USB_Interrupts_Config
- *fill*         0x08002a5a        0x2 
+                0x08002b6c       0x52 Debug_Win/usb/hw_config.o
+                0x08002b6c                USB_Interrupts_Config
+ *fill*         0x08002bbe        0x2 
  .text.USB_Cable_Config
-                0x08002a5c       0x34 Debug_Win/usb/hw_config.o
-                0x08002a5c                USB_Cable_Config
+                0x08002bc0       0x34 Debug_Win/usb/hw_config.o
+                0x08002bc0                USB_Cable_Config
  .text.Get_SerialNum
-                0x08002a90       0x58 Debug_Win/usb/hw_config.o
-                0x08002a90                Get_SerialNum
+                0x08002bf4       0x58 Debug_Win/usb/hw_config.o
+                0x08002bf4                Get_SerialNum
  .text.IntToUnicode
-                0x08002ae8       0x7e Debug_Win/usb/hw_config.o
- *fill*         0x08002b66        0x2 
+                0x08002c4c       0x7e Debug_Win/usb/hw_config.o
+ *fill*         0x08002cca        0x2 
  .text.CDC_Send_DATA
-                0x08002b68       0x4c Debug_Win/usb/hw_config.o
-                0x08002b68                CDC_Send_DATA
+                0x08002ccc       0x4c Debug_Win/usb/hw_config.o
+                0x08002ccc                CDC_Send_DATA
  .text.USB_Istr
-                0x08002bb4      0x220 Debug_Win/usb/usb_istr.o
-                0x08002bb4                USB_Istr
- .text.PowerOn  0x08002dd4       0x50 Debug_Win/usb/usb_pwr.o
-                0x08002dd4                PowerOn
- .text.Suspend  0x08002e24      0x170 Debug_Win/usb/usb_pwr.o
-                0x08002e24                Suspend
+                0x08002d18      0x220 Debug_Win/usb/usb_istr.o
+                0x08002d18                USB_Istr
+ .text.PowerOn  0x08002f38       0x50 Debug_Win/usb/usb_pwr.o
+                0x08002f38                PowerOn
+ .text.Suspend  0x08002f88      0x170 Debug_Win/usb/usb_pwr.o
+                0x08002f88                Suspend
  .text.Resume_Init
-                0x08002f94       0x34 Debug_Win/usb/usb_pwr.o
-                0x08002f94                Resume_Init
- .text.Resume   0x08002fc8      0x11c Debug_Win/usb/usb_pwr.o
-                0x08002fc8                Resume
+                0x080030f8       0x34 Debug_Win/usb/usb_pwr.o
+                0x080030f8                Resume_Init
+ .text.Resume   0x0800312c      0x11c Debug_Win/usb/usb_pwr.o
+                0x0800312c                Resume
  .text.USB_Init
-                0x080030e4       0x44 Debug_Win/usb/usb_init.o
-                0x080030e4                USB_Init
+                0x08003248       0x44 Debug_Win/usb/usb_init.o
+                0x08003248                USB_Init
  .text.Virtual_Com_Port_init
-                0x08003128       0x2c Debug_Win/usb/usb_prop.o
-                0x08003128                Virtual_Com_Port_init
+                0x0800328c       0x2c Debug_Win/usb/usb_prop.o
+                0x0800328c                Virtual_Com_Port_init
  .text.Virtual_Com_Port_Reset
-                0x08003154       0xf4 Debug_Win/usb/usb_prop.o
-                0x08003154                Virtual_Com_Port_Reset
+                0x080032b8       0xf4 Debug_Win/usb/usb_prop.o
+                0x080032b8                Virtual_Com_Port_Reset
  .text.Virtual_Com_Port_SetConfiguration
-                0x08003248       0x2c Debug_Win/usb/usb_prop.o
-                0x08003248                Virtual_Com_Port_SetConfiguration
+                0x080033ac       0x2c Debug_Win/usb/usb_prop.o
+                0x080033ac                Virtual_Com_Port_SetConfiguration
  .text.Virtual_Com_Port_SetDeviceAddress
-                0x08003274       0x18 Debug_Win/usb/usb_prop.o
-                0x08003274                Virtual_Com_Port_SetDeviceAddress
+                0x080033d8       0x18 Debug_Win/usb/usb_prop.o
+                0x080033d8                Virtual_Com_Port_SetDeviceAddress
  .text.Virtual_Com_Port_Status_In
-                0x0800328c       0x20 Debug_Win/usb/usb_prop.o
-                0x0800328c                Virtual_Com_Port_Status_In
+                0x080033f0       0x20 Debug_Win/usb/usb_prop.o
+                0x080033f0                Virtual_Com_Port_Status_In
  .text.Virtual_Com_Port_Status_Out
-                0x080032ac        0xe Debug_Win/usb/usb_prop.o
-                0x080032ac                Virtual_Com_Port_Status_Out
- *fill*         0x080032ba        0x2 
+                0x08003410        0xe Debug_Win/usb/usb_prop.o
+                0x08003410                Virtual_Com_Port_Status_Out
+ *fill*         0x0800341e        0x2 
  .text.Virtual_Com_Port_Data_Setup
-                0x080032bc       0x80 Debug_Win/usb/usb_prop.o
-                0x080032bc                Virtual_Com_Port_Data_Setup
+                0x08003420       0x80 Debug_Win/usb/usb_prop.o
+                0x08003420                Virtual_Com_Port_Data_Setup
  .text.Virtual_Com_Port_NoData_Setup
-                0x0800333c       0x40 Debug_Win/usb/usb_prop.o
-                0x0800333c                Virtual_Com_Port_NoData_Setup
+                0x080034a0       0x40 Debug_Win/usb/usb_prop.o
+                0x080034a0                Virtual_Com_Port_NoData_Setup
  .text.Virtual_Com_Port_GetDeviceDescriptor
-                0x0800337c       0x24 Debug_Win/usb/usb_prop.o
-                0x0800337c                Virtual_Com_Port_GetDeviceDescriptor
+                0x080034e0       0x24 Debug_Win/usb/usb_prop.o
+                0x080034e0                Virtual_Com_Port_GetDeviceDescriptor
  .text.Virtual_Com_Port_GetConfigDescriptor
-                0x080033a0       0x24 Debug_Win/usb/usb_prop.o
-                0x080033a0                Virtual_Com_Port_GetConfigDescriptor
+                0x08003504       0x24 Debug_Win/usb/usb_prop.o
+                0x08003504                Virtual_Com_Port_GetConfigDescriptor
  .text.Virtual_Com_Port_GetStringDescriptor
-                0x080033c4       0x40 Debug_Win/usb/usb_prop.o
-                0x080033c4                Virtual_Com_Port_GetStringDescriptor
+                0x08003528       0x40 Debug_Win/usb/usb_prop.o
+                0x08003528                Virtual_Com_Port_GetStringDescriptor
  .text.Virtual_Com_Port_GetQualifierDescriptor
-                0x08003404       0x24 Debug_Win/usb/usb_prop.o
-                0x08003404                Virtual_Com_Port_GetQualifierDescriptor
+                0x08003568       0x24 Debug_Win/usb/usb_prop.o
+                0x08003568                Virtual_Com_Port_GetQualifierDescriptor
  .text.Virtual_Com_Port_Get_Interface_Setting
-                0x08003428       0x32 Debug_Win/usb/usb_prop.o
-                0x08003428                Virtual_Com_Port_Get_Interface_Setting
- *fill*         0x0800345a        0x2 
+                0x0800358c       0x32 Debug_Win/usb/usb_prop.o
+                0x0800358c                Virtual_Com_Port_Get_Interface_Setting
+ *fill*         0x080035be        0x2 
  .text.Virtual_Com_Port_GetLineCoding
-                0x0800345c       0x34 Debug_Win/usb/usb_prop.o
-                0x0800345c                Virtual_Com_Port_GetLineCoding
+                0x080035c0       0x34 Debug_Win/usb/usb_prop.o
+                0x080035c0                Virtual_Com_Port_GetLineCoding
  .text.Virtual_Com_Port_SetLineCoding
-                0x08003490       0x34 Debug_Win/usb/usb_prop.o
-                0x08003490                Virtual_Com_Port_SetLineCoding
+                0x080035f4       0x34 Debug_Win/usb/usb_prop.o
+                0x080035f4                Virtual_Com_Port_SetLineCoding
  .text.SetBTABLE
-                0x080034c4       0x28 Debug_Win/usb/usb_regs.o
-                0x080034c4                SetBTABLE
+                0x08003628       0x28 Debug_Win/usb/usb_regs.o
+                0x08003628                SetBTABLE
  .text.SetEPType
-                0x080034ec       0x4e Debug_Win/usb/usb_regs.o
-                0x080034ec                SetEPType
- *fill*         0x0800353a        0x2 
+                0x08003650       0x4e Debug_Win/usb/usb_regs.o
+                0x08003650                SetEPType
+ *fill*         0x0800369e        0x2 
  .text.SetEPTxStatus
-                0x0800353c       0x70 Debug_Win/usb/usb_regs.o
-                0x0800353c                SetEPTxStatus
+                0x080036a0       0x70 Debug_Win/usb/usb_regs.o
+                0x080036a0                SetEPTxStatus
  .text.SetEPRxStatus
-                0x080035ac       0x70 Debug_Win/usb/usb_regs.o
-                0x080035ac                SetEPRxStatus
+                0x08003710       0x70 Debug_Win/usb/usb_regs.o
+                0x08003710                SetEPRxStatus
  .text.SetEPTxValid
-                0x0800361c       0x54 Debug_Win/usb/usb_regs.o
-                0x0800361c                SetEPTxValid
+                0x08003780       0x54 Debug_Win/usb/usb_regs.o
+                0x08003780                SetEPTxValid
  .text.SetEPRxValid
-                0x08003670       0x54 Debug_Win/usb/usb_regs.o
-                0x08003670                SetEPRxValid
+                0x080037d4       0x54 Debug_Win/usb/usb_regs.o
+                0x080037d4                SetEPRxValid
  .text.Clear_Status_Out
-                0x080036c4       0x48 Debug_Win/usb/usb_regs.o
-                0x080036c4                Clear_Status_Out
+                0x08003828       0x48 Debug_Win/usb/usb_regs.o
+                0x08003828                Clear_Status_Out
  .text.ClearDTOG_RX
-                0x0800370c       0x5c Debug_Win/usb/usb_regs.o
-                0x0800370c                ClearDTOG_RX
+                0x08003870       0x5c Debug_Win/usb/usb_regs.o
+                0x08003870                ClearDTOG_RX
  .text.ClearDTOG_TX
-                0x08003768       0x5c Debug_Win/usb/usb_regs.o
-                0x08003768                ClearDTOG_TX
+                0x080038cc       0x5c Debug_Win/usb/usb_regs.o
+                0x080038cc                ClearDTOG_TX
  .text.SetEPTxAddr
-                0x080037c4       0x44 Debug_Win/usb/usb_regs.o
-                0x080037c4                SetEPTxAddr
+                0x08003928       0x44 Debug_Win/usb/usb_regs.o
+                0x08003928                SetEPTxAddr
  .text.SetEPRxAddr
-                0x08003808       0x44 Debug_Win/usb/usb_regs.o
-                0x08003808                SetEPRxAddr
+                0x0800396c       0x44 Debug_Win/usb/usb_regs.o
+                0x0800396c                SetEPRxAddr
  .text.GetEPTxAddr
-                0x0800384c       0x38 Debug_Win/usb/usb_regs.o
-                0x0800384c                GetEPTxAddr
+                0x080039b0       0x38 Debug_Win/usb/usb_regs.o
+                0x080039b0                GetEPTxAddr
  .text.GetEPRxAddr
-                0x08003884       0x38 Debug_Win/usb/usb_regs.o
-                0x08003884                GetEPRxAddr
+                0x080039e8       0x38 Debug_Win/usb/usb_regs.o
+                0x080039e8                GetEPRxAddr
  .text.SetEPTxCount
-                0x080038bc       0x40 Debug_Win/usb/usb_regs.o
-                0x080038bc                SetEPTxCount
+                0x08003a20       0x40 Debug_Win/usb/usb_regs.o
+                0x08003a20                SetEPTxCount
  .text.SetEPRxCount
-                0x080038fc       0x88 Debug_Win/usb/usb_regs.o
-                0x080038fc                SetEPRxCount
+                0x08003a60       0x88 Debug_Win/usb/usb_regs.o
+                0x08003a60                SetEPRxCount
  .text.GetEPRxCount
-                0x08003984       0x3c Debug_Win/usb/usb_regs.o
-                0x08003984                GetEPRxCount
+                0x08003ae8       0x3c Debug_Win/usb/usb_regs.o
+                0x08003ae8                GetEPRxCount
  .text.ByteSwap
-                0x080039c0       0x30 Debug_Win/usb/usb_regs.o
-                0x080039c0                ByteSwap
+                0x08003b24       0x30 Debug_Win/usb/usb_regs.o
+                0x08003b24                ByteSwap
  .text.USB_SIL_Init
-                0x080039f0       0x34 Debug_Win/usb/usb_sil.o
-                0x080039f0                USB_SIL_Init
+                0x08003b54       0x34 Debug_Win/usb/usb_sil.o
+                0x08003b54                USB_SIL_Init
  .text.Standard_GetConfiguration
-                0x08003a24       0x3c Debug_Win/usb/usb_core.o
-                0x08003a24                Standard_GetConfiguration
+                0x08003b88       0x3c Debug_Win/usb/usb_core.o
+                0x08003b88                Standard_GetConfiguration
  .text.Standard_SetConfiguration
-                0x08003a60       0x50 Debug_Win/usb/usb_core.o
-                0x08003a60                Standard_SetConfiguration
+                0x08003bc4       0x50 Debug_Win/usb/usb_core.o
+                0x08003bc4                Standard_SetConfiguration
  .text.Standard_GetInterface
-                0x08003ab0       0x3c Debug_Win/usb/usb_core.o
-                0x08003ab0                Standard_GetInterface
+                0x08003c14       0x3c Debug_Win/usb/usb_core.o
+                0x08003c14                Standard_GetInterface
  .text.Standard_SetInterface
-                0x08003aec       0x88 Debug_Win/usb/usb_core.o
-                0x08003aec                Standard_SetInterface
+                0x08003c50       0x88 Debug_Win/usb/usb_core.o
+                0x08003c50                Standard_SetInterface
  .text.Standard_GetStatus
-                0x08003b74      0x138 Debug_Win/usb/usb_core.o
-                0x08003b74                Standard_GetStatus
+                0x08003cd8      0x138 Debug_Win/usb/usb_core.o
+                0x08003cd8                Standard_GetStatus
  .text.Standard_ClearFeature
-                0x08003cac      0x1d8 Debug_Win/usb/usb_core.o
-                0x08003cac                Standard_ClearFeature
+                0x08003e10      0x1d8 Debug_Win/usb/usb_core.o
+                0x08003e10                Standard_ClearFeature
  .text.Standard_SetEndPointFeature
-                0x08003e84      0x114 Debug_Win/usb/usb_core.o
-                0x08003e84                Standard_SetEndPointFeature
+                0x08003fe8      0x114 Debug_Win/usb/usb_core.o
+                0x08003fe8                Standard_SetEndPointFeature
  .text.Standard_SetDeviceFeature
-                0x08003f98       0x2c Debug_Win/usb/usb_core.o
-                0x08003f98                Standard_SetDeviceFeature
+                0x080040fc       0x2c Debug_Win/usb/usb_core.o
+                0x080040fc                Standard_SetDeviceFeature
  .text.Standard_GetDescriptorData
-                0x08003fc4       0x48 Debug_Win/usb/usb_core.o
-                0x08003fc4                Standard_GetDescriptorData
+                0x08004128       0x48 Debug_Win/usb/usb_core.o
+                0x08004128                Standard_GetDescriptorData
  .text.DataStageOut
-                0x0800400c      0x104 Debug_Win/usb/usb_core.o
+                0x08004170      0x104 Debug_Win/usb/usb_core.o
  .text.DataStageIn
-                0x08004110      0x10c Debug_Win/usb/usb_core.o
+                0x08004274      0x10c Debug_Win/usb/usb_core.o
  .text.NoData_Setup0
-                0x0800421c      0x194 Debug_Win/usb/usb_core.o
+                0x08004380      0x194 Debug_Win/usb/usb_core.o
  .text.Data_Setup0
-                0x080043b0      0x33c Debug_Win/usb/usb_core.o
+                0x08004514      0x33c Debug_Win/usb/usb_core.o
  .text.Setup0_Process
-                0x080046ec       0xd8 Debug_Win/usb/usb_core.o
-                0x080046ec                Setup0_Process
+                0x08004850       0xd8 Debug_Win/usb/usb_core.o
+                0x08004850                Setup0_Process
  .text.In0_Process
-                0x080047c4       0x90 Debug_Win/usb/usb_core.o
-                0x080047c4                In0_Process
+                0x08004928       0x90 Debug_Win/usb/usb_core.o
+                0x08004928                In0_Process
  .text.Out0_Process
-                0x08004854       0x74 Debug_Win/usb/usb_core.o
-                0x08004854                Out0_Process
+                0x080049b8       0x74 Debug_Win/usb/usb_core.o
+                0x080049b8                Out0_Process
  .text.Post0_Process
-                0x080048c8       0x50 Debug_Win/usb/usb_core.o
-                0x080048c8                Post0_Process
+                0x08004a2c       0x50 Debug_Win/usb/usb_core.o
+                0x08004a2c                Post0_Process
  .text.SetDeviceAddress
-                0x08004918       0x7c Debug_Win/usb/usb_core.o
-                0x08004918                SetDeviceAddress
+                0x08004a7c       0x7c Debug_Win/usb/usb_core.o
+                0x08004a7c                SetDeviceAddress
  .text.NOP_Process
-                0x08004994        0xe Debug_Win/usb/usb_core.o
-                0x08004994                NOP_Process
- *fill*         0x080049a2        0x2 
- .text.CTR_LP   0x080049a4      0x300 Debug_Win/usb/usb_int.o
-                0x080049a4                CTR_LP
+                0x08004af8        0xe Debug_Win/usb/usb_core.o
+                0x08004af8                NOP_Process
+ *fill*         0x08004b06        0x2 
+ .text.CTR_LP   0x08004b08      0x300 Debug_Win/usb/usb_int.o
+                0x08004b08                CTR_LP
  .text.UserToPMABufferCopy
-                0x08004ca4       0x78 Debug_Win/usb/usb_mem.o
-                0x08004ca4                UserToPMABufferCopy
+                0x08004e08       0x78 Debug_Win/usb/usb_mem.o
+                0x08004e08                UserToPMABufferCopy
  .text.PMAToUserBufferCopy
-                0x08004d1c       0x5e Debug_Win/usb/usb_mem.o
-                0x08004d1c                PMAToUserBufferCopy
- *fill*         0x08004d7a        0x2 
+                0x08004e80       0x5e Debug_Win/usb/usb_mem.o
+                0x08004e80                PMAToUserBufferCopy
+ *fill*         0x08004ede        0x2 
  .text.EP1_IN_Callback
-                0x08004d7c       0x18 Debug_Win/usb/usb_endp.o
-                0x08004d7c                EP1_IN_Callback
+                0x08004ee0       0x18 Debug_Win/usb/usb_endp.o
+                0x08004ee0                EP1_IN_Callback
  .text.EP3_OUT_Callback
-                0x08004d94       0x3c Debug_Win/usb/usb_endp.o
-                0x08004d94                EP3_OUT_Callback
+                0x08004ef8       0x3c Debug_Win/usb/usb_endp.o
+                0x08004ef8                EP3_OUT_Callback
  .text._ZN7GBuffer4InitEii
-                0x08004dd0       0x34 Debug_Win/usb/VCP_F3.opp
-                0x08004dd0                GBuffer::Init(int, int)
+                0x08004f34       0x34 Debug_Win/usb/VCP_F3.opp
+                0x08004f34                GBuffer::Init(int, int)
  .text.VCP_Init
-                0x08004e04       0x30 Debug_Win/usb/VCP_F3.opp
-                0x08004e04                VCP_Init
+                0x08004f68       0x30 Debug_Win/usb/VCP_F3.opp
+                0x08004f68                VCP_Init
  .text.VCP_ResetPort
-                0x08004e34       0x48 Debug_Win/usb/VCP_F3.opp
-                0x08004e34                VCP_ResetPort
+                0x08004f98       0x48 Debug_Win/usb/VCP_F3.opp
+                0x08004f98                VCP_ResetPort
  .text._ZN7CBufferIhEC2Ev
-                0x08004e7c       0x22 Debug_Win/usb/VCP_F3.opp
-                0x08004e7c                CBuffer<unsigned char>::CBuffer()
-                0x08004e7c                CBuffer<unsigned char>::CBuffer()
+                0x08004fe0       0x22 Debug_Win/usb/VCP_F3.opp
+                0x08004fe0                CBuffer<unsigned char>::CBuffer()
+                0x08004fe0                CBuffer<unsigned char>::CBuffer()
  .text._ZN7CBufferIhE4InitEii
-                0x08004e9e       0x6c Debug_Win/usb/VCP_F3.opp
-                0x08004e9e                CBuffer<unsigned char>::Init(int, int)
+                0x08005002       0x6c Debug_Win/usb/VCP_F3.opp
+                0x08005002                CBuffer<unsigned char>::Init(int, int)
  .text._ZN7CBufferIhE8ReadFromEv
-                0x08004f0a       0x54 Debug_Win/usb/VCP_F3.opp
-                0x08004f0a                CBuffer<unsigned char>::ReadFrom()
+                0x0800506e       0x54 Debug_Win/usb/VCP_F3.opp
+                0x0800506e                CBuffer<unsigned char>::ReadFrom()
  .text._ZN7CBufferIhE7IsEmptyEv
-                0x08004f5e       0x22 Debug_Win/usb/VCP_F3.opp
-                0x08004f5e                CBuffer<unsigned char>::IsEmpty()
+                0x080050c2       0x22 Debug_Win/usb/VCP_F3.opp
+                0x080050c2                CBuffer<unsigned char>::IsEmpty()
  .text._Z41__static_initialization_and_destruction_0ii
-                0x08004f80       0x2c Debug_Win/usb/VCP_F3.opp
+                0x080050e4       0x2c Debug_Win/usb/VCP_F3.opp
  .text._GLOBAL__sub_I_VCP_PollingCounter
-                0x08004fac       0x10 Debug_Win/usb/VCP_F3.opp
+                0x08005110       0x10 Debug_Win/usb/VCP_F3.opp
  .text._Z8InitGPIOv
-                0x08004fbc       0xe4 Debug_Win/user/Drv_Gpio.opp
-                0x08004fbc                InitGPIO()
+                0x08005120       0xe4 Debug_Win/user/Drv_Gpio.opp
+                0x08005120                InitGPIO()
  .text._Z8InitUarti
-                0x080050a0      0x144 Debug_Win/user/Drv_Uart.opp
-                0x080050a0                InitUart(int)
+                0x08005204      0x144 Debug_Win/user/Drv_Uart.opp
+                0x08005204                InitUart(int)
  .text._Z15Uart_irq_enablev
-                0x080051e4       0x28 Debug_Win/user/Drv_Uart.opp
-                0x080051e4                Uart_irq_enable()
+                0x08005348       0x28 Debug_Win/user/Drv_Uart.opp
+                0x08005348                Uart_irq_enable()
  .text.USART2_IRQHandler
-                0x0800520c       0xb0 Debug_Win/user/Drv_Uart.opp
-                0x0800520c                USART2_IRQHandler
+                0x08005370       0xb0 Debug_Win/user/Drv_Uart.opp
+                0x08005370                USART2_IRQHandler
  .text._Z41__static_initialization_and_destruction_0ii
-                0x080052bc       0x38 Debug_Win/user/Drv_Uart.opp
+                0x08005420       0x38 Debug_Win/user/Drv_Uart.opp
  .text._GLOBAL__sub_I_TxBuff
-                0x080052f4       0x10 Debug_Win/user/Drv_Uart.opp
+                0x08005458       0x10 Debug_Win/user/Drv_Uart.opp
  .text.NVIC_SetPriority
-                0x08005304       0x54 Debug_Win/user/main.opp
+                0x08005468       0x54 Debug_Win/user/main.opp
  .text.SysTick_Config
-                0x08005358       0x44 Debug_Win/user/main.opp
+                0x080054bc       0x44 Debug_Win/user/main.opp
  .text._ZSt3cosf
-                0x0800539c       0x20 Debug_Win/user/main.opp
-                0x0800539c                std::cos(float)
+                0x08005500       0x20 Debug_Win/user/main.opp
+                0x08005500                std::cos(float)
  .text._ZSt3sinf
-                0x080053bc       0x20 Debug_Win/user/main.opp
-                0x080053bc                std::sin(float)
+                0x08005520       0x20 Debug_Win/user/main.opp
+                0x08005520                std::sin(float)
  .text._ZSt4sqrtf
-                0x080053dc       0x20 Debug_Win/user/main.opp
-                0x080053dc                std::sqrt(float)
+                0x08005540       0x20 Debug_Win/user/main.opp
+                0x08005540                std::sqrt(float)
  .text._ZSt5roundf
-                0x080053fc       0x20 Debug_Win/user/main.opp
-                0x080053fc                std::round(float)
+                0x08005560       0x20 Debug_Win/user/main.opp
+                0x08005560                std::round(float)
  .text._ZN5FrameC2Ev
-                0x0800541c       0x3a Debug_Win/user/main.opp
-                0x0800541c                Frame::Frame()
-                0x0800541c                Frame::Frame()
+                0x08005580       0x3a Debug_Win/user/main.opp
+                0x08005580                Frame::Frame()
+                0x08005580                Frame::Frame()
  .text._ZN5FrameplERS_
-                0x08005456       0x58 Debug_Win/user/main.opp
-                0x08005456                Frame::operator+(Frame&)
+                0x080055ba       0x58 Debug_Win/user/main.opp
+                0x080055ba                Frame::operator+(Frame&)
  .text._ZN5FramedvEf
-                0x080054ae       0x54 Debug_Win/user/main.opp
-                0x080054ae                Frame::operator/(float)
+                0x08005612       0x54 Debug_Win/user/main.opp
+                0x08005612                Frame::operator/(float)
  .text._ZN5FrameaSEPf
-                0x08005502       0x2e Debug_Win/user/main.opp
-                0x08005502                Frame::operator=(float*)
+                0x08005666       0x2e Debug_Win/user/main.opp
+                0x08005666                Frame::operator=(float*)
  .text._ZN5FrameixEi
-                0x08005530       0x38 Debug_Win/user/main.opp
-                0x08005530                Frame::operator[](int)
+                0x08005694       0x38 Debug_Win/user/main.opp
+                0x08005694                Frame::operator[](int)
  .text._ZN5Frame8Read_AccEv
-                0x08005568       0x3a Debug_Win/user/main.opp
-                0x08005568                Frame::Read_Acc()
- *fill*         0x080055a2        0x2 
+                0x080056cc       0x3a Debug_Win/user/main.opp
+                0x080056cc                Frame::Read_Acc()
+ *fill*         0x08005706        0x2 
  .text._ZN5Frame9Read_GyroEv
-                0x080055a4       0x60 Debug_Win/user/main.opp
-                0x080055a4                Frame::Read_Gyro()
+                0x08005708       0x60 Debug_Win/user/main.opp
+                0x08005708                Frame::Read_Gyro()
  .text._ZN5Frame14set_zero_FrameEv
-                0x08005604       0x2c Debug_Win/user/main.opp
-                0x08005604                Frame::set_zero_Frame()
+                0x08005768       0x2c Debug_Win/user/main.opp
+                0x08005768                Frame::set_zero_Frame()
  .text._ZN5Frame19copying_from_bufferEv
-                0x08005630       0x2c Debug_Win/user/main.opp
-                0x08005630                Frame::copying_from_buffer()
+                0x08005794       0x2c Debug_Win/user/main.opp
+                0x08005794                Frame::copying_from_buffer()
  .text._ZN4DatapLERS_
-                0x0800565c       0x50 Debug_Win/user/main.opp
-                0x0800565c                Data::operator+=(Data&)
+                0x080057c0       0x50 Debug_Win/user/main.opp
+                0x080057c0                Data::operator+=(Data&)
  .text._ZN4DatadVEf
-                0x080056ac       0x4e Debug_Win/user/main.opp
-                0x080056ac                Data::operator/=(float)
+                0x08005810       0x4e Debug_Win/user/main.opp
+                0x08005810                Data::operator/=(float)
  .text._ZN4Data9Read_DataEv
-                0x080056fa       0x22 Debug_Win/user/main.opp
-                0x080056fa                Data::Read_Data()
+                0x0800585e       0x22 Debug_Win/user/main.opp
+                0x0800585e                Data::Read_Data()
  .text._ZN4Data15set_zero_ValuesEv
-                0x0800571c       0x22 Debug_Win/user/main.opp
-                0x0800571c                Data::set_zero_Values()
- *fill*         0x0800573e        0x2 
+                0x08005880       0x22 Debug_Win/user/main.opp
+                0x08005880                Data::set_zero_Values()
+ *fill*         0x080058a2        0x2 
  .text._ZN4Data11sending_USBEv
-                0x08005740      0x1b4 Debug_Win/user/main.opp
-                0x08005740                Data::sending_USB()
+                0x080058a4      0x1b4 Debug_Win/user/main.opp
+                0x080058a4                Data::sending_USB()
  .text._ZN6MatrixmlER5Frame
-                0x080058f4      0x11c Debug_Win/user/main.opp
-                0x080058f4                Matrix::operator*(Frame&)
+                0x08005a58      0x11c Debug_Win/user/main.opp
+                0x08005a58                Matrix::operator*(Frame&)
  .text._ZN6MatrixmLER5Frame
-                0x08005a10       0x20 Debug_Win/user/main.opp
-                0x08005a10                Matrix::operator*=(Frame&)
+                0x08005b74       0x20 Debug_Win/user/main.opp
+                0x08005b74                Matrix::operator*=(Frame&)
  .text._ZN6MatrixmlER4Data
-                0x08005a30       0x4c Debug_Win/user/main.opp
-                0x08005a30                Matrix::operator*(Data&)
+                0x08005b94       0x4c Debug_Win/user/main.opp
+                0x08005b94                Matrix::operator*(Data&)
  .text._ZN6MatrixmlERS_
-                0x08005a7c      0x244 Debug_Win/user/main.opp
-                0x08005a7c                Matrix::operator*(Matrix&)
+                0x08005be0      0x244 Debug_Win/user/main.opp
+                0x08005be0                Matrix::operator*(Matrix&)
  .text._ZN6MatrixmLERS_
-                0x08005cc0       0x20 Debug_Win/user/main.opp
-                0x08005cc0                Matrix::operator*=(Matrix&)
+                0x08005e24       0x20 Debug_Win/user/main.opp
+                0x08005e24                Matrix::operator*=(Matrix&)
  .text._ZN6MatrixaSERS_
-                0x08005ce0       0x5a Debug_Win/user/main.opp
-                0x08005ce0                Matrix::operator=(Matrix&)
+                0x08005e44       0x5a Debug_Win/user/main.opp
+                0x08005e44                Matrix::operator=(Matrix&)
  .text._ZN6MatrixixEi
-                0x08005d3a       0x1e Debug_Win/user/main.opp
-                0x08005d3a                Matrix::operator[](int)
+                0x08005e9e       0x1e Debug_Win/user/main.opp
+                0x08005e9e                Matrix::operator[](int)
  .text._ZN6MatrixclEii
-                0x08005d58       0x2a Debug_Win/user/main.opp
-                0x08005d58                Matrix::operator()(int, int)
+                0x08005ebc       0x2a Debug_Win/user/main.opp
+                0x08005ebc                Matrix::operator()(int, int)
  .text._ZN6Matrix19copying_from_BufferEv
-                0x08005d82       0x62 Debug_Win/user/main.opp
-                0x08005d82                Matrix::copying_from_Buffer()
+                0x08005ee6       0x62 Debug_Win/user/main.opp
+                0x08005ee6                Matrix::copying_from_Buffer()
  .text._ZN6Matrix11DeterminantEv
-                0x08005de4       0xa8 Debug_Win/user/main.opp
-                0x08005de4                Matrix::Determinant()
+                0x08005f48       0xa8 Debug_Win/user/main.opp
+                0x08005f48                Matrix::Determinant()
  .text._ZN6Matrix8MreverseEv
-                0x08005e8c      0x1ec Debug_Win/user/main.opp
-                0x08005e8c                Matrix::Mreverse()
+                0x08005ff0      0x1ec Debug_Win/user/main.opp
+                0x08005ff0                Matrix::Mreverse()
  .text._ZN6Matrix14IdentityMatrixEv
-                0x08006078       0x5c Debug_Win/user/main.opp
-                0x08006078                Matrix::IdentityMatrix()
+                0x080061dc       0x5c Debug_Win/user/main.opp
+                0x080061dc                Matrix::IdentityMatrix()
  .text._ZN4DataC2Ev
-                0x080060d4       0x38 Debug_Win/user/main.opp
-                0x080060d4                Data::Data()
-                0x080060d4                Data::Data()
+                0x08006238       0x38 Debug_Win/user/main.opp
+                0x08006238                Data::Data()
+                0x08006238                Data::Data()
  .text._ZN6MatrixC2Ev
-                0x0800610c       0x36 Debug_Win/user/main.opp
-                0x0800610c                Matrix::Matrix()
-                0x0800610c                Matrix::Matrix()
+                0x08006270       0x36 Debug_Win/user/main.opp
+                0x08006270                Matrix::Matrix()
+                0x08006270                Matrix::Matrix()
  .text._ZN7MeasureC2Eff
-                0x08006142       0xa6 Debug_Win/user/main.opp
-                0x08006142                Measure::Measure(float, float)
-                0x08006142                Measure::Measure(float, float)
+                0x080062a6       0xd0 Debug_Win/user/main.opp
+                0x080062a6                Measure::Measure(float, float)
+                0x080062a6                Measure::Measure(float, float)
  .text._ZN7Measure9measuringEv
-                0x080061e8      0x580 Debug_Win/user/main.opp
-                0x080061e8                Measure::measuring()
- .text._ZN7Measure8new_tickEv
-                0x08006768      0x140 Debug_Win/user/main.opp
-                0x08006768                Measure::new_tick()
- .text._ZN7Measure15clearing_bufferEPs
-                0x080068a8       0x4a Debug_Win/user/main.opp
-                0x080068a8                Measure::clearing_buffer(short*)
- .text._ZN7Measure15add_from_bufferEPsS0_
-                0x080068f2       0x74 Debug_Win/user/main.opp
-                0x080068f2                Measure::add_from_buffer(short*, short*)
+                0x08006376      0x71a Debug_Win/user/main.opp
+                0x08006376                Measure::measuring()
  .text._ZN7Measure15initial_settingEv
-                0x08006966       0x52 Debug_Win/user/main.opp
-                0x08006966                Measure::initial_setting()
+                0x08006a90       0x52 Debug_Win/user/main.opp
+                0x08006a90                Measure::initial_setting()
  .text._ZN7Measure13set_zero_DataEv
-                0x080069b8      0x100 Debug_Win/user/main.opp
-                0x080069b8                Measure::set_zero_Data()
+                0x08006ae2      0x100 Debug_Win/user/main.opp
+                0x08006ae2                Measure::set_zero_Data()
  .text._ZN7Measure18set_rotationMatrixEv
-                0x08006ab8      0x31e Debug_Win/user/main.opp
-                0x08006ab8                Measure::set_rotationMatrix()
- *fill*         0x08006dd6        0x2 
- .text.main     0x08006dd8       0x84 Debug_Win/user/main.opp
-                0x08006dd8                main
- .text.InitAll  0x08006e5c       0x2c Debug_Win/user/main.opp
-                0x08006e5c                InitAll
+                0x08006be2      0x31e Debug_Win/user/main.opp
+                0x08006be2                Measure::set_rotationMatrix()
+ .text.main     0x08006f00       0x84 Debug_Win/user/main.opp
+                0x08006f00                main
+ .text.InitAll  0x08006f84       0x30 Debug_Win/user/main.opp
+                0x08006f84                InitAll
  .text.InitDecoder
-                0x08006e88       0x2c Debug_Win/user/main.opp
-                0x08006e88                InitDecoder
+                0x08006fb4       0x2c Debug_Win/user/main.opp
+                0x08006fb4                InitDecoder
  .text.ProcessInByte
-                0x08006eb4      0x138 Debug_Win/user/main.opp
-                0x08006eb4                ProcessInByte
+                0x08006fe0      0x138 Debug_Win/user/main.opp
+                0x08006fe0                ProcessInByte
  .text.LedsInit
-                0x08006fec       0x38 Debug_Win/user/main.opp
-                0x08006fec                LedsInit
+                0x08007118       0x38 Debug_Win/user/main.opp
+                0x08007118                LedsInit
  .text.Toggle_Leds
-                0x08007024       0x98 Debug_Win/user/main.opp
-                0x08007024                Toggle_Leds
- .text.LedsOff  0x080070bc       0x38 Debug_Win/user/main.opp
-                0x080070bc                LedsOff
- .text.LedOn    0x080070f4       0x1a Debug_Win/user/main.opp
-                0x080070f4                LedOn
- .text.LedOff   0x0800710e       0x1a Debug_Win/user/main.opp
-                0x0800710e                LedOff
+                0x08007150       0x98 Debug_Win/user/main.opp
+                0x08007150                Toggle_Leds
+ .text.LedsOff  0x080071e8       0x38 Debug_Win/user/main.opp
+                0x080071e8                LedsOff
+ .text.LedOn    0x08007220       0x1a Debug_Win/user/main.opp
+                0x08007220                LedOn
+ .text.LedOff   0x0800723a       0x1a Debug_Win/user/main.opp
+                0x0800723a                LedOff
+ .text.TimerInit
+                0x08007254       0x64 Debug_Win/user/main.opp
+                0x08007254                TimerInit
  .text.TIM4_IRQHandler
-                0x08007128       0x2c Debug_Win/user/main.opp
-                0x08007128                TIM4_IRQHandler
- .text.Delay    0x08007154       0x34 Debug_Win/user/main.opp
-                0x08007154                Delay
+                0x080072b8       0x3c Debug_Win/user/main.opp
+                0x080072b8                TIM4_IRQHandler
+ .text.Delay    0x080072f4       0x34 Debug_Win/user/main.opp
+                0x080072f4                Delay
  .text.TimingDelay_Decrement
-                0x08007188       0x30 Debug_Win/user/main.opp
-                0x08007188                TimingDelay_Decrement
+                0x08007328       0x30 Debug_Win/user/main.opp
+                0x08007328                TimingDelay_Decrement
  .text.L3GD20_TIMEOUT_UserCallback
-                0x080071b8       0x10 Debug_Win/user/main.opp
-                0x080071b8                L3GD20_TIMEOUT_UserCallback
+                0x08007358       0x10 Debug_Win/user/main.opp
+                0x08007358                L3GD20_TIMEOUT_UserCallback
  .text.LSM303DLHC_TIMEOUT_UserCallback
-                0x080071c8       0x10 Debug_Win/user/main.opp
-                0x080071c8                LSM303DLHC_TIMEOUT_UserCallback
+                0x08007368       0x10 Debug_Win/user/main.opp
+                0x08007368                LSM303DLHC_TIMEOUT_UserCallback
  .text._ZSt3powIiiEN9__gnu_cxx11__promote_2IT_T0_NS0_9__promoteIS2_XsrSt12__is_integerIS2_E7__valueEE6__typeENS4_IS3_XsrS5_IS3_E7__valueEE6__typeEE6__typeES2_S3_
-                0x080071d8       0x40 Debug_Win/user/main.opp
-                0x080071d8                __gnu_cxx::__promote_2<int, int, __gnu_cxx::__promote<int, std::__is_integer<int>::__value>::__type, __gnu_cxx::__promote<int, std::__is_integer<int>::__value>::__type>::__type std::pow<int, int>(int, int)
+                0x08007378       0x40 Debug_Win/user/main.opp
+                0x08007378                __gnu_cxx::__promote_2<int, int, __gnu_cxx::__promote<int, std::__is_integer<int>::__value>::__type, __gnu_cxx::__promote<int, std::__is_integer<int>::__value>::__type>::__type std::pow<int, int>(int, int)
  .text._Z41__static_initialization_and_destruction_0ii
-                0x08007218       0x3c Debug_Win/user/main.opp
+                0x080073b8       0x3c Debug_Win/user/main.opp
  .text._GLOBAL__sub_I_RCC_Clocks
-                0x08007254       0x10 Debug_Win/user/main.opp
+                0x080073f4       0x10 Debug_Win/user/main.opp
  .text.GYRO_INIT
-                0x08007264       0x80 Debug_Win/user/Sensors.o
-                0x08007264                GYRO_INIT
+                0x08007404       0x80 Debug_Win/user/Sensors.o
+                0x08007404                GYRO_INIT
  .text.ReadGyro
-                0x080072e4       0xb8 Debug_Win/user/Sensors.o
-                0x080072e4                ReadGyro
- .text.ReadGyro_int16
-                0x0800739c       0xac Debug_Win/user/Sensors.o
-                0x0800739c                ReadGyro_int16
+                0x08007484       0xb8 Debug_Win/user/Sensors.o
+                0x08007484                ReadGyro
  .text.ACC_INIT
-                0x08007448       0x50 Debug_Win/user/Sensors.o
-                0x08007448                ACC_INIT
- .text.ReadAcc  0x08007498      0x218 Debug_Win/user/Sensors.o
-                0x08007498                ReadAcc
- .text.ReadAcc_int16
-                0x080076b0      0x1b0 Debug_Win/user/Sensors.o
-                0x080076b0                ReadAcc_int16
- .text.cosf     0x08007860       0x70 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_cos.o)
-                0x08007860                cosf
- .text.roundf   0x080078d0       0x4c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_round.o)
-                0x080078d0                roundf
- .text.sinf     0x0800791c       0x74 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_sin.o)
-                0x0800791c                sinf
- .text.pow      0x08007990       0xf0 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-w_pow.o)
-                0x08007990                pow
- .text.sqrtf    0x08007a80       0x44 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-wf_sqrt.o)
-                0x08007a80                sqrtf
- *fill*         0x08007ac4        0x4 
+                0x0800753c       0x50 Debug_Win/user/Sensors.o
+                0x0800753c                ACC_INIT
+ .text.ReadAcc  0x0800758c      0x218 Debug_Win/user/Sensors.o
+                0x0800758c                ReadAcc
+ .text.cosf     0x080077a4       0x70 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_cos.o)
+                0x080077a4                cosf
+ .text.roundf   0x08007814       0x4c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_round.o)
+                0x08007814                roundf
+ .text.sinf     0x08007860       0x74 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_sin.o)
+                0x08007860                sinf
+ *fill*         0x080078d4        0x4 
+ .text.pow      0x080078d8       0xf0 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-w_pow.o)
+                0x080078d8                pow
+ .text.sqrtf    0x080079c8       0x44 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-wf_sqrt.o)
+                0x080079c8                sqrtf
+ *fill*         0x08007a0c        0x4 
  .text.__ieee754_pow
-                0x08007ac8      0xb74 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_pow.o)
-                0x08007ac8                __ieee754_pow
+                0x08007a10      0xb74 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_pow.o)
+                0x08007a10                __ieee754_pow
  .text.__ieee754_sqrt
-                0x0800863c      0x198 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_sqrt.o)
-                0x0800863c                __ieee754_sqrt
+                0x08008584      0x198 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_sqrt.o)
+                0x08008584                __ieee754_sqrt
  .text.__ieee754_rem_pio2f
-                0x080087d4      0x264 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
-                0x080087d4                __ieee754_rem_pio2f
+                0x0800871c      0x264 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
+                0x0800871c                __ieee754_rem_pio2f
  .text.__ieee754_sqrtf
-                0x08008a38        0x8 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_sqrt.o)
-                0x08008a38                __ieee754_sqrtf
+                0x08008980        0x8 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_sqrt.o)
+                0x08008980                __ieee754_sqrtf
  .text.__kernel_cosf
-                0x08008a40      0x104 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_cos.o)
-                0x08008a40                __kernel_cosf
+                0x08008988      0x104 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_cos.o)
+                0x08008988                __kernel_cosf
  .text.__kernel_rem_pio2f
-                0x08008b44      0x674 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
-                0x08008b44                __kernel_rem_pio2f
+                0x08008a8c      0x674 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
+                0x08008a8c                __kernel_rem_pio2f
  .text.__kernel_sinf
-                0x080091b8       0x90 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_sin.o)
-                0x080091b8                __kernel_sinf
+                0x08009100       0x90 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_sin.o)
+                0x08009100                __kernel_sinf
  .text.with_errno
-                0x08009248       0x18 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
- .text.xflow    0x08009260       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
+                0x08009190       0x18 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
+ .text.xflow    0x080091a8       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
  .text.__math_uflow
-                0x0800928c       0x14 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
-                0x0800928c                __math_uflow
+                0x080091d4       0x14 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
+                0x080091d4                __math_uflow
  .text.__math_oflow
-                0x080092a0       0x14 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
-                0x080092a0                __math_oflow
- .text.fabs     0x080092b4       0x14 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_fabs.o)
-                0x080092b4                fabs
- .text.finite   0x080092c8       0x18 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_finite.o)
-                0x080092c8                finite
- .text.scalbn   0x080092e0      0x124 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_scalbn.o)
-                0x080092e0                scalbn
- .text.fabsf    0x08009404       0x10 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_fabs.o)
-                0x08009404                fabsf
- .text.floorf   0x08009414       0x8c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_floor.o)
-                0x08009414                floorf
- .text.scalbnf  0x080094a0       0xe4 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_scalbn.o)
-                0x080094a0                scalbnf
- .text          0x08009584      0x378 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
-                0x08009584                __aeabi_drsub
-                0x0800958c                __aeabi_dsub
-                0x0800958c                __subdf3
-                0x08009590                __aeabi_dadd
-                0x08009590                __adddf3
-                0x08009808                __floatunsidf
-                0x08009808                __aeabi_ui2d
-                0x08009828                __floatsidf
-                0x08009828                __aeabi_i2d
-                0x0800984c                __aeabi_f2d
-                0x0800984c                __extendsfdf2
-                0x08009890                __floatundidf
-                0x08009890                __aeabi_ul2d
-                0x080098a0                __floatdidf
-                0x080098a0                __aeabi_l2d
- .text          0x080098fc      0x424 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldivdf3.o)
-                0x080098fc                __aeabi_dmul
-                0x080098fc                __muldf3
-                0x08009b50                __divdf3
-                0x08009b50                __aeabi_ddiv
- .text          0x08009d20      0x110 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_cmpdf2.o)
-                0x08009d20                __gtdf2
-                0x08009d20                __gedf2
-                0x08009d28                __ltdf2
-                0x08009d28                __ledf2
-                0x08009d30                __nedf2
-                0x08009d30                __eqdf2
-                0x08009d30                __cmpdf2
-                0x08009dac                __aeabi_cdrcmple
-                0x08009dbc                __aeabi_cdcmpeq
-                0x08009dbc                __aeabi_cdcmple
-                0x08009dcc                __aeabi_dcmpeq
-                0x08009de0                __aeabi_dcmplt
-                0x08009df4                __aeabi_dcmple
-                0x08009e08                __aeabi_dcmpge
-                0x08009e1c                __aeabi_dcmpgt
- .text          0x08009e30       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_unorddf2.o)
-                0x08009e30                __unorddf2
-                0x08009e30                __aeabi_dcmpun
- .text          0x08009e5c       0x50 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixdfsi.o)
-                0x08009e5c                __aeabi_d2iz
-                0x08009e5c                __fixdfsi
- .text.__errno  0x08009eac        0xc c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-errno.o)
-                0x08009eac                __errno
- .text.memset   0x08009eb8       0xa4 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-memset.o)
-                0x08009eb8                memset
+                0x080091e8       0x14 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
+                0x080091e8                __math_oflow
+ .text.fabs     0x080091fc       0x14 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_fabs.o)
+                0x080091fc                fabs
+ .text.finite   0x08009210       0x18 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_finite.o)
+                0x08009210                finite
+ .text.scalbn   0x08009228      0x124 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_scalbn.o)
+                0x08009228                scalbn
+ .text.fabsf    0x0800934c       0x10 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_fabs.o)
+                0x0800934c                fabsf
+ .text.floorf   0x0800935c       0x8c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_floor.o)
+                0x0800935c                floorf
+ .text.scalbnf  0x080093e8       0xe4 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_scalbn.o)
+                0x080093e8                scalbnf
+ .text          0x080094cc      0x378 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
+                0x080094cc                __aeabi_drsub
+                0x080094d4                __aeabi_dsub
+                0x080094d4                __subdf3
+                0x080094d8                __aeabi_dadd
+                0x080094d8                __adddf3
+                0x08009750                __floatunsidf
+                0x08009750                __aeabi_ui2d
+                0x08009770                __floatsidf
+                0x08009770                __aeabi_i2d
+                0x08009794                __aeabi_f2d
+                0x08009794                __extendsfdf2
+                0x080097d8                __floatundidf
+                0x080097d8                __aeabi_ul2d
+                0x080097e8                __floatdidf
+                0x080097e8                __aeabi_l2d
+ .text          0x08009844      0x424 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldivdf3.o)
+                0x08009844                __aeabi_dmul
+                0x08009844                __muldf3
+                0x08009a98                __divdf3
+                0x08009a98                __aeabi_ddiv
+ .text          0x08009c68      0x110 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_cmpdf2.o)
+                0x08009c68                __gtdf2
+                0x08009c68                __gedf2
+                0x08009c70                __ltdf2
+                0x08009c70                __ledf2
+                0x08009c78                __nedf2
+                0x08009c78                __eqdf2
+                0x08009c78                __cmpdf2
+                0x08009cf4                __aeabi_cdrcmple
+                0x08009d04                __aeabi_cdcmpeq
+                0x08009d04                __aeabi_cdcmple
+                0x08009d14                __aeabi_dcmpeq
+                0x08009d28                __aeabi_dcmplt
+                0x08009d3c                __aeabi_dcmple
+                0x08009d50                __aeabi_dcmpge
+                0x08009d64                __aeabi_dcmpgt
+ .text          0x08009d78       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_unorddf2.o)
+                0x08009d78                __unorddf2
+                0x08009d78                __aeabi_dcmpun
+ .text          0x08009da4       0x50 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixdfsi.o)
+                0x08009da4                __aeabi_d2iz
+                0x08009da4                __fixdfsi
+ .text.__errno  0x08009df4        0xc c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-errno.o)
+                0x08009df4                __errno
+ .text.memset   0x08009e00       0xa4 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-memset.o)
+                0x08009e00                memset
  *(.rodata .rodata.* .constdata .constdata.*)
  .rodata.GPIO_PIN
-                0x08009f5c       0x10 Debug_Win/stm32f3/stm32f3_discovery.o
-                0x08009f5c                GPIO_PIN
+                0x08009ea4       0x10 Debug_Win/stm32f3/stm32f3_discovery.o
+                0x08009ea4                GPIO_PIN
  .rodata.GPIO_CLK
-                0x08009f6c       0x20 Debug_Win/stm32f3/stm32f3_discovery.o
-                0x08009f6c                GPIO_CLK
+                0x08009eb4       0x20 Debug_Win/stm32f3/stm32f3_discovery.o
+                0x08009eb4                GPIO_CLK
  .rodata.Virtual_Com_Port_DeviceDescriptor
-                0x08009f8c       0x12 Debug_Win/usb/usb_desc.o
-                0x08009f8c                Virtual_Com_Port_DeviceDescriptor
- *fill*         0x08009f9e        0x2 
+                0x08009ed4       0x12 Debug_Win/usb/usb_desc.o
+                0x08009ed4                Virtual_Com_Port_DeviceDescriptor
+ *fill*         0x08009ee6        0x2 
  .rodata.Virtual_Com_Port_ConfigDescriptor
-                0x08009fa0       0x43 Debug_Win/usb/usb_desc.o
-                0x08009fa0                Virtual_Com_Port_ConfigDescriptor
- *fill*         0x08009fe3        0x1 
+                0x08009ee8       0x43 Debug_Win/usb/usb_desc.o
+                0x08009ee8                Virtual_Com_Port_ConfigDescriptor
+ *fill*         0x08009f2b        0x1 
  .rodata.Virtual_Com_Port_StringLangID
-                0x08009fe4        0x4 Debug_Win/usb/usb_desc.o
-                0x08009fe4                Virtual_Com_Port_StringLangID
+                0x08009f2c        0x4 Debug_Win/usb/usb_desc.o
+                0x08009f2c                Virtual_Com_Port_StringLangID
  .rodata.Virtual_Com_Port_StringVendor
-                0x08009fe8       0x26 Debug_Win/usb/usb_desc.o
-                0x08009fe8                Virtual_Com_Port_StringVendor
- *fill*         0x0800a00e        0x2 
+                0x08009f30       0x26 Debug_Win/usb/usb_desc.o
+                0x08009f30                Virtual_Com_Port_StringVendor
+ *fill*         0x08009f56        0x2 
  .rodata.Virtual_Com_Port_StringProduct
-                0x0800a010       0x2e Debug_Win/usb/usb_desc.o
-                0x0800a010                Virtual_Com_Port_StringProduct
- *fill*         0x0800a03e        0x2 
+                0x08009f58       0x2e Debug_Win/usb/usb_desc.o
+                0x08009f58                Virtual_Com_Port_StringProduct
+ *fill*         0x08009f86        0x2 
  .rodata.Virtual_Com_Port_QualifierDescriptor
-                0x0800a040       0x12 Debug_Win/usb/usb_desc.o
-                0x0800a040                Virtual_Com_Port_QualifierDescriptor
- *fill*         0x0800a052        0x2 
- .rodata        0x0800a054       0x11 Debug_Win/user/main.opp
- *fill*         0x0800a065        0x3 
+                0x08009f88       0x12 Debug_Win/usb/usb_desc.o
+                0x08009f88                Virtual_Com_Port_QualifierDescriptor
+ *fill*         0x08009f9a        0x2 
+ .rodata        0x08009f9c       0x11 Debug_Win/user/main.opp
+ *fill*         0x08009fad        0x3 
  .rodata.npio2_hw
-                0x0800a068       0x80 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
+                0x08009fb0       0x80 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
  .rodata.two_over_pi
-                0x0800a0e8      0x318 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
- .rodata.PIo2   0x0800a400       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
+                0x0800a030      0x318 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
+ .rodata.PIo2   0x0800a348       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
  .rodata.init_jk
-                0x0800a42c        0xc c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
+                0x0800a374        0xc c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
  *(vtable)
  *(.eh_frame*)
  *(.glue_7)
- .glue_7        0x0800a438        0x0 linker stubs
+ .glue_7        0x0800a380        0x0 linker stubs
  *(.glue_7t)
- .glue_7t       0x0800a438        0x0 linker stubs
+ .glue_7t       0x0800a380        0x0 linker stubs
 
-.vfp11_veneer   0x0800a438        0x0
- .vfp11_veneer  0x0800a438        0x0 linker stubs
+.vfp11_veneer   0x0800a380        0x0
+ .vfp11_veneer  0x0800a380        0x0 linker stubs
 
-.v4_bx          0x0800a438        0x0
- .v4_bx         0x0800a438        0x0 linker stubs
+.v4_bx          0x0800a380        0x0
+ .v4_bx         0x0800a380        0x0 linker stubs
 
-.iplt           0x0800a438        0x0
- .iplt          0x0800a438        0x0 Debug_Win/stm32f30x/stm32f30x_usart.o
+.iplt           0x0800a380        0x0
+ .iplt          0x0800a380        0x0 Debug_Win/stm32f30x/stm32f30x_usart.o
 
-.rel.dyn        0x0800a438        0x0
- .rel.iplt      0x0800a438        0x0 Debug_Win/stm32f30x/stm32f30x_usart.o
+.rel.dyn        0x0800a380        0x0
+ .rel.iplt      0x0800a380        0x0 Debug_Win/stm32f30x/stm32f30x_usart.o
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x0800a438                . = ALIGN (0x4)
-                0x0800a438                __exidx_start = .
+                0x0800a380                . = ALIGN (0x4)
+                0x0800a380                __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x0800a438                __exidx_end = .
-                0x0800a438                . = ALIGN (0x4)
-                0x0800a438                _etext = .
-                0x0800a438                __etext = .
+                0x0800a380                __exidx_end = .
+                0x0800a380                . = ALIGN (0x4)
+                0x0800a380                _etext = .
+                0x0800a380                __etext = .
 
-.data_CCMRAM    0x10000000        0x0 load address 0x0800a438
+.data_CCMRAM    0x10000000        0x0 load address 0x0800a380
  FILL mask 0xff
  *(.data.CCMRAM .data.CCMRAM.*)
                 0x10000000                . = ALIGN (0x4)
-                0x0800a438                _sidata = LOADADDR (.data)
+                0x0800a380                _sidata = LOADADDR (.data)
 
-.data           0x20000000      0x5a4 load address 0x0800a438
+.data           0x20000000      0x5a4 load address 0x0800a380
  FILL mask 0xff
                 0x20000000                _sdata = .
                 0x20000000                __data_start__ = .
@@ -5582,13 +5568,13 @@ END GROUP
                 0x200005a4                _edata = .
                 0x200005a4                __data_end__ = .
 
-.igot.plt       0x200005a4        0x0 load address 0x0800a9dc
+.igot.plt       0x200005a4        0x0 load address 0x0800a924
  .igot.plt      0x200005a4        0x0 Debug_Win/stm32f30x/stm32f30x_usart.o
 
 .bss_CCMRAM     0x10000000        0x0
  *(.bss.CCMRAM .bss.CCMRAM.*)
 
-.bss            0x200005a4      0xa14
+.bss            0x200005a4      0xa04
                 0x200005a4                __bss_start__ = .
                 0x200005a4                _sbss = .
  *(.bss_begin .bss_begin.*)
@@ -5728,35 +5714,33 @@ END GROUP
  .bss.gyro_multiplier
                 0x20000d34        0x4 Debug_Win/user/main.opp
                 0x20000d34                gyro_multiplier
- .bss.measure   0x20000d38      0x26c Debug_Win/user/main.opp
+ .bss.measure   0x20000d38      0x264 Debug_Win/user/main.opp
                 0x20000d38                measure
- .bss.buffer.3  0x20000fa4        0x6 Debug_Win/user/Sensors.o
- *fill*         0x20000faa        0x2 
- .bss.buffer.2  0x20000fac        0x6 Debug_Win/user/Sensors.o
+ .bss.buffer.2  0x20000f9c        0x6 Debug_Win/user/Sensors.o
  *(COMMON)
  *(.bss_end .bss_end.*)
- *fill*         0x20000fb2        0x2 
- .bss_end       0x20000fb4        0x4 Debug_Win/system/_startup.o
-                0x20000fb8                . = ALIGN (0x4)
-                0x20000fb8                __bss_end__ = .
-                0x20000fb8                _ebss = .
+ *fill*         0x20000fa2        0x2 
+ .bss_end       0x20000fa4        0x4 Debug_Win/system/_startup.o
+                0x20000fa8                . = ALIGN (0x4)
+                0x20000fa8                __bss_end__ = .
+                0x20000fa8                _ebss = .
 
 .noinit_CCMRAM
  *(.noinit.CCMRAM .noinit.CCMRAM.*)
 
-.noinit         0x20000fb8        0x0
-                0x20000fb8                _noinit = .
+.noinit         0x20000fa8        0x0
+                0x20000fa8                _noinit = .
  *(.noinit .noinit.*)
-                0x20000fb8                . = ALIGN (0x4)
-                0x20000fb8                _end_noinit = .
+                0x20000fa8                . = ALIGN (0x4)
+                0x20000fa8                _end_noinit = .
                 [!provide]                PROVIDE (end = _end_noinit)
                 [!provide]                PROVIDE (_end = _end_noinit)
                 [!provide]                PROVIDE (__end = _end_noinit)
                 [!provide]                PROVIDE (__end__ = _end_noinit)
 
-._check_stack   0x20000fb8      0x100
-                0x200010b8                . = (. + _Minimum_Stack_Size)
- *fill*         0x20000fb8      0x100 
+._check_stack   0x20000fa8      0x100
+                0x200010a8                . = (. + _Minimum_Stack_Size)
+ *fill*         0x20000fa8      0x100 
 
 .b1text
  *(.b1text)
@@ -5985,7 +5969,7 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000     0x16e0
+.debug_aranges  0x00000000     0x16b8
  *(.debug_aranges)
  .debug_aranges
                 0x00000000      0x1a0 Debug_Win/stm32f30x/stm32f30x_usart.o
@@ -6058,14 +6042,14 @@ END GROUP
  .debug_aranges
                 0x000013b8       0xb8 Debug_Win/user/Drv_Uart.opp
  .debug_aranges
-                0x00001470      0x208 Debug_Win/user/main.opp
+                0x00001470      0x1f0 Debug_Win/user/main.opp
  .debug_aranges
-                0x00001678       0x68 Debug_Win/user/Sensors.o
+                0x00001660       0x58 Debug_Win/user/Sensors.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000    0x15009
+.debug_info     0x00000000    0x14e02
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0xf58 Debug_Win/stm32f30x/stm32f30x_usart.o
  .debug_info    0x00000f58     0x233e Debug_Win/stm32f30x/stm32f30x_tim.o
@@ -6102,10 +6086,10 @@ END GROUP
  .debug_info    0x0000d763      0x94d Debug_Win/usb/VCP_F3.opp
  .debug_info    0x0000e0b0      0x36c Debug_Win/user/Drv_Gpio.opp
  .debug_info    0x0000e41c      0xddc Debug_Win/user/Drv_Uart.opp
- .debug_info    0x0000f1f8     0x5314 Debug_Win/user/main.opp
- .debug_info    0x0001450c      0xafd Debug_Win/user/Sensors.o
+ .debug_info    0x0000f1f8     0x51e7 Debug_Win/user/main.opp
+ .debug_info    0x000143df      0xa23 Debug_Win/user/Sensors.o
 
-.debug_abbrev   0x00000000     0x3e29
+.debug_abbrev   0x00000000     0x3deb
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x185 Debug_Win/stm32f30x/stm32f30x_usart.o
  .debug_abbrev  0x00000185      0x19f Debug_Win/stm32f30x/stm32f30x_tim.o
@@ -6143,9 +6127,9 @@ END GROUP
  .debug_abbrev  0x000030c3      0x133 Debug_Win/user/Drv_Gpio.opp
  .debug_abbrev  0x000031f6      0x377 Debug_Win/user/Drv_Uart.opp
  .debug_abbrev  0x0000356d      0x70c Debug_Win/user/main.opp
- .debug_abbrev  0x00003c79      0x1b0 Debug_Win/user/Sensors.o
+ .debug_abbrev  0x00003c79      0x172 Debug_Win/user/Sensors.o
 
-.debug_line     0x00000000    0x10ddf
+.debug_line     0x00000000    0x10b74
  *(.debug_line)
  .debug_line    0x00000000      0xa65 Debug_Win/stm32f30x/stm32f30x_usart.o
  .debug_line    0x00000a65     0x15ff Debug_Win/stm32f30x/stm32f30x_tim.o
@@ -6182,10 +6166,10 @@ END GROUP
  .debug_line    0x0000ce9b      0x8ee Debug_Win/usb/VCP_F3.opp
  .debug_line    0x0000d789      0x362 Debug_Win/user/Drv_Gpio.opp
  .debug_line    0x0000daeb      0x8cf Debug_Win/user/Drv_Uart.opp
- .debug_line    0x0000e3ba     0x1d06 Debug_Win/user/main.opp
- .debug_line    0x000100c0      0xd1f Debug_Win/user/Sensors.o
+ .debug_line    0x0000e3ba     0x1c5b Debug_Win/user/main.opp
+ .debug_line    0x00010015      0xb5f Debug_Win/user/Sensors.o
 
-.debug_frame    0x00000000     0x6598
+.debug_frame    0x00000000     0x64dc
  *(.debug_frame)
  .debug_frame   0x00000000      0x7b0 Debug_Win/stm32f30x/stm32f30x_usart.o
  .debug_frame   0x000007b0     0x11c4 Debug_Win/stm32f30x/stm32f30x_tim.o
@@ -6221,36 +6205,36 @@ END GROUP
  .debug_frame   0x00004e38      0x230 Debug_Win/usb/VCP_F3.opp
  .debug_frame   0x00005068       0x34 Debug_Win/user/Drv_Gpio.opp
  .debug_frame   0x0000509c      0x2d4 Debug_Win/user/Drv_Uart.opp
- .debug_frame   0x00005370      0x8e4 Debug_Win/user/main.opp
- .debug_frame   0x00005c54      0x17c Debug_Win/user/Sensors.o
- .debug_frame   0x00005dd0       0x34 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_cos.o)
- .debug_frame   0x00005e04       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_round.o)
- .debug_frame   0x00005e24       0x34 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_sin.o)
- .debug_frame   0x00005e58       0x44 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-w_pow.o)
- .debug_frame   0x00005e9c       0x44 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-wf_sqrt.o)
- .debug_frame   0x00005ee0      0x12c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_pow.o)
- .debug_frame   0x0000600c       0x30 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_sqrt.o)
- .debug_frame   0x0000603c       0x3c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
- .debug_frame   0x00006078       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_sqrt.o)
- .debug_frame   0x00006098       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_cos.o)
- .debug_frame   0x000060b8       0x5c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
- .debug_frame   0x00006114       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_sin.o)
- .debug_frame   0x00006134      0x124 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
- .debug_frame   0x00006258       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_fabs.o)
- .debug_frame   0x00006278       0x28 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_finite.o)
- .debug_frame   0x000062a0       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_scalbn.o)
- .debug_frame   0x000062cc       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_fabs.o)
- .debug_frame   0x000062ec       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_floor.o)
- .debug_frame   0x0000630c       0x3c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_scalbn.o)
- .debug_frame   0x00006348       0xac c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
- .debug_frame   0x000063f4       0x50 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldivdf3.o)
- .debug_frame   0x00006444       0xc4 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_cmpdf2.o)
- .debug_frame   0x00006508       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_unorddf2.o)
- .debug_frame   0x00006528       0x24 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixdfsi.o)
- .debug_frame   0x0000654c       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-errno.o)
- .debug_frame   0x0000656c       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-memset.o)
+ .debug_frame   0x00005370      0x870 Debug_Win/user/main.opp
+ .debug_frame   0x00005be0      0x134 Debug_Win/user/Sensors.o
+ .debug_frame   0x00005d14       0x34 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_cos.o)
+ .debug_frame   0x00005d48       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_round.o)
+ .debug_frame   0x00005d68       0x34 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_sin.o)
+ .debug_frame   0x00005d9c       0x44 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-w_pow.o)
+ .debug_frame   0x00005de0       0x44 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-wf_sqrt.o)
+ .debug_frame   0x00005e24      0x12c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_pow.o)
+ .debug_frame   0x00005f50       0x30 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-e_sqrt.o)
+ .debug_frame   0x00005f80       0x3c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_rem_pio2.o)
+ .debug_frame   0x00005fbc       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-ef_sqrt.o)
+ .debug_frame   0x00005fdc       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_cos.o)
+ .debug_frame   0x00005ffc       0x5c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_rem_pio2.o)
+ .debug_frame   0x00006058       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-kf_sin.o)
+ .debug_frame   0x00006078      0x124 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-math_err.o)
+ .debug_frame   0x0000619c       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_fabs.o)
+ .debug_frame   0x000061bc       0x28 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_finite.o)
+ .debug_frame   0x000061e4       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-s_scalbn.o)
+ .debug_frame   0x00006210       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_fabs.o)
+ .debug_frame   0x00006230       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_floor.o)
+ .debug_frame   0x00006250       0x3c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libm.a(lib_a-sf_scalbn.o)
+ .debug_frame   0x0000628c       0xac c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
+ .debug_frame   0x00006338       0x50 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldivdf3.o)
+ .debug_frame   0x00006388       0xc4 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_cmpdf2.o)
+ .debug_frame   0x0000644c       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_unorddf2.o)
+ .debug_frame   0x0000646c       0x24 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixdfsi.o)
+ .debug_frame   0x00006490       0x20 c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-errno.o)
+ .debug_frame   0x000064b0       0x2c c:/sysgcc/arm-eabi/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libg.a(lib_a-memset.o)
 
-.debug_str      0x00000000    0x6a364
+.debug_str      0x00000000    0x6a2bc
  *(.debug_str)
  .debug_str     0x00000000    0x542e5 Debug_Win/stm32f30x/stm32f30x_usart.o
                               0x544c9 (size before relaxing)
@@ -6322,10 +6306,10 @@ END GROUP
                               0x54271 (size before relaxing)
  .debug_str     0x00066e0e      0x245 Debug_Win/user/Drv_Uart.opp
                               0x57bd1 (size before relaxing)
- .debug_str     0x00067053     0x305c Debug_Win/user/main.opp
-                              0x62e55 (size before relaxing)
- .debug_str     0x0006a0af      0x2b5 Debug_Win/user/Sensors.o
-                              0x5f524 (size before relaxing)
+ .debug_str     0x00067053     0x2fd1 Debug_Win/user/main.opp
+                              0x62dc3 (size before relaxing)
+ .debug_str     0x0006a024      0x298 Debug_Win/user/Sensors.o
+                              0x5f4fb (size before relaxing)
 
 .debug_loc
  *(.debug_loc)
@@ -6347,7 +6331,7 @@ END GROUP
 OUTPUT(Debug_Win/STM_ACC_GIRO_FILTERED.elf elf32-littlearm)
 LOAD linker stubs
 
-.debug_ranges   0x00000000     0x1560
+.debug_ranges   0x00000000     0x1538
  .debug_ranges  0x00000000      0x190 Debug_Win/stm32f30x/stm32f30x_usart.o
  .debug_ranges  0x00000190      0x398 Debug_Win/stm32f30x/stm32f30x_tim.o
  .debug_ranges  0x00000528      0x140 Debug_Win/stm32f30x/stm32f30x_rcc.o
@@ -6382,8 +6366,8 @@ LOAD linker stubs
  .debug_ranges  0x000011d8       0x80 Debug_Win/usb/VCP_F3.opp
  .debug_ranges  0x00001258       0x10 Debug_Win/user/Drv_Gpio.opp
  .debug_ranges  0x00001268       0xa8 Debug_Win/user/Drv_Uart.opp
- .debug_ranges  0x00001310      0x1f8 Debug_Win/user/main.opp
- .debug_ranges  0x00001508       0x58 Debug_Win/user/Sensors.o
+ .debug_ranges  0x00001310      0x1e0 Debug_Win/user/main.opp
+ .debug_ranges  0x000014f0       0x48 Debug_Win/user/Sensors.o
 
 .debug_macro    0x00000000    0x18a37
  .debug_macro   0x00000000      0x174 Debug_Win/stm32f30x/stm32f30x_usart.o

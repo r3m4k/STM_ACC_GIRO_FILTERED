@@ -12,37 +12,29 @@ public:
     // Данные, которые будут меняться в вызываемых функциях
     // Вынесем их в статические переменные для избежания переполнения стека процессора
     Data current_Data, zero_Data, buffer_Data;
-    Matrix temp_matrix;
-    
+    Matrix temp_matrix;    
     // -------------------------------------------------------------------------------
     Matrix rotation_matrix;         // Матрица перехода от СК платы к глобальной СК, у которой ось OY направлена на север, а OZ перпендикулярно поверхности
     Matrix buffer_matrix;           // Матрица поворота от i-1 состояния в исходное
     float longitude;                // Широта места, где будет находиться плата
-
     // -------------------------------------------------------------------------------
     float Coordinates[3] = {0};     // Координаты перемещения по осям XYZ
     float Velocity[3] = {0};        // Скорости по осям XYZ
     float Angles[3] = {0};          // Углы поворота вокруг XYZ
-    float shift;                    // Погрешность, накапливаемая при работе датчиков, которую необходимо компенсировать
-
+    float shift = 0;                // Погрешность, накапливаемая при работе датчиков, которую необходимо компенсировать
     // -------------------------------------------------------------------------------
-    bool new_data_Flag = FALSE;     // Флаг, отвечающий за наличие новых данных, требующих обработки
-    
+    bool new_tick_Flag = FALSE;     // Флаг, отвечающий за наличие нового прерывания от таймера
+    bool new_DPP_Flag  = FALSE;     // Флаг, отвечающие за наличие нового кода от ДПП
     // -------------------------------------------------------------------------------
     // Переменные для работы с прерываниями от таймера
     float period;                   // Период изменения TickCounter в секундах
     uint32_t TickCounter;           // Счётчик тиков запущенного таймера с периодом period (см main.cpp --> TimerInit())
     uint16_t filter_depth = 1024;   // Глубина усреднения
-
-    // Буферы, в которые будет заполняться временная информация с датчиков, при чтении данных во время прерывания от таймера
-    int16_t Acc_Buffer[3];
-    int16_t Gyro_Buffer[3];
-    int16_t tmp_Buffer[3];
-    float sensitivity;              // Чувствительность акселерометра
     // -------------------------------------------------------------------------------
     // Переменные для работы с прерываниями от USART (канал связи с ДПП)
     uint32_t _DppCode;              // Код от ДПП
-    float offset;                   // Перемещение от прошлого сигнала 
+    float offset = OFFSET_VALUE;    // Перемещение от прошлого сигнала 
+    float displacement[3] = {0};    // Изменение координат от предыдущей посылки ДПП
     // -------------------------------------------------------------------------------
     uint16_t index1, index2;        // Индексы для циклов (объявляем здесь чтобы не выделять под них постоянно память в ходе программы) 
     // -------------------------------------------------------------------------------
@@ -69,13 +61,20 @@ public:
             // rotation_matrix *= current_Data;
             current_Data.sending_USB();
 
-            if (new_data_Flag)
+            if (new_tick_Flag)
             {
-                // Начнём обработку новых данных
-                for (index1 = 0; index1 < 3; index1++){
-                    buffer_Data.Acc[index1] = Acc_Buffer[index1] / sensitivity;
-                    buffer_Data.Gyro[index1] = Gyro_Buffer[index1] * gyro_multiplier;
+                // Считаем данные и отфильтруем их
+
+                // Пока в качестве фильтрации будем использовать усреднение
+                buffer_Data.set_zero_Values();
+                for (index1 = 0; index1 < filter_depth; index1++){
+                    current_Data.Read_Data();
+                    buffer_Data += current_Data;
                 }
+
+                buffer_Data /= filter_depth;
+
+                // Начнём обработку новых данных
                 
                 // Вычислим угол поворота за время period, опираясь на данные полученные только на части этого промежутка
                 // При этом считаем, что за время period не произойдёт сильных изменений ни угловых скоростей, ни ускорений
@@ -107,63 +106,45 @@ public:
 
                 // Заполним данные о координатах и скоростях                
                 for (index1 = 0; index1 < 3; index1++){
-                    Coordinates[index1] = Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2;    
-                    Velocity[index1] =  buffer_Data.Acc[index1] * period;
+                    Coordinates[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2 - shift;    
+                    Velocity[index1] += buffer_Data.Acc[index1] * period;
+                    displacement[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2; 
                 }
+                new_tick_Flag = FALSE;
             }
 
-            new_data_Flag = FALSE;            
+            if (new_DPP_Flag)
+            {
+                // Начало обработки нового кода ДПП
+                /* 
+                Решим уравнение s**2 = (x-a)**2 + (y-a)**2 + (z-a)**2
+                где а - искомое смещение, обусловленное накапливаемой погрешностью акселерометра            ??? Как корректировать гироскоп
+                s = offset
+                x = displacement[0]
+                y = displacement[1]
+                z = displacement[2]
+                a = shift 
+
+                Решения этого уравнения: а = (x + y + z +- sqrt(-2*(x**2 + y**2 + z**2 - x*y - x*z - y*z) + 3*s**2) ) / 3
+                Возьмём бОльший корень уравнения (со знаком "+")
+                */
+
+                shift = (displacement[0] + displacement[1] + displacement[2] + \
+                            sqrt(-2*(displacement[0]*displacement[0] + displacement[1]*displacement[1] + displacement[2]*displacement[2] - \
+                            displacement[0] * displacement[1] - displacement[0] * displacement[2] - displacement[1] * displacement[2]) + \
+                            3 * offset*offset) ) / 3;
+
+                // Завершение обработки нового кода ДПП
+                for (index1 = 0; index1 < 3; index1++){
+                    displacement[index1] = 0;
+                }
+                new_DPP_Flag = FALSE;
+            }            
+
             LedOn(LED8);
         }
     }
 
-    // ########################################################################
-    // Обработка прерывания таймера
-
-    friend void ReadAcc_int16(int16_t* pfData, float* sensitivity);
-    friend void ReadGyro_int16(int16_t *pfData);
-
-    void new_tick(){    
-        TickCounter++;
-
-        // Очистим буферы
-        clearing_buffer(Acc_Buffer);
-        clearing_buffer(Gyro_Buffer);
-
-        for (index1 = 0; index1 < filter_depth; index1++){
-            // Прочитаем данные акселерометра        
-            ReadAcc_int16(tmp_Buffer, &sensitivity);
-            add_from_buffer(Acc_Buffer, tmp_Buffer);
-
-            // Прочитаем данные гироскопа
-            ReadGyro_int16(tmp_Buffer);
-            add_from_buffer(Gyro_Buffer, tmp_Buffer);
-        }
-
-        for (index1 = 0; index1 < 3; index1++){
-            Acc_Buffer[index1] /= filter_depth;
-            Gyro_Buffer[index1] /= filter_depth;
-        }
-
-        new_data_Flag = TRUE;
-    }
-
-    // Ниже используем index2, тк эти функции будут вызываться из цикла, в котором уже используется index1
-    
-    // Очистка буфера
-    void clearing_buffer(int16_t *buffer){
-        for (index2 = 0; index2 < 3; index2++){
-            buffer[index2] = 0;
-        }
-    }
-
-    // Добавление к значениям из buffer значений из add_buffer 
-    void add_from_buffer(int16_t *buffer, int16_t *add_buffer){
-        for (index2 = 0; index2 < 3; index2++){
-            buffer[index2] += add_buffer[index2];
-        }
-    }
-    
     // ########################################################################
     // Начальная выставка датчиков
     void initial_setting(){
@@ -179,6 +160,7 @@ public:
         LedOff(LED9);
     }
 
+    // ########################################################################
     // Нахождение нулевых значений
     void set_zero_Data()
     {
