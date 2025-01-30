@@ -106,6 +106,7 @@ void InitAll(){
     InitUart(115200);  
     GYRO_INIT();
     ACC_INIT();
+    MAG_INIT();
     InitDecoder();
 
     // Инициализация таймера и его настройка

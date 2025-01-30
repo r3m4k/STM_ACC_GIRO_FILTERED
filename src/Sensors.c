@@ -85,6 +85,7 @@ void ReadMag(float *pfData)
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_M, buffer + 3, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_M, buffer + 4, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_M, buffer + 5, 1);
+    
     /* Switch the sensitivity set in the CRTLB*/
     switch (CTRLB & 0xE0)
     {

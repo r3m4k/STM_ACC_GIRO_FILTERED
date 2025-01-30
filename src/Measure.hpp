@@ -2,6 +2,7 @@
 
 #define OFFSET_VALUE    0           // Пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
+// #define DATA_PROCESSING
 
 extern float gyro_multiplier;
 
@@ -61,6 +62,7 @@ public:
             // rotation_matrix *= current_Data;
             current_Data.sending_USB();
 
+#ifdef DATA_PROCESSING
             if (new_tick_Flag)
             {
                 // Считаем данные и отфильтруем их
@@ -140,7 +142,7 @@ public:
                 }
                 new_DPP_Flag = FALSE;
             }            
-
+#endif
             LedOn(LED8);
         }
     }

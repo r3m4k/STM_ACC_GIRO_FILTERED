@@ -93,6 +93,7 @@ public:
     
     friend void ReadAcc(float *pfData);
     friend void ReadGyro(float *pfData);
+    friend void ReadMag(float *pfData);
 
     void Read_Acc()
     {
@@ -123,6 +124,20 @@ public:
         Z_coord = frame_Buffer[2] / gyro_multiplier;
     }
 
+    void Read_Mag()
+    {
+        /*
+        В соответствии с документацией на LSM303DLHC:
+        OX =  oy
+        OY = -ox
+        OZ =  oz
+        */
+        ReadMag(frame_Buffer);
+        X_coord =  frame_Buffer[1];
+        Y_coord = -frame_Buffer[0];
+        Z_coord =  frame_Buffer[2];
+    }
+
     // ########################################################################
     // Дополнительный функционал
 
@@ -143,5 +158,4 @@ public:
         Y_coord = frame_Buffer[1];
         Z_coord = frame_Buffer[2];
     }
-
 };
