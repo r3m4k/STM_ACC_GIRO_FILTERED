@@ -201,7 +201,7 @@ public:
         for (i = 0; i < 3; i++){
             // ((unsigned char*)&Out_Buf)[16 + 2 * i] = Out_Buf.Gyro_XYZ_lowBit  (т.е младший разряд Gyro.XYZ_coord)
             // ((unsigned char*)&Out_Buf)[17 + 2 * i] = Out_Buf.Gyro_XYZ_highBit (т.е старший разряд Gyro.XYZ_coord)
-            tmp = round(Gyro[i]);
+            tmp = round(Mag[i]);
             ((unsigned char*)&Out_Buf)[16 + 2 * i] = tmp;                 // Младший разряд
             ((unsigned char*)&Out_Buf)[17 + 2 * i] = tmp >> 8;            // Старший разряд
         }
