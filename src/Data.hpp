@@ -1,6 +1,9 @@
 #include "Frame.hpp"
 #include "VCP_F3.h"
 
+#define MAG     // Использование магнитометра
+#define TEMP    // Использование температурного датчика
+
 
 class Data
 {
@@ -11,6 +14,11 @@ public:
 
     // Буферы, в которые будет сохраняться временная информация
     Frame Acc_Buffer, Gyro_Buffer, Mag_Buffer;
+
+#ifdef TEMP
+    float Temp;
+    friend void ReadMagTemp(float *pfTData);
+#endif
 
     typedef struct 
     {
@@ -23,10 +31,16 @@ public:
         uint8_t Gyro_X[2] = {0};
         uint8_t Gyro_Y[2] = {0};
         uint8_t Gyro_Z[2] = {0};
-        
+
+#ifdef MAG
         uint8_t Mag_X[2] = {0};
         uint8_t Mag_Y[2] = {0};
         uint8_t Mag_Z[2] = {0};
+#endif
+
+#ifdef TEMP
+        uint8_t Temp[2] = {0};
+#endif
 
         uint8_t checksum = 0;
     }outbuf;
@@ -46,8 +60,10 @@ public:
         Gyro + data.Gyro;
         Gyro_Buffer = Gyro.frame_Buffer;
 
+#ifdef MAG
         Mag + data.Mag;
         Mag_Buffer = Mag.frame_Buffer;
+#endif
 
     }
 
@@ -59,9 +75,10 @@ public:
 
         Gyro + data.Gyro;
         Gyro = Gyro.frame_Buffer;
-
+#ifdef MAG
         Mag + data.Mag;
         Mag = Mag.frame_Buffer;
+#endif
     }
 
     // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer уменьшаемого
@@ -72,9 +89,10 @@ public:
 
         Gyro - data.Gyro;
         Gyro_Buffer = Gyro.frame_Buffer;
-
+#ifdef MAG
         Mag + data.Mag;
         Mag_Buffer = Mag.frame_Buffer;
+#endif
     }
 
     // Изменение значений Acc, Gyro, Mag уменьшаемого
@@ -85,9 +103,10 @@ public:
 
         Gyro - data.Gyro;
         Gyro = Gyro.frame_Buffer;
-
+#ifdef MAG
         Mag - data.Mag;
         Mag = Mag.frame_Buffer;
+#endif
     }
 
     // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer делимого
@@ -98,9 +117,10 @@ public:
 
         Gyro / num;
         Gyro_Buffer = Gyro.frame_Buffer;
-
+#ifdef MAG
         Mag / num;
         Mag_Buffer = Mag.frame_Buffer;
+#endif
     }
 
     // Изменение значений Acc, Gyro, Mag делимого
@@ -111,16 +131,19 @@ public:
 
         Gyro / num;
         Gyro = Gyro.frame_Buffer;
-
+#ifdef MAG
         Mag / num;
         Mag = Mag.frame_Buffer;
+#endif
     }
 
     void operator=(Data &data)
     {
         Acc = data.Acc;
         Gyro = data.Gyro;
+#ifdef MAG
         Mag = data.Mag;
+#endif
     }
 
     Frame& operator[](int index)
@@ -129,8 +152,10 @@ public:
             return Acc;
         else if (index == 1)
             return Gyro;
+#ifdef MAG
         else if (index == 2)
             return Mag;
+    #endif
     }
 
     float operator()(int index1, int index2){
@@ -144,10 +169,12 @@ public:
             else if (index2 == 1) return Gyro.Y_coord;
             else if (index2 == 2) return Gyro.Z_coord;
         }
+#ifdef MAG
         else if (index1 == 2){
             if      (index2 == 0) return Mag.X_coord;
             else if (index2 == 1) return Mag.Y_coord;
             else if (index2 == 2) return Mag.Z_coord;
+    #endif
         }
     }
 
@@ -157,7 +184,9 @@ public:
     {
         Acc.Read_Acc();
         Gyro.Read_Gyro();
+#ifdef MAG
         Mag.Read_Mag();
+#endif
     }
 
     // ########################################################################
@@ -168,7 +197,9 @@ public:
     {
         Acc.set_zero_Frame();
         Gyro.set_zero_Frame();
+#ifdef MAG
         Mag.set_zero_Frame();
+#endif
     }
 
     friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
@@ -198,13 +229,24 @@ public:
             ((unsigned char*)&Out_Buf)[11 + 2 * i] = tmp >> 8;            // Старший разряд
         }
         
+#ifdef MAG        
         for (i = 0; i < 3; i++){
-            // ((unsigned char*)&Out_Buf)[16 + 2 * i] = Out_Buf.Gyro_XYZ_lowBit  (т.е младший разряд Gyro.XYZ_coord)
-            // ((unsigned char*)&Out_Buf)[17 + 2 * i] = Out_Buf.Gyro_XYZ_highBit (т.е старший разряд Gyro.XYZ_coord)
+            // ((unsigned char*)&Out_Buf)[16 + 2 * i] = Out_Buf.Mag_XYZ_lowBit  (т.е младший разряд Mag.XYZ_coord)
+            // ((unsigned char*)&Out_Buf)[17 + 2 * i] = Out_Buf.Mag_XYZ_highBit (т.е старший разряд Mag.XYZ_coord)
             tmp = round(Mag[i]);
             ((unsigned char*)&Out_Buf)[16 + 2 * i] = tmp;                 // Младший разряд
             ((unsigned char*)&Out_Buf)[17 + 2 * i] = tmp >> 8;            // Старший разряд
         }
+#endif
+
+#ifdef TEMP
+        ReadMagTemp(&Temp);
+        // ((unsigned char*)&Out_Buf)[16 + 2 * i] = Temp_lowBit  (т.е младший разряд Temp)
+        // ((unsigned char*)&Out_Buf)[17 + 2 * i] = Temp_highBit (т.е старший разряд Temp)
+        tmp = round(Temp);
+        ((unsigned char*)&Out_Buf)[22] = tmp;                 // Младший разряд
+        ((unsigned char*)&Out_Buf)[23] = tmp >> 8;            // Старший разряд
+#endif
 
         // Посчитаем контрольную сумму
         tmp = 0;

@@ -73,11 +73,11 @@ int main()
     measure.initial_setting();
 
     // Запускаем таймер 
-    TIM_Cmd(TIM4, ENABLE);
+    // TIM_Cmd(TIM4, ENABLE);
 
     // Включим прерывания от USART2
-    USART_Cmd(USART2, ENABLE);
-    Uart_irq_enable();
+    // USART_Cmd(USART2, ENABLE);
+    // Uart_irq_enable();
 
     // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
@@ -102,15 +102,17 @@ void InitAll(){
     VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
     VCP_Init();        
 
-    // Инициализируем UART и датчики
-    InitUart(115200);  
+    // Инициализируем UART
+    // InitUart(115200);  
+    // InitDecoder();
+
+    // Инициализируем датчики
     GYRO_INIT();
     ACC_INIT();
     MAG_INIT();
-    InitDecoder();
 
     // Инициализация таймера и его настройка
-    TimerInit();  
+    // TimerInit();  
 }
 
 // -------------------------------------------------------------------------------

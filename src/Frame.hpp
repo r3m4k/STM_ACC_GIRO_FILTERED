@@ -104,9 +104,9 @@ public:
         OZ =  oz
         */
         ReadAcc(frame_Buffer);
-        X_coord =  frame_Buffer[1];
-        Y_coord = -frame_Buffer[0];
-        Z_coord =  frame_Buffer[2];
+        X_coord =  frame_Buffer[1] * 0.1;
+        Y_coord = -frame_Buffer[0] * 0.1;
+        Z_coord =  frame_Buffer[2] * 0.1;
         // Домножаем на 0.1, чтобы ускорения были в mg
     }
 
@@ -119,9 +119,11 @@ public:
         OZ = oz
         */
         ReadGyro(frame_Buffer);
-        X_coord = frame_Buffer[0] / gyro_multiplier;
-        Y_coord = frame_Buffer[1] / gyro_multiplier;
-        Z_coord = frame_Buffer[2] / gyro_multiplier;
+        X_coord = (frame_Buffer[0] / gyro_multiplier) * 100;
+        Y_coord = (frame_Buffer[1] / gyro_multiplier) * 100;
+        Z_coord = (frame_Buffer[2] / gyro_multiplier) * 100;
+        // Домножаем на 100, чтобы передать 2 значащие цифры после запятой,
+        // тк данные отправляются в целочисленном виде
     }
 
     void Read_Mag()
@@ -133,9 +135,10 @@ public:
         OZ =  oz
         */
         ReadMag(frame_Buffer);
-        X_coord =  frame_Buffer[1];
-        Y_coord = -frame_Buffer[0];
-        Z_coord =  frame_Buffer[2];
+        X_coord =  frame_Buffer[1] * 1000;
+        Y_coord = -frame_Buffer[0] * 1000;
+        Z_coord =  frame_Buffer[2] * 1000;
+        // Домножаем на 1000, чтобы перевести напряжённость магнитного поля в мкГауссы
     }
 
     // ########################################################################
