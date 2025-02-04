@@ -2,10 +2,17 @@
 
 #define OFFSET_VALUE    0           // Пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
-// #define DATA_PROCESSING
+#define DATA_PROCESSING
 
+// ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
 #define FilterSize          128
 #define FilterFrameSize     16
+#define rolling_n           8
+#define n_sigma             1.0f
+
+#define X_COORD             (int) 0
+#define Y_COORD             (int) 1
+#define Z_COORD             (int) 2
 
 extern float gyro_multiplier;
 
@@ -16,7 +23,7 @@ public:
     // Данные, которые будут меняться в вызываемых функциях
     // Вынесем их в статические переменные для избежания переполнения стека процессора
     Data current_Data, zero_Data, buffer_Data;
-    Matrix temp_matrix;    
+    Matrix tmp_matrix;    
     // -------------------------------------------------------------------------------
     Matrix rotation_matrix;         // Матрица перехода от СК платы к глобальной СК, у которой ось OY направлена на север, а OZ перпендикулярно поверхности
     Matrix buffer_matrix;           // Матрица поворота от i-1 состояния в исходное
@@ -45,12 +52,21 @@ public:
     {
         float Acc_Buffer[3];        // Буфер для данных с акселерометра
         float Gyro_Buffer[3];       // Буфер для данных с гироскопа
-        float tmp_Buffer[3];        // Вспомогательный буфер
     }FilterFrame[FilterSize];    
 
-    uint8_t temp_size;              // Вспомогательная переменная
+    int tmp_size;                   // Вспомогательная переменная
+    int flt_size;
+    int frame_counter;              // Счётчик кусков данных
+
+    // Вспомогательные буферы
+    float tmp_Buffer[FilterSize];   
+    float flt_Buffer[FilterSize];
+    float tmp_frame_Buffer[FilterFrameSize];
+    float flt_frame_Buffer[FilterFrameSize];
     // -------------------------------------------------------------------------------
-    uint16_t index1, index2;        // Индексы для циклов (объявляем здесь чтобы не выделять под них постоянно память в ходе программы) 
+    // Вспомогательные переменные (объявляем здесь чтобы не выделять под них постоянно память в ходе программы) 
+    uint16_t index1, index2;        // Индексы для циклов 
+    float tmp_float;
     // -------------------------------------------------------------------------------
 
     // ########################################################################
@@ -80,14 +96,7 @@ public:
             {
                 // Считаем данные и отфильтруем их
 
-                // Пока в качестве фильтрации будем использовать усреднение
-                buffer_Data.set_zero_Values();
-                for (index1 = 0; index1 < filter_depth; index1++){
-                    current_Data.Read_Data();
-                    buffer_Data += current_Data;
-                }
-
-                buffer_Data /= filter_depth;
+                data_filtering();
 
                 // Начнём обработку новых данных
                 
@@ -97,27 +106,27 @@ public:
                     Angles[index1] = buffer_Data.Gyro[index1] * period;
                 }
                 
-                // Далее считаем, что temp_matrix - матрица поворота от i-го состояния в i-1 состояние, соответствущее прошлой итерации обработки данных
-                // Заполним матрицу temp_matrix углами поворота вокруг XYZ (https://ru.wikipedia.org/wiki/Матрица_поворота)
-                temp_matrix(0, 0) =  cos(Angles[1]) * cos(Angles[2]);
-                temp_matrix(0, 1) = -sin(Angles[2]) * cos(Angles[1]);
-                temp_matrix(0, 2) =  sin(Angles[1]);
+                // Далее считаем, что tmp_matrix - матрица поворота от i-го состояния в i-1 состояние, соответствущее прошлой итерации обработки данных
+                // Заполним матрицу tmp_matrix углами поворота вокруг XYZ (https://ru.wikipedia.org/wiki/Матрица_поворота)
+                tmp_matrix(0, 0) =  cos(Angles[1]) * cos(Angles[2]);
+                tmp_matrix(0, 1) = -sin(Angles[2]) * cos(Angles[1]);
+                tmp_matrix(0, 2) =  sin(Angles[1]);
 
-                temp_matrix(1, 0) =  sin(Angles[0]) * sin(Angles[1]) * cos(Angles[2]) + sin(Angles[2]) * cos(Angles[0]);
-                temp_matrix(1, 1) = -sin(Angles[0]) * sin(Angles[1]) * sin(Angles[2]) + cos(Angles[0]) * cos(Angles[2]);
-                temp_matrix(1, 2) = -sin(Angles[0]) * cos(Angles[1]);
+                tmp_matrix(1, 0) =  sin(Angles[0]) * sin(Angles[1]) * cos(Angles[2]) + sin(Angles[2]) * cos(Angles[0]);
+                tmp_matrix(1, 1) = -sin(Angles[0]) * sin(Angles[1]) * sin(Angles[2]) + cos(Angles[0]) * cos(Angles[2]);
+                tmp_matrix(1, 2) = -sin(Angles[0]) * cos(Angles[1]);
 
-                temp_matrix(2, 0) =  sin(Angles[0]) * sin(Angles[2]) - sin(Angles[1]) * cos(Angles[0]) * cos(Angles[2]);
-                temp_matrix(2, 1) =  sin(Angles[0]) * cos(Angles[2]) + sin(Angles[1]) * sin(Angles[2]) * cos(Angles[0]);
-                temp_matrix(2, 2) =  cos(Angles[0]) * cos(Angles[1]);
+                tmp_matrix(2, 0) =  sin(Angles[0]) * sin(Angles[2]) - sin(Angles[1]) * cos(Angles[0]) * cos(Angles[2]);
+                tmp_matrix(2, 1) =  sin(Angles[0]) * cos(Angles[2]) + sin(Angles[1]) * sin(Angles[2]) * cos(Angles[0]);
+                tmp_matrix(2, 2) =  cos(Angles[0]) * cos(Angles[1]);
 
-                temp_matrix *= buffer_matrix;       // Получили матрицу поворота в исходное состояние, при котором проводилась выставка
-                buffer_matrix = temp_matrix;        // Сохраним значения temp_matrix в buffer_matrix, чтобы корректно перейти к i+1 состоянию
+                tmp_matrix *= buffer_matrix;       // Получили матрицу поворота в исходное состояние, при котором проводилась выставка
+                buffer_matrix = tmp_matrix;        // Сохраним значения tmp_matrix в buffer_matrix, чтобы корректно перейти к i+1 состоянию
                 
-                temp_matrix *= rotation_matrix;     // Получили матрицу поворота в СК Земли из i-го состояния
+                tmp_matrix *= rotation_matrix;     // Получили матрицу поворота в СК Земли из i-го состояния
 
                 // Вычислим приращение координат за время period в СК Земли
-                temp_matrix *= buffer_Data.Acc;     // Значение ускорений в СК Земли
+                tmp_matrix *= buffer_Data.Acc;     // Значение ускорений в СК Земли
 
                 // Заполним данные о координатах и скоростях                
                 for (index1 = 0; index1 < 3; index1++){
@@ -250,11 +259,135 @@ public:
     }
     // ########################################################################
     // Фильтрация входного потока данных
+    /* Описание алгоритма фильтрации данных:
+       Будем работать с частями буфера размера FilterFrameSize. Считаем, что данные на этом отрезке распределены нормально.
+       Будем учитывать данные, отличающиеся от среднего значения только на n_sigma сигм (см ./Documentation/sigma_rule.jpg).
+       Аналогичные действия выполняются со всеми частями буферов.
+    
+       Затем мы получаем данные без резких выбросов. По этому набору мы вычисляем скользящее среднее и вычисляем его среднее арифметическое.
+       Это значение и будет принято за истинное значение на данном промежутке
+    */
     void data_filtering(){
+        // Заполним буферы
         for (index1 = 0; index1 < FilterSize; index1++){
             current_Data.Read_Data();
-            FilterFrame[index1].Acc_Buffer = current_Data.Acc;
-            FilterFrame[index1].Gyro_Buffer = current_Data.Gyro;
+            for (index2 = 0; index2 < 3; index2++){
+                FilterFrame[index1].Acc_Buffer[index2] = current_Data(0, index2);
+                FilterFrame[index1].Gyro_Buffer[index2] = current_Data(1, index2);
+            }
         }
+
+        // Получим истинные значения данных с акселерометра по осям
+        AccXYZ_filtering(X_COORD);
+        AccXYZ_filtering(Y_COORD);
+        AccXYZ_filtering(Z_COORD);
+
+        // Получим истинные значения данных с гироскопа по осям
+        GyroXYZ_filtering(X_COORD);
+        GyroXYZ_filtering(Y_COORD);
+        GyroXYZ_filtering(Z_COORD);
+    }
+
+    // Фильтрация данных одной координаты coord с акселерометра с последующим сохранением полученного значения в buffer_Data.Acc
+    void AccXYZ_filtering(int coord){
+        frame_counter = 0;
+        flt_size = 0;
+
+        // Отфильтруем резкие выбросы из Acc_Buffer[coord] и сохраним эти значения в flt_Buffer. Всего будет flt_size отфильтрованных значений
+        for (index1 = 0; index1 < (FilterSize / FilterFrameSize); index1++){
+            // Скопируем index1-ую часть буфера
+            for (index2 = 0; index2 < FilterFrameSize; index2++){
+                flt_frame_Buffer[index2] = FilterFrame[frame_counter * FilterFrameSize + index2].Acc_Buffer[coord];
+            }
+            tmp_size = 0;       // Размер заполненных данных в tmp_frame_Buffer
+            sharp_emission_filter(flt_frame_Buffer, FilterFrameSize);
+
+            for (index2 = 0; index2 < tmp_size; index2++){
+                flt_Buffer[flt_size + index2] = tmp_frame_Buffer[index2];
+            }
+            
+            flt_size += tmp_size;
+            frame_counter++;
+        }
+
+        rolling_mean(flt_Buffer, FilterSize - flt_size);
+        
+        tmp_size = FilterSize - flt_size - rolling_n;
+        mean(flt_Buffer, tmp_size);
+
+        buffer_Data.Acc[coord] = tmp_float;
+    }
+
+    // Фильтрация данных одной координаты coord с гироскопа с последующим сохранением полученного значения в buffer_Data.Gyro
+    void GyroXYZ_filtering(int coord){
+        frame_counter = 0;
+        flt_size = 0;
+
+        // Отфильтруем резкие выбросы из Gyro_Buffer[coord] и сохраним эти значения в flt_Buffer. Всего будет flt_size отфильтрованных значений
+        for (index1 = 0; index1 < (FilterSize / FilterFrameSize); index1++){
+            // Скопируем index1-ую часть буфера
+            for (index2 = 0; index2 < FilterFrameSize; index2++){
+                flt_frame_Buffer[index2] = FilterFrame[frame_counter * FilterFrameSize + index2].Gyro_Buffer[coord];
+            }
+            tmp_size = 0;       // Размер заполненных данных в tmp_frame_Buffer
+            sharp_emission_filter(flt_frame_Buffer, FilterFrameSize);
+
+            for (index2 = 0; index2 < tmp_size; index2++){
+                flt_Buffer[flt_size + index2] = tmp_frame_Buffer[index2];
+            }
+            
+            flt_size += tmp_size;
+            frame_counter++;
+        }
+
+        rolling_mean(flt_Buffer, FilterSize - flt_size);
+        
+        tmp_size = FilterSize - flt_size - rolling_n;
+        mean(flt_Buffer, tmp_size);
+
+        buffer_Data.Gyro[coord] = tmp_float;
+    }
+
+    // Фильтр резких выбросов значений из массива arr с сохранением в tmp_frame_Buffer
+    void sharp_emission_filter(float *arr, int len){
+        // Инициализируем эти переменные здесь, чтобы они сохранилась в стек и доступ к ним был наиболее быстрым (наверное)
+        mean(arr, len);
+        float mean_value = tmp_float;     
+        
+        std(arr, mean_value, len);
+        float std_value = tmp_float;
+
+        for (index2 = 0; index2 < FilterFrameSize; index2++){
+            if ((arr[index2] > (mean_value - n_sigma * std_value)) & (arr[index2] < (mean_value + n_sigma * std_value))){
+                tmp_frame_Buffer[tmp_size++] = arr[index2];
+            }
+        }
+    }
+
+    // Вычисление плавающего среднего с сохранением в flt_Buffer
+    void rolling_mean(float *arr, int len){
+        int length = len - rolling_n;
+        tmp_float = 0;
+        for (index2 = 0; index2 < length; index2++){
+            for (int i = 0; i < rolling_n; i++){    tmp_float += arr[index2 + i];    }
+
+        }
+    }
+
+    // Вычисление среднего арифметического с сохранением результата в tmp_float
+    void mean(float *arr, int len){
+        tmp_float = 0;
+        for (index2 = 0; index2 < len; index2++){
+            tmp_float += arr[index2];
+        }
+    }
+
+    // Вычисление среднеквадратического отклонения с сохранением результата в tmp_float
+    void std(float *arr, float mean_value, int len){
+        tmp_float = 0;
+        for (index2 = 0; index2 < len; index2++){
+            tmp_float += (arr[index2] - mean_value) * (arr[index2] - mean_value);
+        }
+        tmp_float = sqrt(tmp_float / len);
     }
 };
