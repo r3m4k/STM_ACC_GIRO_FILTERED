@@ -2,6 +2,10 @@
 
 #define OFFSET_VALUE    0           // Пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
+// #define DATA_PROCESSING
+
+#define FilterSize          128
+#define FilterFrameSize     16
 
 extern float gyro_multiplier;
 
@@ -36,6 +40,16 @@ public:
     float offset = OFFSET_VALUE;    // Перемещение от прошлого сигнала 
     float displacement[3] = {0};    // Изменение координат от предыдущей посылки ДПП
     // -------------------------------------------------------------------------------
+    // Переменные для фильтрации данных
+    struct FilterData               // Структура для хранения данных
+    {
+        float Acc_Buffer[3];        // Буфер для данных с акселерометра
+        float Gyro_Buffer[3];       // Буфер для данных с гироскопа
+        float tmp_Buffer[3];        // Вспомогательный буфер
+    }FilterFrame[FilterSize];    
+
+    uint8_t temp_size;              // Вспомогательная переменная
+    // -------------------------------------------------------------------------------
     uint16_t index1, index2;        // Индексы для циклов (объявляем здесь чтобы не выделять под них постоянно память в ходе программы) 
     // -------------------------------------------------------------------------------
 
@@ -61,6 +75,7 @@ public:
             // rotation_matrix *= current_Data;
             current_Data.sending_USB();
 
+#ifdef DATA_PROCESSING
             if (new_tick_Flag)
             {
                 // Считаем данные и отфильтруем их
@@ -140,7 +155,7 @@ public:
                 }
                 new_DPP_Flag = FALSE;
             }            
-
+#endif
             LedOn(LED8);
         }
     }
@@ -232,5 +247,14 @@ public:
 
         rotation_matrix.Mreverse();
         rotation_matrix.copying_from_Buffer();
+    }
+    // ########################################################################
+    // Фильтрация входного потока данных
+    void data_filtering(){
+        for (index1 = 0; index1 < FilterSize; index1++){
+            current_Data.Read_Data();
+            FilterFrame[index1].Acc_Buffer = current_Data.Acc;
+            FilterFrame[index1].Gyro_Buffer = current_Data.Gyro;
+        }
     }
 };
