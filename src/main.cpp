@@ -6,7 +6,7 @@
 #include "Measure.hpp"
 
 #define PI 3.14159265358979f
-#define TIM_PERIOD 4    // Количество тиков таймера с частотой 800 Гц перед вызовом прерывания
+#define TIM_PERIOD 10000    // Количество тиков таймера с частотой 800 Гц перед вызовом прерывания
 
 // ----------------------------------------------------------------------------
 //
@@ -75,9 +75,9 @@ int main()
     // Запускаем таймер 
     TIM_Cmd(TIM4, ENABLE);
 
-    // Включим прерывания от USART2
-    USART_Cmd(USART2, ENABLE);
-    Uart_irq_enable();
+    // // Включим прерывания от USART2
+    // USART_Cmd(USART2, ENABLE);
+    // Uart_irq_enable();
 
     // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
@@ -260,8 +260,8 @@ void TimerInit(void){
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    uint16_t TIMER_PRESCALER = 10000;    // При таком предделителе получается один тик таймера на 1.25 мс
-
+    // uint16_t TIMER_PRESCALER = 10000;    // При таком предделителе получается один тик таймера на 1.25 мс
+    uint16_t TIMER_PRESCALER = 1;
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     /* Set the default configuration */
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
@@ -277,8 +277,8 @@ void TIM4_IRQHandler(void)
 { 
     LedOn(LED9);
     
-    measure.TickCounter++;
-    measure.new_tick_Flag = TRUE;
+    // measure.TickCounter++;
+    // measure.new_tick_Flag = TRUE;
     
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
     LedOff(LED9);

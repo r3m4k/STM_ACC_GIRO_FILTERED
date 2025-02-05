@@ -5,9 +5,9 @@
 #define DATA_PROCESSING
 
 // ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
-#define FilterSize          128
-#define FilterFrameSize     16
-#define rolling_n           8
+#define FilterSize          16
+#define FilterFrameSize     8
+#define rolling_n           4
 #define n_sigma             1.0f
 
 #define X_COORD             (int) 0
@@ -52,17 +52,17 @@ public:
     {
         float Acc_Buffer[3];        // Буфер для данных с акселерометра
         float Gyro_Buffer[3];       // Буфер для данных с гироскопа
-    }FilterFrame[FilterSize];    
+    }FilterFrame[FilterSize];
 
-    int tmp_size;                   // Вспомогательная переменная
-    int flt_size;
-    int frame_counter;              // Счётчик кусков данных
-
-    // Вспомогательные буферы
+    // Вспомогательные буферы для работы фильтра
     float tmp_Buffer[FilterSize];   
     float flt_Buffer[FilterSize];
     float tmp_frame_Buffer[FilterFrameSize];
     float flt_frame_Buffer[FilterFrameSize];
+
+    int tmp_size;                   // Размер заполненных данных в tmp_Buffer / tmp_frame_Buffer в определённый момент времени
+    int flt_size;                   // Размер заполненных данных в flt_Buffer / flt_frame_Buffer в определённый момент времени
+    int frame_counter;              // Счётчик кусков данных
     // -------------------------------------------------------------------------------
     // Вспомогательные переменные (объявляем здесь чтобы не выделять под них постоянно память в ходе программы) 
     uint16_t index1, index2;        // Индексы для циклов 
@@ -84,16 +84,28 @@ public:
         while (1)
         {
             LedOff(LED8);
-            current_Data.Read_Data();
+            // current_Data.Read_Data();
 
             // Переведём данные из СК датчика в СК Земли
             // current_Data -= zero_Data;
             // rotation_matrix *= current_Data;
-            current_Data.sending_USB();
-
+            // current_Data.sending_USB();
+            new_tick_Flag = TRUE;
 #ifdef DATA_PROCESSING
-            if (new_tick_Flag)
+            if (new_tick_Flag)       
+            /*
+            Результаты испытаний времени выполнения обработки новых данных:
+            440 мс при FilterSize = 128 / FilterFrameSize = 16 / rolling_n = 8
+            220 мс при FilterSize = 64  / FilterFrameSize = 16 / rolling_n = 8
+            110 мс при FilterSize = 32  / FilterFrameSize = 16 / rolling_n = 8
+            110 мс при FilterSize = 32  / FilterFrameSize = 8  / rolling_n = 4
+            55  мс при FilterSize = 16  / FilterFrameSize = 8  / rolling_n = 4
+            Самой оптимальной является последняя конфигурация (наверное), поэтому будем работать с ней.
+            Тогда можно выставить период таймера в 60 мс. В этом случае будет достаточно времени на компенсацию смещений и останется небольшой запас (наверное).
+            За это время человек, двигаясь со скоростью 5 км/ч пройдёт 8 см.
+            */
             {
+                LedOn(LED5);
                 // Считаем данные и отфильтруем их
 
                 data_filtering();
@@ -135,6 +147,7 @@ public:
                     displacement[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2; 
                 }
                 new_tick_Flag = FALSE;
+                LedOff(LED5);
             }
 
             if (new_DPP_Flag)
@@ -165,6 +178,7 @@ public:
                 new_DPP_Flag = FALSE;
             }            
 #endif
+            for (index1 = 0; index1 < 1000; index1++){  continue;   }
             LedOn(LED8);
         }
     }
@@ -272,7 +286,7 @@ public:
         for (index1 = 0; index1 < FilterSize; index1++){
             current_Data.Read_Data();
             for (index2 = 0; index2 < 3; index2++){
-                FilterFrame[index1].Acc_Buffer[index2] = current_Data(0, index2);
+                FilterFrame[index1].Acc_Buffer[index2]  = current_Data(0, index2);
                 FilterFrame[index1].Gyro_Buffer[index2] = current_Data(1, index2);
             }
         }
@@ -300,7 +314,7 @@ public:
                 flt_frame_Buffer[index2] = FilterFrame[frame_counter * FilterFrameSize + index2].Acc_Buffer[coord];
             }
             tmp_size = 0;       // Размер заполненных данных в tmp_frame_Buffer
-            sharp_emission_filter(flt_frame_Buffer, FilterFrameSize);
+            sharp_emission_filter();
 
             for (index2 = 0; index2 < tmp_size; index2++){
                 flt_Buffer[flt_size + index2] = tmp_frame_Buffer[index2];
@@ -310,10 +324,8 @@ public:
             frame_counter++;
         }
 
-        rolling_mean(flt_Buffer, FilterSize - flt_size);
-        
-        tmp_size = FilterSize - flt_size - rolling_n;
-        mean(flt_Buffer, tmp_size);
+        rolling_mean();
+        mean(tmp_Buffer, tmp_size);
 
         buffer_Data.Acc[coord] = tmp_float;
     }
@@ -330,7 +342,7 @@ public:
                 flt_frame_Buffer[index2] = FilterFrame[frame_counter * FilterFrameSize + index2].Gyro_Buffer[coord];
             }
             tmp_size = 0;       // Размер заполненных данных в tmp_frame_Buffer
-            sharp_emission_filter(flt_frame_Buffer, FilterFrameSize);
+            sharp_emission_filter();
 
             for (index2 = 0; index2 < tmp_size; index2++){
                 flt_Buffer[flt_size + index2] = tmp_frame_Buffer[index2];
@@ -340,37 +352,36 @@ public:
             frame_counter++;
         }
 
-        rolling_mean(flt_Buffer, FilterSize - flt_size);
-        
-        tmp_size = FilterSize - flt_size - rolling_n;
-        mean(flt_Buffer, tmp_size);
+        rolling_mean();
+        mean(tmp_Buffer, tmp_size);
 
         buffer_Data.Gyro[coord] = tmp_float;
     }
 
-    // Фильтр резких выбросов значений из массива arr с сохранением в tmp_frame_Buffer
-    void sharp_emission_filter(float *arr, int len){
-        // Инициализируем эти переменные здесь, чтобы они сохранилась в стек и доступ к ним был наиболее быстрым (наверное)
-        mean(arr, len);
+    // Фильтр резких выбросов значений из массива flt_frame_Buffer с сохранением в tmp_frame_Buffer
+    void sharp_emission_filter(){
+        mean(flt_frame_Buffer, FilterFrameSize);
         float mean_value = tmp_float;     
         
-        std(arr, mean_value, len);
+        std(flt_frame_Buffer, mean_value, FilterFrameSize);
         float std_value = tmp_float;
 
         for (index2 = 0; index2 < FilterFrameSize; index2++){
-            if ((arr[index2] > (mean_value - n_sigma * std_value)) & (arr[index2] < (mean_value + n_sigma * std_value))){
-                tmp_frame_Buffer[tmp_size++] = arr[index2];
+            if ((flt_frame_Buffer[index2] > (mean_value - n_sigma * std_value)) && (flt_frame_Buffer[index2] < (mean_value + n_sigma * std_value))){
+                tmp_frame_Buffer[tmp_size++] = flt_frame_Buffer[index2];
             }
         }
     }
 
-    // Вычисление плавающего среднего с сохранением в flt_Buffer
-    void rolling_mean(float *arr, int len){
-        int length = len - rolling_n;
+    // Вычисление плавающего среднего данных из flt_Buffer с сохранением в tmp_Buffer
+    void rolling_mean(){
+        tmp_size = flt_size - rolling_n + 1;
         tmp_float = 0;
-        for (index2 = 0; index2 < length; index2++){
-            for (int i = 0; i < rolling_n; i++){    tmp_float += arr[index2 + i];    }
-
+        for (index2 = 0; index2 < tmp_size; index2++){
+            for (int i = 0; i < rolling_n; i++){    tmp_float += flt_Buffer[index2 + i];    }
+            tmp_float /= rolling_n;
+            tmp_Buffer[index2] = tmp_float;
+            tmp_float = 0;
         }
     }
 
@@ -380,6 +391,7 @@ public:
         for (index2 = 0; index2 < len; index2++){
             tmp_float += arr[index2];
         }
+        tmp_float /= len;
     }
 
     // Вычисление среднеквадратического отклонения с сохранением результата в tmp_float
