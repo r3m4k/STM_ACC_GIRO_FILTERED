@@ -2,14 +2,14 @@
 
 // #define DATA_PROCESSING
 // #define USING_DPP
+#define ERROR_CALCULATION
 
-#define OFFSET_VALUE    0           // Пройденный путь (в метрах) между сигналами от ДПП
+#define OFFSET_VALUE    0           // Фиктивный пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
-#define DATA_PROCESSING
 
 // ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
-#define FilterSize          16
-#define FilterFrameSize     8
+#define FilterSize          32
+#define FilterFrameSize     16
 #define rolling_n           4
 #define n_sigma             1.0f
 
@@ -17,7 +17,6 @@
 #define Y_COORD             (int) 1
 #define Z_COORD             (int) 2
 
-extern float gyro_multiplier;
 
 class Measure 
 {
@@ -62,10 +61,15 @@ public:
     float flt_Buffer[FilterSize];
     float tmp_frame_Buffer[FilterFrameSize];
     float flt_frame_Buffer[FilterFrameSize];
-
+    
     int tmp_size;                   // Размер заполненных данных в tmp_Buffer / tmp_frame_Buffer в определённый момент времени
     int flt_size;                   // Размер заполненных данных в flt_Buffer / flt_frame_Buffer в определённый момент времени
     int frame_counter;              // Счётчик кусков данных
+
+#ifdef ERROR_CALCULATION
+    float Acc_std[3];               // СКО значений акселерометра
+    float Gyro_std[3];              // СКО значений гироскопа
+#endif      /* ERROR_CALCULATION */
     // -------------------------------------------------------------------------------
     // Вспомогательные переменные (объявляем здесь чтобы не выделять под них постоянно память в ходе программы) 
     uint16_t index1, index2;        // Индексы для циклов 
@@ -91,72 +95,38 @@ public:
         while (1)
         {
             LedOff(LED8);
-            // current_Data.Read_Data();
+            current_Data.Read_Data();
 
             // Переведём данные из СК датчика в СК Земли
             // current_Data -= zero_Data;
             // rotation_matrix *= current_Data;
-            // current_Data.sending_USB();
+            current_Data.sending_USB();
+            
             new_tick_Flag = TRUE;
+
 #ifdef DATA_PROCESSING
             if (new_tick_Flag)       
             /*
-            Результаты испытаний времени выполнения обработки новых данных:
+            Результаты испытаний времени выполнения обработки новых данных без вычисления СКО:
             440 мс при FilterSize = 128 / FilterFrameSize = 16 / rolling_n = 8
             220 мс при FilterSize = 64  / FilterFrameSize = 16 / rolling_n = 8
             110 мс при FilterSize = 32  / FilterFrameSize = 16 / rolling_n = 8
             110 мс при FilterSize = 32  / FilterFrameSize = 8  / rolling_n = 4
             55  мс при FilterSize = 16  / FilterFrameSize = 8  / rolling_n = 4
-            Самой оптимальной является последняя конфигурация (наверное), поэтому будем работать с ней.
-            Тогда можно выставить период таймера в 60 мс. В этом случае будет достаточно времени на компенсацию смещений и останется небольшой запас (наверное).
-            За это время человек, двигаясь со скоростью 5 км/ч пройдёт 8 см.
+            Самой оптимальной является третья конфигурация, тк за это время человек и двигаясь со скоростью 5 км/ч, пройдёт примерно 18 см, 
+            что примерно равно пройденному расстоянию между двумя сигналами от ДПП, поэтому будем работать с ней.
+            Тогда можно выставить период таймера в 120 мс. В этом случае будет достаточно времени на компенсацию смещений и останется небольшой запас (наверное).
             */
             {
                 LedOn(LED5);
-                // Считаем данные и отфильтруем их
-
-                data_filtering();
-
-                // Начнём обработку новых данных
                 
-                // Вычислим угол поворота за время period, опираясь на данные полученные только на части этого промежутка
-                // При этом считаем, что за время period не произойдёт сильных изменений ни угловых скоростей, ни ускорений
-                for (index1 = 0; index1 < 3; index1++){
-                    Angles[index1] = buffer_Data.Gyro[index1] * period;
-                }
+                data_collecting();
+                data_filtering(); 
+                data_processing();
                 
-                // Далее считаем, что tmp_matrix - матрица поворота от i-го состояния в i-1 состояние, соответствущее прошлой итерации обработки данных
-                // Заполним матрицу tmp_matrix углами поворота вокруг XYZ (https://ru.wikipedia.org/wiki/Матрица_поворота)
-                tmp_matrix(0, 0) =  cos(Angles[1]) * cos(Angles[2]);
-                tmp_matrix(0, 1) = -sin(Angles[2]) * cos(Angles[1]);
-                tmp_matrix(0, 2) =  sin(Angles[1]);
-
-                tmp_matrix(1, 0) =  sin(Angles[0]) * sin(Angles[1]) * cos(Angles[2]) + sin(Angles[2]) * cos(Angles[0]);
-                tmp_matrix(1, 1) = -sin(Angles[0]) * sin(Angles[1]) * sin(Angles[2]) + cos(Angles[0]) * cos(Angles[2]);
-                tmp_matrix(1, 2) = -sin(Angles[0]) * cos(Angles[1]);
-
-                tmp_matrix(2, 0) =  sin(Angles[0]) * sin(Angles[2]) - sin(Angles[1]) * cos(Angles[0]) * cos(Angles[2]);
-                tmp_matrix(2, 1) =  sin(Angles[0]) * cos(Angles[2]) + sin(Angles[1]) * sin(Angles[2]) * cos(Angles[0]);
-                tmp_matrix(2, 2) =  cos(Angles[0]) * cos(Angles[1]);
-
-                tmp_matrix *= buffer_matrix;       // Получили матрицу поворота в исходное состояние, при котором проводилась выставка
-                buffer_matrix = tmp_matrix;        // Сохраним значения tmp_matrix в buffer_matrix, чтобы корректно перейти к i+1 состоянию
-                
-                tmp_matrix *= rotation_matrix;     // Получили матрицу поворота в СК Земли из i-го состояния
-
-                // Вычислим приращение координат за время period в СК Земли
-                tmp_matrix *= buffer_Data.Acc;     // Значение ускорений в СК Земли
-
-                // Заполним данные о координатах и скоростях                
-                for (index1 = 0; index1 < 3; index1++){
-                    Coordinates[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2 - shift;    
-                    Velocity[index1] += buffer_Data.Acc[index1] * period;
-                    displacement[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2; 
-                }
-                new_tick_Flag = FALSE;
                 LedOff(LED5);
             }
-#endif      // DATA_PROCESSING
+#endif      /* DATA_PROCESSING */
 
 #ifdef USING_DPP
             if (new_DPP_Flag)
@@ -186,7 +156,7 @@ public:
                 }
                 new_DPP_Flag = FALSE;
             }            
-#endif      // USING_DPP
+#endif      /* USING_DPP */ 
 
             LedOn(LED8);
         }
@@ -279,17 +249,11 @@ public:
         rotation_matrix.Mreverse();
         rotation_matrix.copying_from_Buffer();
     }
+
     // ########################################################################
-    // Фильтрация входного потока данных
-    /* Описание алгоритма фильтрации данных:
-       Будем работать с частями буфера размера FilterFrameSize. Считаем, что данные на этом отрезке распределены нормально.
-       Будем учитывать данные, отличающиеся от среднего значения только на n_sigma сигм (см ./Documentation/sigma_rule.jpg).
-       Аналогичные действия выполняются со всеми частями буферов.
-    
-       Затем мы получаем данные без резких выбросов. По этому набору мы вычисляем скользящее среднее и вычисляем его среднее арифметическое.
-       Это значение и будет принято за истинное значение на данном промежутке
-    */
-    void data_filtering(){
+    // Сбор сырых данных
+    void data_collecting(){
+
         // Заполним буферы
         for (index1 = 0; index1 < FilterSize; index1++){
             current_Data.Read_Data();
@@ -298,6 +262,60 @@ public:
                 FilterFrame[index1].Gyro_Buffer[index2] = current_Data(1, index2);
             }
         }
+    }
+
+    // ########################################################################
+    // Обработка отфильтрованных данных
+    void data_processing(){
+
+        // Вычислим угол поворота за время period, опираясь на данные полученные только на части этого промежутка
+        // При этом считаем, что за время period не произойдёт сильных изменений ни угловых скоростей, ни ускорений
+        for (index1 = 0; index1 < 3; index1++){
+            Angles[index1] = buffer_Data.Gyro[index1] * period;
+        }
+        
+        // Далее считаем, что tmp_matrix - матрица поворота от i-го состояния в i-1 состояние, соответствущее прошлой итерации обработки данных
+        // Заполним матрицу tmp_matrix углами поворота вокруг XYZ (https://ru.wikipedia.org/wiki/Матрица_поворота)
+        tmp_matrix(0, 0) =  cos(Angles[1]) * cos(Angles[2]);
+        tmp_matrix(0, 1) = -sin(Angles[2]) * cos(Angles[1]);
+        tmp_matrix(0, 2) =  sin(Angles[1]);
+
+        tmp_matrix(1, 0) =  sin(Angles[0]) * sin(Angles[1]) * cos(Angles[2]) + sin(Angles[2]) * cos(Angles[0]);
+        tmp_matrix(1, 1) = -sin(Angles[0]) * sin(Angles[1]) * sin(Angles[2]) + cos(Angles[0]) * cos(Angles[2]);
+        tmp_matrix(1, 2) = -sin(Angles[0]) * cos(Angles[1]);
+
+        tmp_matrix(2, 0) =  sin(Angles[0]) * sin(Angles[2]) - sin(Angles[1]) * cos(Angles[0]) * cos(Angles[2]);
+        tmp_matrix(2, 1) =  sin(Angles[0]) * cos(Angles[2]) + sin(Angles[1]) * sin(Angles[2]) * cos(Angles[0]);
+        tmp_matrix(2, 2) =  cos(Angles[0]) * cos(Angles[1]);
+
+        tmp_matrix *= buffer_matrix;       // Получили матрицу поворота в исходное состояние, при котором проводилась выставка
+        buffer_matrix = tmp_matrix;        // Сохраним значения tmp_matrix в buffer_matrix, чтобы корректно перейти к i+1 состоянию
+        
+        tmp_matrix *= rotation_matrix;     // Получили матрицу поворота в СК Земли из i-го состояния
+
+        // Вычислим приращение координат за время period в СК Земли
+        tmp_matrix *= buffer_Data.Acc;     // Значение ускорений в СК Земли
+
+        // Заполним данные о координатах и скоростях                
+        for (index1 = 0; index1 < 3; index1++){
+            Coordinates[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2 - shift;    
+            Velocity[index1] += buffer_Data.Acc[index1] * period;
+            displacement[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2; 
+        }
+        new_tick_Flag = FALSE;
+    }
+
+    // ########################################################################
+    // Фильтрация входного потока данных
+    /* Описание алгоритма фильтрации данных:
+    Будем работать с частями буфера размера FilterFrameSize. Считаем, что данные на этом отрезке распределены нормально.
+    Будем учитывать данные, отличающиеся от среднего значения только на n_sigma сигм (см ./Documentation/sigma_rule.jpg).
+    Аналогичные действия выполняются со всеми частями буферов.
+    
+    Затем мы получаем данные без резких выбросов. По этому набору мы вычисляем скользящее среднее и вычисляем его среднее арифметическое.
+    Это значение и будет принято за истинное значение на данном промежутке
+    */
+    void data_filtering(){
 
         // Получим истинные значения данных с акселерометра по осям
         AccXYZ_filtering(X_COORD);

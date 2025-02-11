@@ -8,25 +8,40 @@
 class Data
 {
 public:
-    Frame Acc;  // Класс для хранения данных с акселерометра
-    Frame Gyro; // Класс для хранения данных с гироскопа
+    Frame Acc;      // Класс для хранения данных с акселерометра
+    Frame Gyro;     // Класс для хранения данных с гироскопа
     
     // Буферы, в которые будет сохраняться временная информация
     Frame Acc_Buffer, Gyro_Buffer;
 
 #ifdef MAG
-    Frame Mag, Mag_Buffer;  // Класс для хранения данных с магнитометра
-#endif
+    Frame Mag, Mag_Buffer;          // Класс для хранения данных с магнитометра
+#endif  /* MAG */
 
 #ifdef TEMP
-    float Temp, Temp_buffer; // Значение температуры
+    float Temp, Temp_buffer;        // Значение температуры
     friend void ReadMagTemp(float *pfTData);
-#endif
+#endif  /* TEMP */
 
     typedef struct 
     {
-        uint8_t Header[4] = {126, 17, 255, 201};      // Начало пакета передачи данных {0x7E, 0x11, 0xFF, 0xC9}
+        // Установим заголовок в зависимости от определения MAG и TEMP
+#if defined MAG && defined TEMP
+        uint8_t Header[4] = {0x7E, 0x11, 0xFF, 0xCA};      // {126, 17, 255, 202}
+#endif  /*  MAG && TEMP  */
         
+#if defined MAG && !defined TEMP
+        uint8_t Header[4] = {0x7E, 0x11, 0xFF, 0xCB};      // {126, 17, 255, 203}
+#endif  /*  MAG && !TEMP  */        
+        
+#if !defined MAG && defined TEMP
+        uint8_t Header[4] = {0x7E, 0x11, 0xFF, 0xCC};      // {126, 17, 255, 204}
+#endif  /* !MAG && TEMP  */
+
+#if !defined MAG && !defined TEMP
+        uint8_t Header[4] = {0x7E, 0x11, 0xFF, 0xCD};      // {126, 17, 255, 205}
+#endif  /* !MAG && !TEMP  */
+
         uint8_t Acc_X[2] = {0};
         uint8_t Acc_Y[2] = {0};
         uint8_t Acc_Z[2] = {0};
@@ -39,11 +54,11 @@ public:
         uint8_t Mag_X[2] = {0};
         uint8_t Mag_Y[2] = {0};
         uint8_t Mag_Z[2] = {0};
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         uint8_t Temp[2] = {0};
-#endif
+#endif  /* TEMP */
 
         uint8_t checksum = 0;
     }outbuf;
@@ -66,11 +81,11 @@ public:
 #ifdef MAG
         Mag + data.Mag;
         Mag_Buffer = Mag.frame_Buffer;
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp_buffer += data.Temp;
-#endif
+#endif  /* TEMP */
 
     }
 
@@ -85,11 +100,11 @@ public:
 #ifdef MAG
         Mag + data.Mag;
         Mag = Mag.frame_Buffer;
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp += data.Temp;
-#endif
+#endif  /* TEMP */
     }
 
     // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer уменьшаемого
@@ -103,11 +118,11 @@ public:
 #ifdef MAG
         Mag + data.Mag;
         Mag_Buffer = Mag.frame_Buffer;
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp_buffer -= data.Temp;
-#endif
+#endif  /* TEMP */
     }
 
     // Изменение значений Acc, Gyro, Mag уменьшаемого
@@ -121,11 +136,11 @@ public:
 #ifdef MAG
         Mag - data.Mag;
         Mag = Mag.frame_Buffer;
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp -= data.Temp;
-#endif
+#endif  /* TEMP */
     }
 
     // Сохранение результата в Acc_Buffer, Gyro_Buffer, Mag_Buffer делимого
@@ -139,11 +154,11 @@ public:
 #ifdef MAG
         Mag / num;
         Mag_Buffer = Mag.frame_Buffer;
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp_buffer /= num;
-#endif
+#endif  /* TEMP */
     }
 
     // Изменение значений Acc, Gyro, Mag делимого
@@ -157,11 +172,11 @@ public:
 #ifdef MAG
         Mag / num;
         Mag = Mag.frame_Buffer;
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp /= num;
-#endif
+#endif  /* TEMP */
     }
 
     void operator=(Data &data)
@@ -170,11 +185,11 @@ public:
         Gyro = data.Gyro;
 #ifdef MAG
         Mag = data.Mag;
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp = data.Temp;
-#endif
+#endif  /* TEMP */
     }
 
     Frame& operator[](int index)
@@ -186,7 +201,7 @@ public:
 #ifdef MAG
         else if (index == 2)
             return Mag;
-#endif
+#endif  /* MAG */
     }
 
     float operator()(int index1, int index2){
@@ -205,7 +220,7 @@ public:
             if      (index2 == 0) return Mag.X_coord;
             else if (index2 == 1) return Mag.Y_coord;
             else if (index2 == 2) return Mag.Z_coord;
-    #endif
+    #endif  /* MAG */
         }
     }
 
@@ -217,11 +232,11 @@ public:
         Gyro.Read_Gyro();
 #ifdef MAG
         Mag.Read_Mag();
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         ReadMagTemp(&Temp);
-#endif
+#endif  /* TEMP */
     }
 
     // ########################################################################
@@ -234,11 +249,11 @@ public:
         Gyro.set_zero_Frame();
 #ifdef MAG
         Mag.set_zero_Frame();
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         Temp = 0.0f;
-#endif
+#endif  /* TEMP */
     }
 
     // friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
@@ -251,7 +266,6 @@ public:
     void sending_USB()
     {     
         outbuf Out_Buf;
-        
         for (i = 0; i < 3; i++){
             // ((unsigned char*)&Out_Buf)[4 + 2 * i] = Out_Buf.Acc_XYZ_lowBit  (т.е младший разряд Acc.XYZ_coord)
             // ((unsigned char*)&Out_Buf)[5 + 2 * i] = Out_Buf.Acc_XYZ_highBit (т.е старший разряд Acc.XYZ_coord)
@@ -276,7 +290,7 @@ public:
             ((unsigned char*)&Out_Buf)[16 + 2 * i] = tmp;                 // Младший разряд
             ((unsigned char*)&Out_Buf)[17 + 2 * i] = tmp >> 8;            // Старший разряд
         }
-#endif
+#endif  /* MAG */
 
 #ifdef TEMP
         // ((unsigned char*)&Out_Buf)[16 + 2 * i] = Temp_lowBit  (т.е младший разряд Temp)
@@ -284,7 +298,7 @@ public:
         tmp = round(Temp);
         ((unsigned char*)&Out_Buf)[sizeof(Out_Buf) - 3] = tmp;                 // Младший разряд
         ((unsigned char*)&Out_Buf)[sizeof(Out_Buf) - 2] = tmp >> 8;            // Старший разряд
-#endif
+#endif  /* TEMP */
 
         // Посчитаем контрольную сумму
         tmp = 0;
