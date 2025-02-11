@@ -1,8 +1,10 @@
 #include "Matrix.hpp"
 
+// #define DATA_PROCESSING
+// #define USING_DPP
+
 #define OFFSET_VALUE    0           // Пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
-// #define DATA_PROCESSING
 
 extern float gyro_multiplier;
 
@@ -42,7 +44,11 @@ public:
 
     // ########################################################################
     // Конструктор класса и другие функции для работы с параметрами класса
-    Measure(float phi, float _period) { longitude = phi; period = _period;  }
+    Measure(float phi, float _period) { 
+        longitude = phi; 
+        period = _period;          
+        buffer_matrix.IdentityMatrix();
+    }
 
     // ########################################################################
     // Функции для управления светодиодами    
@@ -60,7 +66,7 @@ public:
             // Переведём данные из СК датчика в СК Земли
             // current_Data -= zero_Data;
             // rotation_matrix *= current_Data;
-            current_Data.sending_USB();
+            // current_Data.sending_USB();
 
 #ifdef DATA_PROCESSING
             if (new_tick_Flag)
@@ -114,7 +120,9 @@ public:
                 }
                 new_tick_Flag = FALSE;
             }
+#endif      // DATA_PROCESSING
 
+#ifdef USING_DPP
             if (new_DPP_Flag)
             {
                 // Начало обработки нового кода ДПП
@@ -142,7 +150,8 @@ public:
                 }
                 new_DPP_Flag = FALSE;
             }            
-#endif
+#endif      // USING_DPP
+
             LedOn(LED8);
         }
     }
@@ -150,7 +159,6 @@ public:
     // ########################################################################
     // Начальная выставка датчиков
     void initial_setting(){
-        buffer_matrix.IdentityMatrix();
         LedOn(LED4);
         LedOn(LED9);
 

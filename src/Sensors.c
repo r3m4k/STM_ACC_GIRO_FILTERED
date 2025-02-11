@@ -236,10 +236,7 @@ void ReadMagTemp(float *pfTData)
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_H_M, buffer, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_L_M, buffer + 1, 1);
 
-    // *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]));    
-    *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]) >> 4);
-    // *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]) >> 4) / 2;
-
+    *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]) >> 4) * 100;
 }
 
 /**
