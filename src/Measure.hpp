@@ -1,5 +1,8 @@
 #include "Matrix.hpp"
 
+// #define DATA_PROCESSING
+// #define USING_DPP
+
 #define OFFSET_VALUE    0           // Пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
 #define DATA_PROCESSING
@@ -71,7 +74,11 @@ public:
 
     // ########################################################################
     // Конструктор класса и другие функции для работы с параметрами класса
-    Measure(float phi, float _period) { longitude = phi; period = _period;  }
+    Measure(float phi, float _period) { 
+        longitude = phi; 
+        period = _period;          
+        buffer_matrix.IdentityMatrix();
+    }
 
     // ########################################################################
     // Функции для управления светодиодами    
@@ -149,7 +156,9 @@ public:
                 new_tick_Flag = FALSE;
                 LedOff(LED5);
             }
+#endif      // DATA_PROCESSING
 
+#ifdef USING_DPP
             if (new_DPP_Flag)
             {
                 // Начало обработки нового кода ДПП
@@ -177,8 +186,8 @@ public:
                 }
                 new_DPP_Flag = FALSE;
             }            
-#endif
-            for (index1 = 0; index1 < 1000; index1++){  continue;   }
+#endif      // USING_DPP
+
             LedOn(LED8);
         }
     }
@@ -186,7 +195,6 @@ public:
     // ########################################################################
     // Начальная выставка датчиков
     void initial_setting(){
-        buffer_matrix.IdentityMatrix();
         LedOn(LED4);
         LedOn(LED9);
 

@@ -1,6 +1,5 @@
 #include "Sensors.h"
 
-#define FilterDepth 30000
 extern float gyro_multiplier;
 
 
@@ -85,6 +84,7 @@ void ReadMag(float *pfData)
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_M, buffer + 3, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_M, buffer + 4, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_M, buffer + 5, 1);
+    
     /* Switch the sensitivity set in the CRTLB*/
     switch (CTRLB & 0xE0)
     {
@@ -120,9 +120,9 @@ void ReadMag(float *pfData)
 
     for (i = 0; i < 2; i++)
     {
-        pfData[i] = ((((float)((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1]))) / 1000) / Magn_Sensitivity_XY) * (-1);
+        pfData[i] = ((((float)((int16_t)((((int16_t)buffer[2 * i]) << 8) + buffer[2 * i + 1]))) * 1000) / Magn_Sensitivity_XY) * (-1);
     }
-    pfData[2] = ((((float)((int16_t)((((int16_t)buffer[4]) << 8) + buffer[5]))) / 1000) / Magn_Sensitivity_Z) * (-1);
+    pfData[2] = ((((float)((int16_t)((((int16_t)buffer[4]) << 8) + buffer[5]))) * 1000) / Magn_Sensitivity_Z) * (-1);
 }
 
 void ACC_INIT(void)
@@ -236,7 +236,7 @@ void ReadMagTemp(float *pfTData)
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_H_M, buffer, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_L_M, buffer + 1, 1);
 
-    *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]) >> 4) / 2;
+    *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]) >> 4) * 100;
 }
 
 /**
