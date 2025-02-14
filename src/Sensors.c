@@ -1,6 +1,8 @@
 #include "Sensors.h"
 
 extern float gyro_multiplier;
+extern uint16_t Temp_raw_Buffer[128];
+extern int Temp_raw_Buffer_counter;
 
 
 void GYRO_INIT(void)
@@ -232,11 +234,26 @@ void ReadAcc(float *pfData)
 void ReadMagTemp(float *pfTData)
 {
     static uint8_t buffer[2] = {0};
+    uint16_t tmp = 0;
+    int16_t tmp_signed = 0;
 
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_H_M, buffer, 1);
     LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_L_M, buffer + 1, 1);
 
-    *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]) >> 4) * 100;
+    tmp += ((uint16_t)buffer[0] << 8) + buffer[1];
+    tmp_signed = (int16_t)tmp;
+    tmp_signed = tmp_signed >> 4;
+    *pfTData = ((float)tmp_signed) * 100;
+
+    // *pfTData = (float)((int16_t)(((uint16_t)buffer[0] << 8) + buffer[1]) >> 4) * 100;
+
+    if (*pfTData < 0){
+        Temp_raw_Buffer[Temp_raw_Buffer_counter++] = buffer[0];
+        Temp_raw_Buffer[Temp_raw_Buffer_counter++] = buffer[1];
+        Temp_raw_Buffer[Temp_raw_Buffer_counter++] = tmp;
+        Temp_raw_Buffer[Temp_raw_Buffer_counter++] = tmp_signed;
+        Temp_raw_Buffer_counter++;
+    }
 }
 
 /**

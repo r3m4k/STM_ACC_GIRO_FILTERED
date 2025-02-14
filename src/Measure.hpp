@@ -76,6 +76,8 @@ public:
     float tmp_float;
     // -------------------------------------------------------------------------------
 
+    float Temp_Buffer[512];
+
     // ########################################################################
     // Конструктор класса и другие функции для работы с параметрами класса
     Measure(float phi, float _period) { 
@@ -88,19 +90,23 @@ public:
     // Функции для управления светодиодами    
     friend void LedOn(Led_TypeDef Led);
     friend void LedOff(Led_TypeDef Led);
+    friend void ReadMagTemp(float *pfTData);   
 
     // ########################################################################
     // Чтение данных и последующая обработка (основной цикл программы)
     void measuring(){
         while (1)
         {
-            LedOff(LED8);
-            current_Data.Read_Data();
-
-            // Переведём данные из СК датчика в СК Земли
-            // current_Data -= zero_Data;
-            // rotation_matrix *= current_Data;
-            current_Data.sending_USB();
+            LedOff(LED8); 
+            for (index1 = 0; index1 < 512; index1++){
+            
+                current_Data.Read_Data();
+                Temp_Buffer[index1] = current_Data.Temp;
+                // Переведём данные из СК датчика в СК Земли
+                // current_Data -= zero_Data;
+                // rotation_matrix *= current_Data;
+                current_Data.sending_USB();
+            }
             
             new_tick_Flag = TRUE;
 

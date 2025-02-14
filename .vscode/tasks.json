@@ -1,7 +1,7 @@
 {
     "tasks": [
         {
-            "type": "cppbuild",
+            "type": "shell",
             "label": "сборка проекта Win",
             "command": "mingw32-make",
             "args": [
@@ -25,7 +25,7 @@
             "detail": "имитатора ДПП"
         },
         {
-            "type": "cppbuild",
+            "type": "shell",
             "label": "очистка проекта Win",
             "command": "mingw32-make",
             "args": [

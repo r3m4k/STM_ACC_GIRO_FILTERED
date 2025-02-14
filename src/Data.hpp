@@ -19,7 +19,7 @@ public:
 #endif  /* MAG */
 
 #ifdef TEMP
-    float Temp, Temp_buffer;        // Значение температуры
+    float Temp, Temp_buffer, Temp_Previous;        // Значение температуры
     friend void ReadMagTemp(float *pfTData);
 #endif  /* TEMP */
 
@@ -236,6 +236,7 @@ public:
 
 #ifdef TEMP
         ReadMagTemp(&Temp);
+        
 #endif  /* TEMP */
     }
 
