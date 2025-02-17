@@ -1,8 +1,11 @@
 #include "Frame.hpp"
 #include "VCP_F3.h"
 
-#define MAG     // Использование магнитометра
-#define TEMP    // Использование температурного датчика
+// #define MAG                             // Использование магнитометра
+#define TEMP                            // Использование температурного датчика
+#define MAX_TEMP_DIFF       500         // Максимальное изменение температуры между снятиями показаний 
+                                        // (5 сигм для MAX_TEMP_DIFF = 1000 при тепловом равновесии датчика и окружающей среды)
+#define MAX_TEMP_COUNTER    32          // Раз в какое количество шагов будет считываться температура
 
 
 class Data
@@ -19,7 +22,8 @@ public:
 #endif  /* MAG */
 
 #ifdef TEMP
-    float Temp, Temp_buffer;        // Значение температуры
+    float Temp, Temp_buffer, Temp_Previous;        // Значения температуры
+    uint8_t Temp_counter = 255;
     friend void ReadMagTemp(float *pfTData);
 #endif  /* TEMP */
 
@@ -65,6 +69,11 @@ public:
 
     int16_t tmp;
     uint8_t i;  
+
+    Data(){
+        ReadMagTemp(&Temp_Previous);        // Прочитаем первоначальное значение температуры
+                                            // для фильтрации выбросов температуры
+    }    
 
     // ########################################################################
     // Перегрузка операторов
@@ -220,8 +229,8 @@ public:
             if      (index2 == 0) return Mag.X_coord;
             else if (index2 == 1) return Mag.Y_coord;
             else if (index2 == 2) return Mag.Z_coord;
-    #endif  /* MAG */
         }
+#endif  /* MAG */
     }
 
     // ########################################################################
@@ -235,8 +244,26 @@ public:
 #endif  /* MAG */
 
 #ifdef TEMP
-        ReadMagTemp(&Temp);
+        Read_Temp();
 #endif  /* TEMP */
+}
+
+void Read_Temp(){
+        if (Temp_counter == 255){
+            ReadMagTemp(&Temp_Previous);
+            Temp_counter = 0;
+        }
+
+        if (!(Temp_counter++ % MAX_TEMP_COUNTER)){
+            ReadMagTemp(&Temp);
+            if (abs(Temp - Temp_Previous) > MAX_TEMP_DIFF){
+                // Если разница между прошлой температурой и текущей больше MAX_TEMP_DIFF единиц,
+                // то считаем, что полученное значение температуры неверное и заполним его предыдущим значением
+                Temp = Temp_Previous;
+            }
+            Temp_Previous = Temp;
+            Temp_counter = 0;
+        }
     }
 
     // ########################################################################

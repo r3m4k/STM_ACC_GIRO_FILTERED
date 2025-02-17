@@ -99,8 +99,8 @@ void InitAll(){
     InitGPIO();
 
     // Инициализируем Virtual Com Port
-    // VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
-    // VCP_Init();        
+    VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
+    VCP_Init();        
 
     // Инициализируем UART
     // InitUart(115200);  
