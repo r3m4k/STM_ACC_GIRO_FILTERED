@@ -73,7 +73,7 @@ int main()
     measure.initial_setting();
 
     // Запускаем таймер 
-    // TIM_Cmd(TIM4, ENABLE);
+    TIM_Cmd(TIM4, ENABLE);
 
     // // Включим прерывания от USART2
     // USART_Cmd(USART2, ENABLE);
@@ -112,7 +112,7 @@ void InitAll(){
     MAG_INIT();
 
     // Инициализация таймера и его настройка
-    // TimerInit();  
+    TimerInit();  
 }
 
 // -------------------------------------------------------------------------------

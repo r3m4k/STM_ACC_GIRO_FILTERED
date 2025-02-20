@@ -1,5 +1,6 @@
 #include "Matrix.hpp"
 
+#define DATA_FILTERING
 // #define DATA_PROCESSING
 // #define USING_DPP
 #define ERROR_CALCULATION
@@ -8,7 +9,7 @@
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
 
 // ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
-#define FilterSize          32
+#define FilterSize          64
 #define FilterFrameSize     16
 #define rolling_n           4
 #define n_sigma             1.0f
@@ -95,19 +96,11 @@ public:
         while (1)
         {
             LedOff(LED8);
-            current_Data.Read_Data();
-
-            // Переведём данные из СК датчика в СК Земли
-            // current_Data -= zero_Data;
-            // rotation_matrix *= current_Data;
-            current_Data.sending_USB();
             
-            new_tick_Flag = TRUE;
-
-#ifdef DATA_PROCESSING
+#ifdef DATA_FILTERING
             if (new_tick_Flag)       
             /*
-            Результаты испытаний времени выполнения обработки новых данных без вычисления СКО:
+            Результаты испытаний времени выполнения обработки новых данных без вычисления погрешности:
             440 мс при FilterSize = 128 / FilterFrameSize = 16 / rolling_n = 8
             220 мс при FilterSize = 64  / FilterFrameSize = 16 / rolling_n = 8
             110 мс при FilterSize = 32  / FilterFrameSize = 16 / rolling_n = 8
@@ -122,11 +115,12 @@ public:
                 
                 data_collecting();
                 data_filtering(); 
+#ifdef DATA_PROCESSING
                 data_processing();
-                
+#endif      /* DATA_PROCESSING */                
                 LedOff(LED5);
             }
-#endif      /* DATA_PROCESSING */
+#endif      /* DATA_FILTERING */
 
 #ifdef USING_DPP
             if (new_DPP_Flag)
@@ -157,6 +151,8 @@ public:
                 new_DPP_Flag = FALSE;
             }            
 #endif      /* USING_DPP */ 
+
+            buffer_Data.sending_USB();
 
             LedOn(LED8);
         }

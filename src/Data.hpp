@@ -27,7 +27,7 @@ public:
     friend void ReadMagTemp(float *pfTData);
 #endif  /* TEMP */
 
-    typedef struct 
+    typedef struct outbuf
     {
         // Установим заголовок в зависимости от определения MAG и TEMP
 #if defined MAG && defined TEMP
@@ -69,11 +69,6 @@ public:
 
     int16_t tmp;
     uint8_t i;  
-
-    Data(){
-        ReadMagTemp(&Temp_Previous);        // Прочитаем первоначальное значение температуры
-                                            // для фильтрации выбросов температуры
-    }    
 
     // ########################################################################
     // Перегрузка операторов
@@ -250,7 +245,12 @@ public:
 
 void Read_Temp(){
         if (Temp_counter == 255){
-            ReadMagTemp(&Temp_Previous);
+            Temp_counter -= 32;
+            while (Temp_counter++ <= 255){
+                ReadMagTemp(&Temp);
+                Temp_Previous += Temp;
+            }
+            Temp_Previous /= 32;
             Temp_counter = 0;
         }
 
