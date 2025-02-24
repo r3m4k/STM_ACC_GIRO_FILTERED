@@ -8,15 +8,18 @@
 #define OFFSET_VALUE    0           // Фиктивный пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
 
-// ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
-#define FilterSize          64
+/*  Фильтрация входного потока данных   */
+// #define COMPLEX_FILTER
+#define FilterSize          64      // ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
 #define FilterFrameSize     16
 #define rolling_n           4
-#define n_sigma             1.0f
+#define n_sigma             2.0f
 
 #define X_COORD             (int) 0
 #define Y_COORD             (int) 1
 #define Z_COORD             (int) 2
+
+#define TEMP_DELTA          1.0f                     
 
 
 class Measure 
@@ -56,6 +59,14 @@ public:
         float Acc_Buffer[3];        // Буфер для данных с акселерометра
         float Gyro_Buffer[3];       // Буфер для данных с гироскопа
     }FilterFrame[FilterSize];
+   
+    uint8_t Filter_counter = 0;
+    uint8_t temp_counter = 0;
+
+    float Temp_Buffer[FilterSize];
+    float Temp_Delta_sigh = 1;
+    bool Full_Temp_Buffer = FALSE;  // Флаг заполнения буфера температуры
+    float temp_buffer[FilterSize / FilterFrameSize];
 
     // Вспомогательные буферы для работы фильтра
     float tmp_Buffer[FilterSize];   
@@ -83,6 +94,7 @@ public:
         longitude = phi; 
         period = _period;          
         buffer_matrix.IdentityMatrix();
+        current_Data.Temp_counter = 255;       // Значение, при котором задаётся начальная температура
     }
 
     // ########################################################################
@@ -96,6 +108,7 @@ public:
         while (1)
         {
             LedOff(LED8);
+            new_tick_Flag = TRUE;
             
 #ifdef DATA_FILTERING
             if (new_tick_Flag)       
@@ -152,6 +165,26 @@ public:
             }            
 #endif      /* USING_DPP */ 
 
+            if (Full_Temp_Buffer){
+                mean(Temp_Buffer, FilterSize);
+                buffer_Data.Temp = tmp_float;
+
+                if (abs(buffer_Data.Temp - zero_Data.Temp) > TEMP_DELTA){
+
+                    if (buffer_Data.Temp > zero_Data.Temp){
+                        Temp_Delta_sigh = 1;
+                    }
+                    else{   
+                        Temp_Delta_sigh = -1;
+                    }
+                    
+                    zero_Data.Temp += Temp_Delta_sigh * TEMP_DELTA;
+                    zero_Data.update_zero_level(Temp_Delta_sigh * TEMP_DELTA);
+                }
+                Full_Temp_Buffer = FALSE;
+            }
+
+            // buffer_Data -= zero_Data;
             buffer_Data.sending_USB();
 
             LedOn(LED8);
@@ -196,6 +229,10 @@ public:
             zero_Data += buffer_Data;
         }
         zero_Data /= max;
+
+        zero_Data.Temp_Previous = zero_Data.Temp;
+        current_Data.Temp_Previous = zero_Data.Temp;
+        buffer_Data.Temp_Previous = zero_Data.Temp;
     }
 
     // ########################################################################
@@ -251,12 +288,25 @@ public:
     void data_collecting(){
 
         // Заполним буферы
+        current_Data.Temp_counter = 0;
+        temp_counter = 0;
         for (index1 = 0; index1 < FilterSize; index1++){
             current_Data.Read_Data();
             for (index2 = 0; index2 < 3; index2++){
                 FilterFrame[index1].Acc_Buffer[index2]  = current_Data(0, index2);
                 FilterFrame[index1].Gyro_Buffer[index2] = current_Data(1, index2);
             }
+            if (!(index1 % FilterFrameSize)){
+                temp_buffer[temp_counter++] = current_Data.Temp;
+            }
+        }
+
+        mean(temp_buffer, FilterSize / FilterFrameSize);
+        buffer_Data.Temp = tmp_float;
+        Temp_Buffer[Filter_counter++] = buffer_Data.Temp;
+        if (Filter_counter == FilterSize){
+            Filter_counter = 0;
+            Full_Temp_Buffer = TRUE; 
         }
     }
 
@@ -298,7 +348,6 @@ public:
             Velocity[index1] += buffer_Data.Acc[index1] * period;
             displacement[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2; 
         }
-        new_tick_Flag = FALSE;
     }
 
     // ########################################################################
@@ -324,6 +373,7 @@ public:
         GyroXYZ_filtering(Z_COORD);
     }
 
+#ifdef COMPLEX_FILTER
     // Фильтрация данных одной координаты coord с акселерометра с последующим сохранением полученного значения в buffer_Data.Acc
     void AccXYZ_filtering(int coord){
         frame_counter = 0;
@@ -379,6 +429,27 @@ public:
 
         buffer_Data.Gyro[coord] = tmp_float;
     }
+#endif  /*  COMPLEX_FILTER  */
+
+#ifndef COMPLEX_FILTER
+    // Фильтрация данных просто по среднему арифметическому
+    void AccXYZ_filtering(int coord){
+        for (index1 = 0; index1 < FilterSize; index1++){
+            flt_Buffer[index1] = FilterFrame[index1].Acc_Buffer[coord];
+        }
+        mean(flt_Buffer, FilterSize);
+        buffer_Data.Acc[coord] = tmp_float;
+    }
+
+    // Фильтрация данных просто по среднему арифметическому
+    void GyroXYZ_filtering(int coord){
+        for (index1 = 0; index1 < FilterSize; index1++){
+            flt_Buffer[index1] = FilterFrame[index1].Gyro_Buffer[coord];
+        }
+        mean(flt_Buffer, FilterSize);
+        buffer_Data.Gyro[coord] = tmp_float;
+    }
+#endif  /*  COMPLEX_FILTER  */
 
     // Фильтр резких выбросов значений из массива flt_frame_Buffer с сохранением в tmp_frame_Buffer
     void sharp_emission_filter(){

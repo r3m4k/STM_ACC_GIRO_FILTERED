@@ -5,7 +5,7 @@
 #define TEMP                            // Использование температурного датчика
 #define MAX_TEMP_DIFF       500         // Максимальное изменение температуры между снятиями показаний 
                                         // (5 сигм для MAX_TEMP_DIFF = 1000 при тепловом равновесии датчика и окружающей среды)
-#define MAX_TEMP_COUNTER    32          // Раз в какое количество шагов будет считываться температура
+#define MAX_TEMP_COUNTER    16          // Раз в какое количество шагов будет считываться температура. Лучше использовать FilterFrameSize
 
 
 class Data
@@ -23,7 +23,9 @@ public:
 
 #ifdef TEMP
     float Temp, Temp_buffer, Temp_Previous;        // Значения температуры
-    uint8_t Temp_counter = 255;
+    uint8_t Temp_counter = 0;
+    float Acc_coeff[3] = {0.0f};         // Коэффициенты пропорциональности данных ускорений от изменения температуры
+    float Gyro_coeff[3] = {0.0f};        // Коэффициенты пропорциональности данных угловых скоростей от изменения температуры
     friend void ReadMagTemp(float *pfTData);
 #endif  /* TEMP */
 
@@ -240,21 +242,23 @@ public:
 
 #ifdef TEMP
         Read_Temp();
+        Temp_counter++;
 #endif  /* TEMP */
 }
 
 void Read_Temp(){
         if (Temp_counter == 255){
-            Temp_counter -= 32;
-            while (Temp_counter++ <= 255){
+            Temp_counter -= 33;
+            while (Temp_counter++ < 255){
                 ReadMagTemp(&Temp);
                 Temp_Previous += Temp;
+                for (int j = 0; j < 100; j++){   continue;   }
             }
             Temp_Previous /= 32;
             Temp_counter = 0;
         }
 
-        if (!(Temp_counter++ % MAX_TEMP_COUNTER)){
+        if (!(Temp_counter % MAX_TEMP_COUNTER)){
             ReadMagTemp(&Temp);
             if (abs(Temp - Temp_Previous) > MAX_TEMP_DIFF){
                 // Если разница между прошлой температурой и текущей больше MAX_TEMP_DIFF единиц,
@@ -283,6 +287,13 @@ void Read_Temp(){
 #endif  /* TEMP */
     }
 
+    void update_zero_level(float temp_diff){
+        for (i = 0; i < 3; i++){
+            Acc[i] -= Acc_coeff[i] * temp_diff;
+            Gyro[i] -= Gyro_coeff[i] * temp_diff;
+        }
+    }
+
     // friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
     // // Отправка элементов Data по COM порту
     // void sending_Usart()
@@ -296,7 +307,7 @@ void Read_Temp(){
         for (i = 0; i < 3; i++){
             // ((unsigned char*)&Out_Buf)[4 + 2 * i] = Out_Buf.Acc_XYZ_lowBit  (т.е младший разряд Acc.XYZ_coord)
             // ((unsigned char*)&Out_Buf)[5 + 2 * i] = Out_Buf.Acc_XYZ_highBit (т.е старший разряд Acc.XYZ_coord)
-            tmp = round(Acc[i]);
+            tmp = round(Acc[i] * 1000);
             ((unsigned char*)&Out_Buf)[4 + 2 * i] = tmp;                 // Младший разряд
             ((unsigned char*)&Out_Buf)[5 + 2 * i] = tmp >> 8;            // Старший разряд
         }
@@ -304,7 +315,7 @@ void Read_Temp(){
         for (i = 0; i < 3; i++){
             // ((unsigned char*)&Out_Buf)[10 + 2 * i] = Out_Buf.Gyro_XYZ_lowBit  (т.е младший разряд Gyro.XYZ_coord)
             // ((unsigned char*)&Out_Buf)[11 + 2 * i] = Out_Buf.Gyro_XYZ_highBit (т.е старший разряд Gyro.XYZ_coord)
-            tmp = round(Gyro[i]);
+            tmp = round(Gyro[i] * 1000);
             ((unsigned char*)&Out_Buf)[10 + 2 * i] = tmp;                 // Младший разряд
             ((unsigned char*)&Out_Buf)[11 + 2 * i] = tmp >> 8;            // Старший разряд
         }
@@ -322,14 +333,14 @@ void Read_Temp(){
 #ifdef TEMP
         // ((unsigned char*)&Out_Buf)[16 + 2 * i] = Temp_lowBit  (т.е младший разряд Temp)
         // ((unsigned char*)&Out_Buf)[17 + 2 * i] = Temp_highBit (т.е старший разряд Temp)
-        tmp = round(Temp);
+        tmp = round(Temp * 100);
         ((unsigned char*)&Out_Buf)[sizeof(Out_Buf) - 3] = tmp;                 // Младший разряд
         ((unsigned char*)&Out_Buf)[sizeof(Out_Buf) - 2] = tmp >> 8;            // Старший разряд
 #endif  /* TEMP */
 
         // Посчитаем контрольную сумму
         tmp = 0;
-        for (i = 0; i < sizeof(Out_Buf); i++){
+        for (i = 0; i < sizeof(Out_Buf) - 1; i++){
             tmp += ((unsigned char*)&Out_Buf)[i];       
         }
         Out_Buf.checksum = tmp;
