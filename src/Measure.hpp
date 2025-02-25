@@ -9,11 +9,12 @@
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
 
 /*  Фильтрация входного потока данных   */
-// #define COMPLEX_FILTER
+#define COMPLEX_FILTER
 #define FilterSize          64      // ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
 #define FilterFrameSize     16
 #define rolling_n           4
 #define n_sigma             2.0f
+// При такой конфигурации время обработки данных составляет 220 мс
 
 #define X_COORD             (int) 0
 #define Y_COORD             (int) 1
@@ -107,22 +108,9 @@ public:
     void measuring(){
         while (1)
         {
-            LedOff(LED8);
-            new_tick_Flag = TRUE;
             
 #ifdef DATA_FILTERING
             if (new_tick_Flag)       
-            /*
-            Результаты испытаний времени выполнения обработки новых данных без вычисления погрешности:
-            440 мс при FilterSize = 128 / FilterFrameSize = 16 / rolling_n = 8
-            220 мс при FilterSize = 64  / FilterFrameSize = 16 / rolling_n = 8
-            110 мс при FilterSize = 32  / FilterFrameSize = 16 / rolling_n = 8
-            110 мс при FilterSize = 32  / FilterFrameSize = 8  / rolling_n = 4
-            55  мс при FilterSize = 16  / FilterFrameSize = 8  / rolling_n = 4
-            Самой оптимальной является третья конфигурация, тк за это время человек и двигаясь со скоростью 5 км/ч, пройдёт примерно 18 см, 
-            что примерно равно пройденному расстоянию между двумя сигналами от ДПП, поэтому будем работать с ней.
-            Тогда можно выставить период таймера в 120 мс. В этом случае будет достаточно времени на компенсацию смещений и останется небольшой запас (наверное).
-            */
             {
                 LedOn(LED5);
                 
@@ -132,7 +120,31 @@ public:
                 data_processing();
 #endif      /* DATA_PROCESSING */                
                 LedOff(LED5);
+                new_tick_Flag = FALSE;
             }
+
+            if (Full_Temp_Buffer){
+                mean(Temp_Buffer, FilterSize);
+                buffer_Data.Temp = tmp_float;
+
+                if (abs(buffer_Data.Temp - zero_Data.Temp) > TEMP_DELTA){
+
+                    if (buffer_Data.Temp > zero_Data.Temp){
+                        Temp_Delta_sigh = 1;
+                    }
+                    else{   
+                        Temp_Delta_sigh = -1;
+                    }
+                    
+                    zero_Data.Temp += Temp_Delta_sigh * TEMP_DELTA;
+                    zero_Data.update_zero_level(Temp_Delta_sigh * TEMP_DELTA);
+                }
+                Full_Temp_Buffer = FALSE;
+            }
+#endif      /* DATA_FILTERING */
+
+#ifndef DATA_FILTERING
+            buffer_Data.Read_Data();
 #endif      /* DATA_FILTERING */
 
 #ifdef USING_DPP
@@ -165,29 +177,9 @@ public:
             }            
 #endif      /* USING_DPP */ 
 
-            if (Full_Temp_Buffer){
-                mean(Temp_Buffer, FilterSize);
-                buffer_Data.Temp = tmp_float;
-
-                if (abs(buffer_Data.Temp - zero_Data.Temp) > TEMP_DELTA){
-
-                    if (buffer_Data.Temp > zero_Data.Temp){
-                        Temp_Delta_sigh = 1;
-                    }
-                    else{   
-                        Temp_Delta_sigh = -1;
-                    }
-                    
-                    zero_Data.Temp += Temp_Delta_sigh * TEMP_DELTA;
-                    zero_Data.update_zero_level(Temp_Delta_sigh * TEMP_DELTA);
-                }
-                Full_Temp_Buffer = FALSE;
-            }
 
             // buffer_Data -= zero_Data;
             buffer_Data.sending_USB();
-
-            LedOn(LED8);
         }
     }
 

@@ -6,7 +6,8 @@
 #include "Measure.hpp"
 
 #define PI 3.14159265358979f
-#define TIM_PERIOD 10000    // Количество тиков таймера с частотой 800 Гц перед вызовом прерывания
+#define TIM_PERIOD         25000    // Количество тиков таймера с частотой 10 кГц перед вызовом прерывания --> 250 мс период
+#define TIM_PRESCALER      720      // При таком предделителе таймера получается один тик таймера на 10 мкс
 
 // ----------------------------------------------------------------------------
 //
@@ -51,7 +52,7 @@ int32_t  ViewTact = 0;
 // -------------------------------------------------------------------------------
 float gyro_multiplier = 0;             // Множитель для данных с гироскопа
 
-Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00125);
+Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00001);
 // -------------------------------------------------------------------------------
 
 int main()
@@ -263,13 +264,11 @@ void TimerInit(void){
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    // uint16_t TIMER_PRESCALER = 10000;    // При таком предделителе получается один тик таймера на 1.25 мс
-    uint16_t TIMER_PRESCALER = 1;
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    uint16_t TIMER_PRESCALER = TIM_PRESCALER;         
     /* Set the default configuration */
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
     TIM_TimeBaseStructure.TIM_Prescaler = TIMER_PRESCALER - 1;
-    // TIM_TimeBaseStructure.TIM_Period = 40000;      // Выставим задержку в 5 секунд
     TIM_TimeBaseStructure.TIM_Period = TIM_PERIOD;
     TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
 
@@ -280,8 +279,8 @@ void TIM4_IRQHandler(void)
 { 
     LedOn(LED9);
     
-    // measure.TickCounter++;
-    // measure.new_tick_Flag = TRUE;
+    measure.TickCounter++;
+    measure.new_tick_Flag = TRUE;
     
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
     LedOff(LED9);
