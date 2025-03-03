@@ -3,7 +3,7 @@
 #define DATA_FILTERING
 // #define DATA_PROCESSING
 // #define USING_DPP
-#define ERROR_CALCULATION
+// #define ERROR_CALCULATION
 
 #define OFFSET_VALUE    0           // Фиктивный пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
@@ -20,7 +20,7 @@
 #define Y_COORD             (int) 1
 #define Z_COORD             (int) 2
 
-#define TEMP_DELTA          1.0f                     
+#define TEMP_DELTA          3.0f                     
 
 
 class Measure 
@@ -47,7 +47,6 @@ public:
     // Переменные для работы с прерываниями от таймера
     float period;                   // Период изменения TickCounter в секундах
     uint32_t TickCounter;           // Счётчик тиков запущенного таймера с периодом period (см main.cpp --> TimerInit())
-    uint16_t filter_depth = 1024;   // Глубина усреднения
     // -------------------------------------------------------------------------------
     // Переменные для работы с прерываниями от USART (канал связи с ДПП)
     uint32_t _DppCode;              // Код от ДПП
@@ -79,6 +78,8 @@ public:
     int flt_size;                   // Размер заполненных данных в flt_Buffer / flt_frame_Buffer в определённый момент времени
     int frame_counter;              // Счётчик кусков данных
 
+    // -------------------------------------------------------------------------------
+    // Переменные для вычисление погрешности
 #ifdef ERROR_CALCULATION
     float Acc_std[3];               // СКО значений акселерометра
     float Gyro_std[3];              // СКО значений гироскопа
@@ -96,6 +97,7 @@ public:
         period = _period;          
         buffer_matrix.IdentityMatrix();
         current_Data.Temp_counter = 255;       // Значение, при котором задаётся начальная температура
+        TickCounter = 0;
     }
 
     // ########################################################################
@@ -177,9 +179,8 @@ public:
             }            
 #endif      /* USING_DPP */ 
 
-
             // buffer_Data -= zero_Data;
-            buffer_Data.sending_USB();
+            buffer_Data.sending_USB((float) TickCounter * period);
         }
     }
 
