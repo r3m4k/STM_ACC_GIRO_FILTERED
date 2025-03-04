@@ -4,6 +4,7 @@
 #include "main.h"
 
 #include "Measure.hpp"
+#include "Leds.hpp"
 
 #define PI 3.14159265358979f
 #define TIM_PRESCALER      720      // При таком предделителе таймера получается один тик таймера на 10 мкс
@@ -53,6 +54,7 @@ int32_t  ViewTact = 0;
 float gyro_multiplier = 0;             // Множитель для данных с гироскопа
 
 Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00001);
+LEDS Leds;
 // -------------------------------------------------------------------------------
 
 int main()
@@ -67,25 +69,27 @@ int main()
     // Инициализируем всё оборудования
     InitAll();             
     
-    // Поморгаем светодиодами после успешной инициализации
-    Toggle_Leds();      
+    Leds.Toggle_Leds();
 
-    // Начнём первоначальную выставку датчиков
-    measure.initial_setting();
+    // // Поморгаем светодиодами после успешной инициализации
+    // Toggle_Leds();      
 
-    // Запускаем таймер 
-    TIM_Cmd(TIM4, ENABLE);
+    // // Начнём первоначальную выставку датчиков
+    // measure.initial_setting();
 
-    // // Включим прерывания от USART2
-    // USART_Cmd(USART2, ENABLE);
-    // Uart_irq_enable();
+    // // Запускаем таймер 
+    // TIM_Cmd(TIM4, ENABLE);
 
-    // Включим зелёные светодиоды для указания корректной работы 
-    LedOn(LED6);
-    LedOn(LED7);
+    // // // Включим прерывания от USART2
+    // // USART_Cmd(USART2, ENABLE);
+    // // Uart_irq_enable();
 
-    // Начнём работу
-    measure.measuring();  
+    // // Включим зелёные светодиоды для указания корректной работы 
+    // LedOn(LED6);
+    // LedOn(LED7);
+
+    // // Начнём работу
+    // measure.measuring();  
 
     while (1){  continue;   }   // Затычка на всякий случай
 
@@ -96,7 +100,8 @@ int main()
 void InitAll(){
 
     // Инициализируем периферию
-    LedsInit();
+    // LedsInit();
+    Leds.Init();
     InitGPIO();
 
     // Инициализируем Virtual Com Port

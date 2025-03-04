@@ -61,7 +61,8 @@ typedef enum
   LED7 = 4,
   LED8 = 5,
   LED9 = 6,
-  LED10 = 7
+  LED10 = 7,
+  LED_last = 8  
 } Led_TypeDef;
 
 typedef enum 

@@ -21,7 +21,8 @@ INCLUDES = \
 -I"system/include/cmsis" \
 -I"system/include/stm32f3-stdperiph" \
 -I"system/include/additionally" \
--I"system/USB_LIB/include"
+-I"system/USB_LIB/include" \
+-I"cpp_lib"
 
 # общие флаги компиллятора
 # COMPILER_FLAGS = \
