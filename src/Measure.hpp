@@ -180,7 +180,7 @@ public:
 #endif      /* USING_DPP */ 
 
             // buffer_Data -= zero_Data;
-            buffer_Data.sending_USB((float) TickCounter * period);
+            buffer_Data.sending_USB(TickCounter);
         }
     }
 

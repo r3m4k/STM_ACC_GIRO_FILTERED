@@ -209,11 +209,11 @@ void Read_Temp(){
     //     UsartSend(Acc.X_coord, Acc.Y_coord, Acc.Z_coord, Gyro.X_coord, Gyro.Y_coord, Gyro.Z_coord, 0, 0, 0, 0);
     // }
     
-    void sending_USB(float time)
+    void sending_USB(uint32_t Ticks)
     {     
         outbuf Out_Buf;
 
-        tmp = round(time * 100);
+        tmp = (uint16_t)Ticks;
         ((unsigned char*)&Out_Buf)[4] = tmp;                 // Младший разряд
         ((unsigned char*)&Out_Buf)[5] = tmp >> 8;            // Старший разряд
 
