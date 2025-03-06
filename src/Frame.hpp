@@ -1,3 +1,6 @@
+#ifndef __FRAME_HPP
+#define __FRAME_HPP
+
 extern float sqrt2;
 extern float gyro_multiplier;
 
@@ -162,3 +165,5 @@ public:
         Z_coord = frame_Buffer[2];
     }
 };
+
+#endif /*    __FRAME_HPP    */

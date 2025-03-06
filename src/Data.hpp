@@ -1,3 +1,6 @@
+#ifndef __DATA_HPP
+#define __DATA_HPP
+
 #include "Frame.hpp"
 #include "VCP_F3.h"
 
@@ -22,26 +25,6 @@ public:
     float Acc_coeff[3] = {0.0f};         // Коэффициенты пропорциональности данных ускорений от изменения температуры
     float Gyro_coeff[3] = {0.0f};        // Коэффициенты пропорциональности данных угловых скоростей от изменения температуры
 
-    typedef struct outbuf
-    {         
-        uint8_t Header[4] = {0x7E, 0x11, 0xFF, 0xCC};      // {126, 17, 255, 204}
-
-        uint8_t Time[2];
-
-        uint8_t Acc_X[2];
-        uint8_t Acc_Y[2];
-        uint8_t Acc_Z[2];
-        
-        uint8_t Gyro_X[2];
-        uint8_t Gyro_Y[2];
-        uint8_t Gyro_Z[2];
-
-        uint8_t Temp[2];
-
-        uint8_t checksum = 0;
-    }outbuf;
-
-    int16_t tmp;
     uint8_t i;  
 
     // ########################################################################
@@ -209,43 +192,6 @@ void Read_Temp(){
     //     UsartSend(Acc.X_coord, Acc.Y_coord, Acc.Z_coord, Gyro.X_coord, Gyro.Y_coord, Gyro.Z_coord, 0, 0, 0, 0);
     // }
     
-    void sending_USB(uint32_t Ticks)
-    {     
-        outbuf Out_Buf;
-
-        tmp = (uint16_t)Ticks;
-        ((unsigned char*)&Out_Buf)[4] = tmp;                 // Младший разряд
-        ((unsigned char*)&Out_Buf)[5] = tmp >> 8;            // Старший разряд
-
-        for (i = 0; i < 3; i++){
-            // ((unsigned char*)&Out_Buf)[4 + 2 * i] = Out_Buf.Acc_XYZ_lowBit  (т.е младший разряд Acc.XYZ_coord)
-            // ((unsigned char*)&Out_Buf)[5 + 2 * i] = Out_Buf.Acc_XYZ_highBit (т.е старший разряд Acc.XYZ_coord)
-            tmp = round(Acc[i] * 1000);
-            ((unsigned char*)&Out_Buf)[6 + 2 * i] = tmp;                 // Младший разряд
-            ((unsigned char*)&Out_Buf)[7 + 2 * i] = tmp >> 8;            // Старший разряд
-        }
-
-        for (i = 0; i < 3; i++){
-            // ((unsigned char*)&Out_Buf)[10 + 2 * i] = Out_Buf.Gyro_XYZ_lowBit  (т.е младший разряд Gyro.XYZ_coord)
-            // ((unsigned char*)&Out_Buf)[11 + 2 * i] = Out_Buf.Gyro_XYZ_highBit (т.е старший разряд Gyro.XYZ_coord)
-            tmp = round(Gyro[i] * 1000);
-            ((unsigned char*)&Out_Buf)[12 + 2 * i] = tmp;                 // Младший разряд
-            ((unsigned char*)&Out_Buf)[13 + 2 * i] = tmp >> 8;            // Старший разряд
-        }
-
-        // ((unsigned char*)&Out_Buf)[16 + 2 * i] = Temp_lowBit  (т.е младший разряд Temp)
-        // ((unsigned char*)&Out_Buf)[17 + 2 * i] = Temp_highBit (т.е старший разряд Temp)
-        tmp = round(Temp * 100);
-        ((unsigned char*)&Out_Buf)[18] = tmp;                 // Младший разряд
-        ((unsigned char*)&Out_Buf)[19] = tmp >> 8;            // Старший разряд
-
-        // Посчитаем контрольную сумму
-        tmp = 0;
-        for (i = 0; i < sizeof(Out_Buf) - 1; i++){
-            tmp += ((unsigned char*)&Out_Buf)[i];       
-        }
-        Out_Buf.checksum = tmp;
-
-        CDC_Send_DATA((unsigned char*)&Out_Buf, sizeof(Out_Buf));
-    }
 };
+
+#endif /*    __DATA_HPP    */

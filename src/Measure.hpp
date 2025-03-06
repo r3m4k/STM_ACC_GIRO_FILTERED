@@ -1,4 +1,5 @@
 #include "Matrix.hpp"
+#include "COM_Port.hpp"
 
 #define DATA_FILTERING
 // #define DATA_PROCESSING
@@ -8,7 +9,7 @@
 #define OFFSET_VALUE    0           // Фиктивный пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
 
-/*  Фильтрация входного потока данных   */
+/*  Фильтрация входного потока данных  */
 #define COMPLEX_FILTER
 #define FilterSize          64      // ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
 #define FilterFrameSize     16
@@ -20,12 +21,19 @@
 #define Y_COORD             (int) 1
 #define Z_COORD             (int) 2
 
-#define TEMP_DELTA          3.0f                     
+#define TEMP_DELTA          3.0f  
 
+/*  Отправка данных по com порту  */
+#define SENDING_BUFFER          TRUE
+#define SEND_ALL_RAW_DATA
+// #define SEND_SINGLE_RAW_DATA
+
+extern COM_Port COM_port;
 
 class Measure 
 {
 public:
+    // -------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------
     // Данные, которые будут меняться в вызываемых функциях
     // Вынесем их в статические переменные для избежания переполнения стека процессора
@@ -179,8 +187,36 @@ public:
             }            
 #endif      /* USING_DPP */ 
 
-            // buffer_Data -= zero_Data;
-            buffer_Data.sending_USB(TickCounter);
+#ifdef SEND_ALL_RAW_DATA
+            current_Data = buffer_Data;
+            current_Data - zero_Data;
+
+            rotation_matrix * current_Data.Acc;
+            current_Data.Acc.copying_from_buffer();
+
+            rotation_matrix * current_Data.Acc_Buffer;
+            current_Data.Acc_Buffer.copying_from_buffer();
+            
+            rotation_matrix * current_Data.Gyro;
+            current_Data.Gyro.copying_from_buffer();
+
+            rotation_matrix * current_Data.Gyro_Buffer;
+            current_Data.Gyro_Buffer.copying_from_buffer();
+
+            buffer_Data - zero_Data;
+
+            // Таким образом:
+            // buffer_Data - исходные данные
+            // buffer_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля
+            // current_Data - исходные данные в СК Земли
+            // current_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля в СК Земли
+
+            COM_port.sending_data(TickCounter, buffer_Data, current_Data, SENDING_BUFFER);
+#endif  /* SEND_ALL_RAW_DATA */
+
+#ifdef SEND_SINGLE_RAW_DATA
+            COM_port.sending_data(TickCounter, buffer_Data);
+#endif  /* SEND_SINGLE_RAW_DATA */
         }
     }
 
