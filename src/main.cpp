@@ -77,8 +77,6 @@ int main()
     // Начнём первоначальную выставку датчиков
     measure.initial_setting();
 
-    // Запускаем таймер 
-    TIM_Cmd(TIM4, ENABLE);
 
     // // Включим прерывания от USART2
     // USART_Cmd(USART2, ENABLE);
@@ -88,6 +86,8 @@ int main()
     LedOn(LED6);
     LedOn(LED7);
 
+    // Запускаем таймер 
+    TIM_Cmd(TIM4, ENABLE);
     // Начнём работу
     measure.measuring();  
 

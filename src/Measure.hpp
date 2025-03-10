@@ -51,6 +51,7 @@ public:
     // -------------------------------------------------------------------------------
     bool new_tick_Flag = FALSE;     // Флаг, отвечающий за наличие нового прерывания от таймера
     bool new_DPP_Flag  = FALSE;     // Флаг, отвечающие за наличие нового кода от ДПП
+    bool data_updated  = FALSE;     // Флаг, отвечающий за состояние данных: новые или старые
     // -------------------------------------------------------------------------------
     // Переменные для работы с прерываниями от таймера
     float period;                   // Период изменения TickCounter в секундах
@@ -116,6 +117,7 @@ public:
     // ########################################################################
     // Чтение данных и последующая обработка (основной цикл программы)
     void measuring(){
+        TickCounter = 0;
         while (1)
         {
             
@@ -130,6 +132,7 @@ public:
                 data_processing();
 #endif      /* DATA_PROCESSING */                
                 LedOff(LED5);
+                data_updated = TRUE;
                 new_tick_Flag = FALSE;
             }
 
@@ -158,8 +161,7 @@ public:
 #endif      /* DATA_FILTERING */
 
 #ifdef USING_DPP
-            if (new_DPP_Flag)
-            {
+            if (new_DPP_Flag){
                 // Начало обработки нового кода ДПП
                 /* 
                 Решим уравнение s**2 = (x-a)**2 + (y-a)**2 + (z-a)**2
@@ -187,36 +189,42 @@ public:
             }            
 #endif      /* USING_DPP */ 
 
+            if (data_updated){
+                LedOn(LED8);
+
 #ifdef SEND_ALL_RAW_DATA
-            current_Data = buffer_Data;
-            current_Data - zero_Data;
+                current_Data = buffer_Data;
+                current_Data - zero_Data;
 
-            rotation_matrix * current_Data.Acc;
-            current_Data.Acc.copying_from_buffer();
+                rotation_matrix * current_Data.Acc;
+                current_Data.Acc.copying_from_buffer();
 
-            rotation_matrix * current_Data.Acc_Buffer;
-            current_Data.Acc_Buffer.copying_from_buffer();
-            
-            rotation_matrix * current_Data.Gyro;
-            current_Data.Gyro.copying_from_buffer();
+                rotation_matrix * current_Data.Acc_Buffer;
+                current_Data.Acc_Buffer.copying_from_buffer();
+                
+                rotation_matrix * current_Data.Gyro;
+                current_Data.Gyro.copying_from_buffer();
 
-            rotation_matrix * current_Data.Gyro_Buffer;
-            current_Data.Gyro_Buffer.copying_from_buffer();
+                rotation_matrix * current_Data.Gyro_Buffer;
+                current_Data.Gyro_Buffer.copying_from_buffer();
 
-            buffer_Data - zero_Data;
+                buffer_Data - zero_Data;
 
-            // Таким образом:
-            // buffer_Data - исходные данные
-            // buffer_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля
-            // current_Data - исходные данные в СК Земли
-            // current_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля в СК Земли
+                // Таким образом:
+                // buffer_Data - исходные данные
+                // buffer_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля
+                // current_Data - исходные данные в СК Земли
+                // current_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля в СК Земли
 
-            COM_port.sending_data(TickCounter, buffer_Data, current_Data, SENDING_BUFFER);
+                COM_port.sending_data(TickCounter, buffer_Data, current_Data, SENDING_BUFFER);
 #endif  /* SEND_ALL_RAW_DATA */
 
 #ifdef SEND_SINGLE_RAW_DATA
-            COM_port.sending_data(TickCounter, buffer_Data);
+                COM_port.sending_data(TickCounter, buffer_Data);
 #endif  /* SEND_SINGLE_RAW_DATA */
+                LedOff(LED8);
+                data_updated = FALSE;
+            }
         }
     }
 
