@@ -19,8 +19,6 @@ public:
     Frame Acc_Buffer, Gyro_Buffer;
 
     float Temp, Temp_buffer, Temp_Previous;        // Значения температуры
-    uint8_t Temp_counter = 0;
-    friend void ReadMagTemp(float *pfTData);
 
     float Acc_coeff[3] = {0.0f};         // Коэффициенты пропорциональности данных ускорений от изменения температуры
     float Gyro_coeff[3] = {0.0f};        // Коэффициенты пропорциональности данных угловых скоростей от изменения температуры
@@ -138,32 +136,29 @@ public:
         Acc.Read_Acc();
         Gyro.Read_Gyro();
 
-        Read_Temp();
-        Temp_counter++;
-}
+    }
 
-void Read_Temp(){
-        if (Temp_counter == 255){
-            Temp_counter -= 33;
-            while (Temp_counter++ < 255){
-                ReadMagTemp(&Temp);
-                Temp_Previous += Temp;
-                for (int j = 0; j < 100; j++){   continue;   }
-            }
-            Temp_Previous /= 32;
-            Temp_counter = 0;
+    friend void ReadMagTemp(float *pfTData);
+    void Read_Temp(){
+        // Перед вызовом функции необходимо вызвать Read_TempPrevious !!!
+        // Проверка не сделана для оптимизации кода
+        ReadMagTemp(&Temp);
+        if (abs(Temp - Temp_Previous) > MAX_TEMP_DIFF){
+            // Если разница между прошлой температурой и текущей больше MAX_TEMP_DIFF единиц,
+            // то считаем, что полученное значение температуры неверное и заполним его предыдущим значением
+            Temp = Temp_Previous;
         }
+        Temp_Previous = Temp;
+    }
 
-        if (!(Temp_counter % MAX_TEMP_COUNTER)){
-            ReadMagTemp(&Temp);
-            if (abs(Temp - Temp_Previous) > MAX_TEMP_DIFF){
-                // Если разница между прошлой температурой и текущей больше MAX_TEMP_DIFF единиц,
-                // то считаем, что полученное значение температуры неверное и заполним его предыдущим значением
-                Temp = Temp_Previous;
-            }
-            Temp_Previous = Temp;
-            Temp_counter = 0;
+    void Read_TempPrevious(){
+        Temp_Previous = 0;
+        for (i = 0; i < 32; i++){
+            ReadMagTemp(&Temp_buffer);
+            Temp_Previous += Temp_buffer;
+            for (uint8_t j = 0; j < 255; j++){   continue;   }      // Задержка
         }
+        Temp_Previous /= 32;
     }
 
     // ########################################################################
@@ -178,10 +173,25 @@ void Read_Temp(){
         Temp = 0.0f;
     }
 
+    void set_zero_Buffer()
+    {
+        Acc_Buffer.set_zero_Frame();
+        Gyro_Buffer.set_zero_Frame();
+
+        Temp_buffer = 0.0f;
+    }
+
     void update_zero_level(float temp_diff){
         for (i = 0; i < 3; i++){
             Acc[i] -= Acc_coeff[i] * temp_diff;
             Gyro[i] -= Gyro_coeff[i] * temp_diff;
+        }
+    }
+
+    void update_zero_level_Buffer(float temp_diff){
+        for (i = 0; i < 3; i++){
+            Acc_Buffer[i] -= Acc_coeff[i] * temp_diff;
+            Gyro_Buffer[i] -= Gyro_coeff[i] * temp_diff;
         }
     }
 

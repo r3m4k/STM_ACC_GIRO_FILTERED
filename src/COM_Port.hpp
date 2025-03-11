@@ -105,6 +105,57 @@ class COM_Port{
 
     //#############################################
     
+    typedef struct outbuf_type6
+    {         
+        uint8_t Header[4] = {0x7E, 0x11, 0xFE, 0xC8};      // {126, 17, 254, 200}
+
+        Data_Struct data_struct;
+        uint8_t Temp[2];
+
+        uint8_t checksum = 0;
+    }outbuf_type6;
+
+    //#############################################
+
+    // Заполнение структуры frame_struct данными из frame
+    void filling_FrameStruct(Frame &frame, Frame_Struct &frame_struct){
+        for (i = 0; i < 3; i++){
+            // ((uint8_t*)&frame_struct)[0 + 2 * i] = frame_struct.XYZ_coord_lowBit  (т.е младший разряд Acc.XYZ_coord)
+            // ((uint8_t*)&frame_struct)[1 + 2 * i] = frame_struct.XYZ_coord_highBit (т.е старший разряд Acc.XYZ_coord)
+            tmp = round(frame[i] * 1000);
+            ((uint8_t*)&frame_struct)[0 + 2 * i] = tmp;                 // Младший разряд
+            ((uint8_t*)&frame_struct)[1 + 2 * i] = tmp >> 8;            // Старший разряд
+        }
+    }
+
+    // Заполнение структуры frame_struct данными из array
+    void filling_FrameStruct(float *array, Frame_Struct &frame_struct){
+        for (i = 0; i < 3; i++){
+            // ((uint8_t*)&frame_struct)[0 + 2 * i] = frame_struct.XYZ_coord_lowBit  (т.е младший разряд Acc.XYZ_coord)
+            // ((uint8_t*)&frame_struct)[1 + 2 * i] = frame_struct.XYZ_coord_highBit (т.е старший разряд Acc.XYZ_coord)
+            tmp = round(array[i] * 1000);
+            ((uint8_t*)&frame_struct)[0 + 2 * i] = tmp;                 // Младший разряд
+            ((uint8_t*)&frame_struct)[1 + 2 * i] = tmp >> 8;            // Старший разряд
+        }
+    }
+    
+    // Заполнение структуры data_struct данными из data
+    void filling_DataStruct(Data &data, Data_Struct &data_struct){
+        filling_FrameStruct(data.Acc, data_struct.Acc);
+        filling_FrameStruct(data.Gyro, data_struct.Gyro);
+    }
+
+    // Заполнение структуры data_Buffer_struct данными из data
+    void filling_DataBuffer_Struct(Data &data, DataBuffer_Struct &data_Buffer_struct){
+        filling_FrameStruct(data.Acc, data_Buffer_struct.Acc);
+        filling_FrameStruct(data.Acc_Buffer, data_Buffer_struct.Acc_Buffer);
+
+        filling_FrameStruct(data.Gyro, data_Buffer_struct.Gyro);
+        filling_FrameStruct(data.Gyro_Buffer, data_Buffer_struct.Gyro_Buffer);
+    }
+    
+    //#############################################
+    
 public:
     // Отправка посылки с одним пакетом измерений data
     void sending_data(uint32_t Ticks, Data &data){
@@ -243,44 +294,26 @@ public:
         CDC_Send_DATA((uint8_t*)&Out_Buf, sizeof(Out_Buf));
     }
 
-    //#############################################
-    // Заполнение структуры frame_struct данными из frame
-    void filling_FrameStruct(Frame &frame, Frame_Struct &frame_struct){
-        for (i = 0; i < 3; i++){
-            // ((uint8_t*)&frame_struct)[0 + 2 * i] = frame_struct.XYZ_coord_lowBit  (т.е младший разряд Acc.XYZ_coord)
-            // ((uint8_t*)&frame_struct)[1 + 2 * i] = frame_struct.XYZ_coord_highBit (т.е старший разряд Acc.XYZ_coord)
-            tmp = round(frame[i] * 1000);
-            ((uint8_t*)&frame_struct)[0 + 2 * i] = tmp;                 // Младший разряд
-            ((uint8_t*)&frame_struct)[1 + 2 * i] = tmp >> 8;            // Старший разряд
+    // Отправка посылки с одним пакетом измерений data без времени
+    void sending_data(Data &data){
+
+        outbuf_type6 Out_Buf;
+
+        filling_DataStruct(data, Out_Buf.data_struct);
+
+        tmp = round(data.Temp * 100);
+        ((uint8_t*)&Out_Buf)[sizeof(Out_Buf) - 3] = tmp;                 // Младший разряд
+        ((uint8_t*)&Out_Buf)[sizeof(Out_Buf) - 2] = tmp >> 8;            // Старший разряд
+
+        // Посчитаем контрольную сумму
+        tmp = 0;
+        for (i = 0; i < sizeof(Out_Buf) - 1; i++){
+            tmp += ((uint8_t*)&Out_Buf)[i];       
         }
-    }
+        Out_Buf.checksum = tmp;
 
-    // Заполнение структуры frame_struct данными из array
-    void filling_FrameStruct(float *array, Frame_Struct &frame_struct){
-        for (i = 0; i < 3; i++){
-            // ((uint8_t*)&frame_struct)[0 + 2 * i] = frame_struct.XYZ_coord_lowBit  (т.е младший разряд Acc.XYZ_coord)
-            // ((uint8_t*)&frame_struct)[1 + 2 * i] = frame_struct.XYZ_coord_highBit (т.е старший разряд Acc.XYZ_coord)
-            tmp = round(array[i] * 1000);
-            ((uint8_t*)&frame_struct)[0 + 2 * i] = tmp;                 // Младший разряд
-            ((uint8_t*)&frame_struct)[1 + 2 * i] = tmp >> 8;            // Старший разряд
-        }
+        CDC_Send_DATA((uint8_t*)&Out_Buf, sizeof(Out_Buf));
     }
-    
-    // Заполнение структуры data_struct данными из data
-    void filling_DataStruct(Data &data, Data_Struct &data_struct){
-        filling_FrameStruct(data.Acc, data_struct.Acc);
-        filling_FrameStruct(data.Gyro, data_struct.Gyro);
-    }
-
-    // Заполнение структуры data_Buffer_struct данными из data
-    void filling_DataBuffer_Struct(Data &data, DataBuffer_Struct &data_Buffer_struct){
-        filling_FrameStruct(data.Acc, data_Buffer_struct.Acc);
-        filling_FrameStruct(data.Acc_Buffer, data_Buffer_struct.Acc_Buffer);
-
-        filling_FrameStruct(data.Gyro, data_Buffer_struct.Gyro);
-        filling_FrameStruct(data.Gyro_Buffer, data_Buffer_struct.Gyro_Buffer);
-    }
-    
 };
 
 #endif /*    __COM_PORT_HPP    */
