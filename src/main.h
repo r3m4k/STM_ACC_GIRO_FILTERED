@@ -7,6 +7,7 @@
 #include "diag/Trace.h"
 #include "Sensors.h"
 
+
 // ===============================================================================
 // Sample pragmas to cope with warnings. Please note the related line at
 // the end of this function, used to pop the compiler diagnostics status.
@@ -18,7 +19,7 @@
 #pragma GCC diagnostic pop
 
 #define FALSE 0
-#define TRUE 1
+#define TRUE  1
 
 /* Exported functions ------------------------------------------------------- */
 #ifdef __cplusplus

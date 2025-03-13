@@ -1,8 +1,11 @@
+/* Includes ------------------------------------------------------------------*/
 #include "Drv_Gpio.h"
 #include "Drv_Uart.h"
 
 #include "main.h"
 
+/* Includes HPP files --------------------------------------------------------*/
+#include "COM_Port.hpp"
 #include "Measure.hpp"
 #include "Leds.hpp"
 
@@ -53,6 +56,7 @@ int32_t  ViewTact = 0;
 // -------------------------------------------------------------------------------
 float gyro_multiplier = 0;             // Множитель для данных с гироскопа
 
+COM_Port COM_port;
 Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00001);
 LEDS Leds;
 // -------------------------------------------------------------------------------
@@ -74,8 +78,11 @@ int main()
     // // Поморгаем светодиодами после успешной инициализации
     // Toggle_Leds();      
 
+<<<<<<< HEAD
     // // Начнём первоначальную выставку датчиков
     // measure.initial_setting();
+=======
+>>>>>>> master
 
     // // Запускаем таймер 
     // TIM_Cmd(TIM4, ENABLE);
@@ -84,12 +91,19 @@ int main()
     // // USART_Cmd(USART2, ENABLE);
     // // Uart_irq_enable();
 
+<<<<<<< HEAD
     // // Включим зелёные светодиоды для указания корректной работы 
     // LedOn(LED6);
     // LedOn(LED7);
 
     // // Начнём работу
     // measure.measuring();  
+=======
+    // Запускаем таймер 
+    TIM_Cmd(TIM4, ENABLE);
+    // Начнём работу
+    measure.measuring();  
+>>>>>>> master
 
     while (1){  continue;   }   // Затычка на всякий случай
 

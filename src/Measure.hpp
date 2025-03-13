@@ -1,4 +1,5 @@
 #include "Matrix.hpp"
+#include "COM_Port.hpp"
 
 #define DATA_FILTERING
 // #define DATA_PROCESSING
@@ -8,7 +9,7 @@
 #define OFFSET_VALUE    0           // Фиктивный пройденный путь (в метрах) между сигналами от ДПП
 // #define OFFSET_VALUE    0.2256      // Пройденный путь (в метрах) между сигналами от ДПП
 
-/*  Фильтрация входного потока данных   */
+/*  Фильтрация входного потока данных  */
 #define COMPLEX_FILTER
 #define FilterSize          64      // ВАЖНО!!! Значение FilterSize должно нацело делиться на FilterFrameSize
 #define FilterFrameSize     16
@@ -20,12 +21,19 @@
 #define Y_COORD             (int) 1
 #define Z_COORD             (int) 2
 
-#define TEMP_DELTA          3.0f                     
+#define TEMP_DELTA          3.0f  
 
+/*  Отправка данных по com порту  */
+#define SENDING_BUFFER          TRUE
+#define SEND_ALL_RAW_DATA
+// #define SEND_SINGLE_RAW_DATA
+
+extern COM_Port COM_port;
 
 class Measure 
 {
 public:
+    // -------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------
     // Данные, которые будут меняться в вызываемых функциях
     // Вынесем их в статические переменные для избежания переполнения стека процессора
@@ -43,6 +51,7 @@ public:
     // -------------------------------------------------------------------------------
     bool new_tick_Flag = FALSE;     // Флаг, отвечающий за наличие нового прерывания от таймера
     bool new_DPP_Flag  = FALSE;     // Флаг, отвечающие за наличие нового кода от ДПП
+    bool data_updated  = FALSE;     // Флаг, отвечающий за состояние данных: новые или старые
     // -------------------------------------------------------------------------------
     // Переменные для работы с прерываниями от таймера
     float period;                   // Период изменения TickCounter в секундах
@@ -60,13 +69,9 @@ public:
         float Gyro_Buffer[3];       // Буфер для данных с гироскопа
     }FilterFrame[FilterSize];
    
-    uint8_t Filter_counter = 0;
-    uint8_t temp_counter = 0;
-
-    float Temp_Buffer[FilterSize];
-    float Temp_Delta_sigh = 1;
+    int temp_counter = 0;
+    float temp_buffer[FilterFrameSize];
     bool Full_Temp_Buffer = FALSE;  // Флаг заполнения буфера температуры
-    float temp_buffer[FilterSize / FilterFrameSize];
 
     // Вспомогательные буферы для работы фильтра
     float tmp_Buffer[FilterSize];   
@@ -96,8 +101,6 @@ public:
         longitude = phi; 
         period = _period;          
         buffer_matrix.IdentityMatrix();
-        current_Data.Temp_counter = 255;       // Значение, при котором задаётся начальная температура
-        TickCounter = 0;
     }
 
     // ########################################################################
@@ -108,6 +111,7 @@ public:
     // ########################################################################
     // Чтение данных и последующая обработка (основной цикл программы)
     void measuring(){
+        TickCounter = 0;
         while (1)
         {
             
@@ -122,24 +126,14 @@ public:
                 data_processing();
 #endif      /* DATA_PROCESSING */                
                 LedOff(LED5);
+                data_updated = TRUE;
                 new_tick_Flag = FALSE;
             }
 
             if (Full_Temp_Buffer){
-                mean(Temp_Buffer, FilterSize);
-                buffer_Data.Temp = tmp_float;
-
                 if (abs(buffer_Data.Temp - zero_Data.Temp) > TEMP_DELTA){
-
-                    if (buffer_Data.Temp > zero_Data.Temp){
-                        Temp_Delta_sigh = 1;
-                    }
-                    else{   
-                        Temp_Delta_sigh = -1;
-                    }
-                    
-                    zero_Data.Temp += Temp_Delta_sigh * TEMP_DELTA;
-                    zero_Data.update_zero_level(Temp_Delta_sigh * TEMP_DELTA);
+                    zero_Data.Temp = buffer_Data.Temp;
+                    zero_Data.update_zero_level(buffer_Data.Temp - zero_Data.Temp);
                 }
                 Full_Temp_Buffer = FALSE;
             }
@@ -150,8 +144,7 @@ public:
 #endif      /* DATA_FILTERING */
 
 #ifdef USING_DPP
-            if (new_DPP_Flag)
-            {
+            if (new_DPP_Flag){
                 // Начало обработки нового кода ДПП
                 /* 
                 Решим уравнение s**2 = (x-a)**2 + (y-a)**2 + (z-a)**2
@@ -179,8 +172,42 @@ public:
             }            
 #endif      /* USING_DPP */ 
 
-            // buffer_Data -= zero_Data;
-            buffer_Data.sending_USB((float) TickCounter * period);
+            if (data_updated){
+                LedOn(LED8);
+
+#ifdef SEND_ALL_RAW_DATA
+                current_Data = buffer_Data;
+                current_Data - zero_Data;
+
+                rotation_matrix * current_Data.Acc;
+                current_Data.Acc.copying_from_buffer();
+
+                rotation_matrix * current_Data.Acc_Buffer;
+                current_Data.Acc_Buffer.copying_from_buffer();
+                
+                rotation_matrix * current_Data.Gyro;
+                current_Data.Gyro.copying_from_buffer();
+
+                rotation_matrix * current_Data.Gyro_Buffer;
+                current_Data.Gyro_Buffer.copying_from_buffer();
+
+                buffer_Data - zero_Data;
+
+                // Таким образом:
+                // buffer_Data - исходные данные
+                // buffer_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля
+                // current_Data - исходные данные в СК Земли
+                // current_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля в СК Земли
+
+                COM_port.sending_data(TickCounter, buffer_Data, current_Data, SENDING_BUFFER);
+#endif  /* SEND_ALL_RAW_DATA */
+
+#ifdef SEND_SINGLE_RAW_DATA
+                COM_port.sending_data(TickCounter, buffer_Data);
+#endif  /* SEND_SINGLE_RAW_DATA */
+                LedOff(LED8);
+                data_updated = FALSE;
+            }
         }
     }
 
@@ -200,32 +227,40 @@ public:
 
     // ########################################################################
     // Нахождение нулевых значений
-    void set_zero_Data()
-    {
-        int degree = 10;
-        int jump_mean_degree = 6; // Степень глубины прыгающего среднего
+    void set_zero_Data(){
+        zero_Data.Read_TempPrevious();
+        zero_Data.set_zero_Values();
+        zero_Data.set_zero_Buffer();
+        zero_Data.Temp_buffer = zero_Data.Temp_Previous;
 
-        int max = pow(2, degree - jump_mean_degree);
-        int jm_max = pow(2, jump_mean_degree);
+        buffer_Data.Temp_Previous  = zero_Data.Temp_Previous;
+        current_Data.Temp_Previous = zero_Data.Temp_Previous;
 
-        for (index1 = 0; index1 < max; index1++)
-        {
-            buffer_Data.set_zero_Values();
+        int FilterFrame_num = pow(2, 10);
+        
+        // В буфере zero_Data будем хранить смещение нуля из-за температурного нагрева
+        // Поэтому в цикле ниже НЕ ИСПОЛЬЗОВАТЬ операции, которые могут изменить zero_Data.Acc|Gyro_Buffer 
+        for (int index = 0; index < FilterFrame_num; index++){
+            data_collecting();
+            data_filtering();            
 
-            for (index2 = 0; index2 < jm_max; index2++)
-            {
-                current_Data.Read_Data();
-                buffer_Data += current_Data;
+            if (Full_Temp_Buffer){
+                if (abs(buffer_Data.Temp - zero_Data.Temp_buffer) > TEMP_DELTA){
+                    zero_Data.Temp_buffer = buffer_Data.Temp;
+                    zero_Data.update_zero_level_Buffer(buffer_Data.Temp - zero_Data.Temp_buffer);
+                }
+                Full_Temp_Buffer = FALSE;
             }
-            buffer_Data /= jm_max;
-            
-            zero_Data += buffer_Data;
-        }
-        zero_Data /= max;
 
-        zero_Data.Temp_Previous = zero_Data.Temp;
-        current_Data.Temp_Previous = zero_Data.Temp;
-        buffer_Data.Temp_Previous = zero_Data.Temp;
+            buffer_Data.Acc -= zero_Data.Acc_Buffer;
+            buffer_Data.Gyro -= zero_Data.Gyro_Buffer;
+            zero_Data += buffer_Data;
+
+            COM_port.sending_data(buffer_Data);
+        }
+
+        zero_Data /= FilterFrame_num;
+        COM_port.sending_data(zero_Data);
     }
 
     // ########################################################################
@@ -281,24 +316,21 @@ public:
     void data_collecting(){
 
         // Заполним буферы
-        current_Data.Temp_counter = 0;
-        temp_counter = 0;
         for (index1 = 0; index1 < FilterSize; index1++){
             current_Data.Read_Data();
             for (index2 = 0; index2 < 3; index2++){
                 FilterFrame[index1].Acc_Buffer[index2]  = current_Data(0, index2);
                 FilterFrame[index1].Gyro_Buffer[index2] = current_Data(1, index2);
             }
-            if (!(index1 % FilterFrameSize)){
-                temp_buffer[temp_counter++] = current_Data.Temp;
-            }
         }
 
-        mean(temp_buffer, FilterSize / FilterFrameSize);
-        buffer_Data.Temp = tmp_float;
-        Temp_Buffer[Filter_counter++] = buffer_Data.Temp;
-        if (Filter_counter == FilterSize){
-            Filter_counter = 0;
+        current_Data.Read_Temp();
+        temp_buffer[temp_counter++] = current_Data.Temp;
+
+        if (temp_counter == FilterFrameSize){
+            mean(temp_buffer, FilterFrameSize);
+            buffer_Data.Temp = tmp_float;
+            temp_counter = 0;
             Full_Temp_Buffer = TRUE; 
         }
     }
