@@ -7,6 +7,8 @@
 #include "stm32f30x_rcc.h"
 #include "stm32f30x_syscfg.h"
 
+#include "RCC.hpp"
+
 /* Defines  ------------------------------------------------------------------*/
 
 class System
@@ -15,11 +17,12 @@ private:
     RCC_ClocksTypeDef RCC_Clocks; // structure used for setting up the SysTick Interrupt
 
 public:
+    RCC_PERIPH RCC_Periph;
     System()
     {
         __disable_irq();
         __enable_irq();
-        
+
         RCC_GetClocksFreq(&RCC_Clocks);
         if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
             while (1); // will end up in this infinite loop if there was an error with Systick_Config

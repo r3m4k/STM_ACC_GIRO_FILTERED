@@ -5,9 +5,16 @@
 #include "main.h"
 
 /* Includes HPP files --------------------------------------------------------*/
-#include "COM_Port.hpp"
-#include "Measure.hpp"
+#include "System.hpp"
+#include "RCC.hpp"
+#include "GPIO.hpp"
 #include "Leds.hpp"
+#include "COM_Port.hpp"
+
+#include "Measure.hpp"
+
+System STM32;
+
 
 #define PI 3.14159265358979f
 #define TIM_PRESCALER      720      // При таком предделителе таймера получается один тик таймера на 10 мкс
@@ -63,13 +70,7 @@ LEDS Leds;
 
 int main()
 {
-    __disable_irq();
-    __enable_irq();
 
-	RCC_GetClocksFreq(&RCC_Clocks);
-	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
-		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
-    
     // Инициализируем всё оборудования
     InitAll();             
     
@@ -78,11 +79,6 @@ int main()
     // // Поморгаем светодиодами после успешной инициализации
     // Toggle_Leds();      
 
-<<<<<<< HEAD
-    // // Начнём первоначальную выставку датчиков
-    // measure.initial_setting();
-=======
->>>>>>> master
 
     // // Запускаем таймер 
     // TIM_Cmd(TIM4, ENABLE);
@@ -91,19 +87,10 @@ int main()
     // // USART_Cmd(USART2, ENABLE);
     // // Uart_irq_enable();
 
-<<<<<<< HEAD
-    // // Включим зелёные светодиоды для указания корректной работы 
-    // LedOn(LED6);
-    // LedOn(LED7);
-
-    // // Начнём работу
-    // measure.measuring();  
-=======
     // Запускаем таймер 
     TIM_Cmd(TIM4, ENABLE);
     // Начнём работу
     measure.measuring();  
->>>>>>> master
 
     while (1){  continue;   }   // Затычка на всякий случай
 
