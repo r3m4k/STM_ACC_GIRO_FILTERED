@@ -96,7 +96,7 @@ class COM_Port{
 
         Frame_Struct coordinates;
         Frame_Struct velocity;
-        Data_Struct data_struct;
+        DataBuffer_Struct data_Buffer_struct;
 
         uint8_t Temp[2];
 
@@ -123,17 +123,6 @@ class COM_Port{
             // ((uint8_t*)&frame_struct)[0 + 2 * i] = frame_struct.XYZ_coord_lowBit  (т.е младший разряд Acc.XYZ_coord)
             // ((uint8_t*)&frame_struct)[1 + 2 * i] = frame_struct.XYZ_coord_highBit (т.е старший разряд Acc.XYZ_coord)
             tmp = round(frame[i] * 1000);
-            ((uint8_t*)&frame_struct)[0 + 2 * i] = tmp;                 // Младший разряд
-            ((uint8_t*)&frame_struct)[1 + 2 * i] = tmp >> 8;            // Старший разряд
-        }
-    }
-
-    // Заполнение структуры frame_struct данными из array
-    void filling_FrameStruct(float *array, Frame_Struct &frame_struct){
-        for (i = 0; i < 3; i++){
-            // ((uint8_t*)&frame_struct)[0 + 2 * i] = frame_struct.XYZ_coord_lowBit  (т.е младший разряд Acc.XYZ_coord)
-            // ((uint8_t*)&frame_struct)[1 + 2 * i] = frame_struct.XYZ_coord_highBit (т.е старший разряд Acc.XYZ_coord)
-            tmp = round(array[i] * 1000);
             ((uint8_t*)&frame_struct)[0 + 2 * i] = tmp;                 // Младший разряд
             ((uint8_t*)&frame_struct)[1 + 2 * i] = tmp >> 8;            // Старший разряд
         }
@@ -268,7 +257,7 @@ public:
     }
 
     // Отправка посылки с данными координат, скоростей и одним пакетом измерений data
-    void sending_data(uint32_t Ticks, float *coordinates, float *velocity, Data &data){
+    void sending_data(uint32_t Ticks, Frame &coordinates, Frame &velocity, Data &data){
 
         outbuf_type5 Out_Buf;
 
@@ -278,7 +267,7 @@ public:
 
         filling_FrameStruct(coordinates, Out_Buf.coordinates);
         filling_FrameStruct(velocity, Out_Buf.velocity);
-        filling_DataStruct(data, Out_Buf.data_struct);
+        filling_DataBuffer_Struct(data, Out_Buf.data_Buffer_struct);
 
         tmp = round(data.Temp * 100);
         ((uint8_t*)&Out_Buf)[sizeof(Out_Buf) - 3] = tmp;                 // Младший разряд

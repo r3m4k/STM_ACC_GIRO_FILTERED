@@ -2,7 +2,7 @@
 #include "COM_Port.hpp"
 
 #define DATA_FILTERING
-// #define DATA_PROCESSING
+#define DATA_PROCESSING
 // #define USING_DPP
 // #define ERROR_CALCULATION
 
@@ -21,19 +21,20 @@
 #define Y_COORD             (int) 1
 #define Z_COORD             (int) 2
 
-#define TEMP_DELTA          1.5f  
+#define TEMP_DELTA          2.0f  
 
 /*  Отправка данных по com порту  */
 #define SENDING_BUFFER          TRUE
-#define SEND_ALL_RAW_DATA
+// #define SEND_ALL_RAW_DATA
 // #define SEND_SINGLE_RAW_DATA
+#define SEND_MAIN_DATA       // Отправка исходных данных и полученные координаты со скоростью
 
 extern COM_Port COM_port;
 
 class Measure 
 {
+    
 public:
-    // -------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------
     // Данные, которые будут меняться в вызываемых функциях
     // Вынесем их в статические переменные для избежания переполнения стека процессора
@@ -203,8 +204,13 @@ public:
 #endif  /* SEND_ALL_RAW_DATA */
 
 #ifdef SEND_SINGLE_RAW_DATA
-                COM_port.sending_data(TickCounter, buffer_Data);
+                buffer_Data - zero_Data;
+                COM_port.sending_data(TickCounter, buffer_Data, SENDING_BUFFER);
 #endif  /* SEND_SINGLE_RAW_DATA */
+
+#ifdef SEND_MAIN_DATA
+                COM_port.sending_data(TickCounter, Coordinates, Velocity, buffer_Data);                
+#endif /* SEND_MAIN_DATA */
                 LedOff(LED8);
                 data_updated = FALSE;
             }
@@ -225,6 +231,7 @@ public:
         LedOff(LED9);
     }
 
+private:
     // ########################################################################
     // Нахождение нулевых значений
     void set_zero_Data(){
@@ -245,7 +252,7 @@ public:
             data_filtering();            
 
             if (Full_Temp_Buffer){
-                if (abs(buffer_Data.Temp - zero_Data.Temp_buffer) > TEMP_DELTA){
+                if (abs(buffer_Data.Temp - zero_Data.Temp_buffer) > (TEMP_DELTA / 2)){
                     zero_Data.Temp_buffer = buffer_Data.Temp;
                     zero_Data.update_zero_level_Buffer(buffer_Data.Temp, zero_Data.Temp_buffer);
                 }
@@ -338,11 +345,12 @@ public:
     // ########################################################################
     // Обработка отфильтрованных данных
     void data_processing(){
+        buffer_Data - zero_Data;
 
         // Вычислим угол поворота за время period, опираясь на данные полученные только на части этого промежутка
         // При этом считаем, что за время period не произойдёт сильных изменений ни угловых скоростей, ни ускорений
         for (index1 = 0; index1 < 3; index1++){
-            Angles[index1] = buffer_Data.Gyro[index1] * period;
+            Angles[index1] = buffer_Data.Gyro_Buffer[index1] * period;
         }
         
         // Далее считаем, что tmp_matrix - матрица поворота от i-го состояния в i-1 состояние, соответствущее прошлой итерации обработки данных
@@ -365,13 +373,13 @@ public:
         tmp_matrix *= rotation_matrix;     // Получили матрицу поворота в СК Земли из i-го состояния
 
         // Вычислим приращение координат за время period в СК Земли
-        buffer_Data.Acc *= tmp_matrix;     // Значение ускорений в СК Земли
+        buffer_Data.Acc_Buffer *= tmp_matrix;     // Значение ускорений в СК Земли
 
         // Заполним данные о координатах и скоростях                
         for (index1 = 0; index1 < 3; index1++){
-            Coordinates[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2 - shift;    
-            Velocity[index1] += buffer_Data.Acc[index1] * period;
-            displacement[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2; 
+            Coordinates[index1] += Velocity[index1] * period + buffer_Data.Acc_Buffer[index1] * period * period / 2 - shift;    
+            Velocity[index1] += buffer_Data.Acc_Buffer[index1] * period;
+            // displacement[index1] += Velocity[index1] * period + buffer_Data.Acc[index1] * period * period / 2; 
         }
     }
 
