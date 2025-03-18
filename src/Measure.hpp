@@ -21,7 +21,7 @@
 #define Y_COORD             (int) 1
 #define Z_COORD             (int) 2
 
-#define TEMP_DELTA          3.0f  
+#define TEMP_DELTA          1.5f  
 
 /*  Отправка данных по com порту  */
 #define SENDING_BUFFER          TRUE
@@ -44,9 +44,9 @@ public:
     Matrix buffer_matrix;           // Матрица поворота от i-1 состояния в исходное
     float longitude;                // Широта места, где будет находиться плата
     // -------------------------------------------------------------------------------
-    float Coordinates[3] = {0};     // Координаты перемещения по осям XYZ
-    float Velocity[3] = {0};        // Скорости по осям XYZ
-    float Angles[3] = {0};          // Углы поворота вокруг XYZ
+    Frame Coordinates;              // Координаты перемещения по осям XYZ
+    Frame Velocity;                 // Скорости по осям XYZ
+    Frame Angles;                   // Углы поворота вокруг XYZ
     float shift = 0;                // Погрешность, накапливаемая при работе датчиков, которую необходимо компенсировать
     // -------------------------------------------------------------------------------
     bool new_tick_Flag = FALSE;     // Флаг, отвечающий за наличие нового прерывания от таймера
@@ -86,8 +86,8 @@ public:
     // -------------------------------------------------------------------------------
     // Переменные для вычисление погрешности
 #ifdef ERROR_CALCULATION
-    float Acc_std[3];               // СКО значений акселерометра
-    float Gyro_std[3];              // СКО значений гироскопа
+    Frame Acc_std;                  // СКО значений акселерометра
+    Frame Gyro_std;                 // СКО значений гироскопа
 #endif      /* ERROR_CALCULATION */
     // -------------------------------------------------------------------------------
     // Вспомогательные переменные (объявляем здесь чтобы не выделять под них постоянно память в ходе программы) 
@@ -133,7 +133,7 @@ public:
             if (Full_Temp_Buffer){
                 if (abs(buffer_Data.Temp - zero_Data.Temp) > TEMP_DELTA){
                     zero_Data.Temp = buffer_Data.Temp;
-                    zero_Data.update_zero_level(buffer_Data.Temp - zero_Data.Temp);
+                    zero_Data.update_zero_level(buffer_Data.Temp, zero_Data.Temp);
                 }
                 Full_Temp_Buffer = FALSE;
             }
@@ -179,16 +179,16 @@ public:
                 current_Data = buffer_Data;
                 current_Data - zero_Data;
 
-                rotation_matrix * current_Data.Acc;
+                current_Data.Acc * rotation_matrix;
                 current_Data.Acc.copying_from_buffer();
 
-                rotation_matrix * current_Data.Acc_Buffer;
+                current_Data.Acc_Buffer * rotation_matrix;
                 current_Data.Acc_Buffer.copying_from_buffer();
                 
-                rotation_matrix * current_Data.Gyro;
+                current_Data.Gyro * rotation_matrix;
                 current_Data.Gyro.copying_from_buffer();
 
-                rotation_matrix * current_Data.Gyro_Buffer;
+                current_Data.Gyro_Buffer * rotation_matrix;
                 current_Data.Gyro_Buffer.copying_from_buffer();
 
                 buffer_Data - zero_Data;
@@ -219,7 +219,7 @@ public:
 
         set_zero_Data();
         set_rotationMatrix();
-        rotation_matrix * zero_Data;
+        zero_Data * rotation_matrix;
             
         LedOff(LED4);
         LedOff(LED9);
@@ -247,7 +247,7 @@ public:
             if (Full_Temp_Buffer){
                 if (abs(buffer_Data.Temp - zero_Data.Temp_buffer) > TEMP_DELTA){
                     zero_Data.Temp_buffer = buffer_Data.Temp;
-                    zero_Data.update_zero_level_Buffer(buffer_Data.Temp - zero_Data.Temp_buffer);
+                    zero_Data.update_zero_level_Buffer(buffer_Data.Temp, zero_Data.Temp_buffer);
                 }
                 Full_Temp_Buffer = FALSE;
             }
@@ -347,17 +347,17 @@ public:
         
         // Далее считаем, что tmp_matrix - матрица поворота от i-го состояния в i-1 состояние, соответствущее прошлой итерации обработки данных
         // Заполним матрицу tmp_matrix углами поворота вокруг XYZ (https://ru.wikipedia.org/wiki/Матрица_поворота)
-        tmp_matrix(0, 0) =  cos(Angles[1]) * cos(Angles[2]);
-        tmp_matrix(0, 1) = -sin(Angles[2]) * cos(Angles[1]);
-        tmp_matrix(0, 2) =  sin(Angles[1]);
+        tmp_matrix(0, 0) =  cos(Angles.Y_coord) * cos(Angles.Z_coord);
+        tmp_matrix(0, 1) = -sin(Angles.Z_coord) * cos(Angles.Y_coord);
+        tmp_matrix(0, 2) =  sin(Angles.Y_coord);
 
-        tmp_matrix(1, 0) =  sin(Angles[0]) * sin(Angles[1]) * cos(Angles[2]) + sin(Angles[2]) * cos(Angles[0]);
-        tmp_matrix(1, 1) = -sin(Angles[0]) * sin(Angles[1]) * sin(Angles[2]) + cos(Angles[0]) * cos(Angles[2]);
-        tmp_matrix(1, 2) = -sin(Angles[0]) * cos(Angles[1]);
+        tmp_matrix(1, 0) =  sin(Angles.X_coord) * sin(Angles.Y_coord) * cos(Angles.Z_coord) + sin(Angles.Z_coord) * cos(Angles.X_coord);
+        tmp_matrix(1, 1) = -sin(Angles.X_coord) * sin(Angles.Y_coord) * sin(Angles.Z_coord) + cos(Angles.X_coord) * cos(Angles.Z_coord);
+        tmp_matrix(1, 2) = -sin(Angles.X_coord) * cos(Angles.Y_coord);
 
-        tmp_matrix(2, 0) =  sin(Angles[0]) * sin(Angles[2]) - sin(Angles[1]) * cos(Angles[0]) * cos(Angles[2]);
-        tmp_matrix(2, 1) =  sin(Angles[0]) * cos(Angles[2]) + sin(Angles[1]) * sin(Angles[2]) * cos(Angles[0]);
-        tmp_matrix(2, 2) =  cos(Angles[0]) * cos(Angles[1]);
+        tmp_matrix(2, 0) =  sin(Angles.X_coord) * sin(Angles.Z_coord) - sin(Angles.Y_coord) * cos(Angles.X_coord) * cos(Angles.Z_coord);
+        tmp_matrix(2, 1) =  sin(Angles.X_coord) * cos(Angles.Z_coord) + sin(Angles.Y_coord) * sin(Angles.Z_coord) * cos(Angles.X_coord);
+        tmp_matrix(2, 2) =  cos(Angles.X_coord) * cos(Angles.Y_coord);
 
         tmp_matrix *= buffer_matrix;       // Получили матрицу поворота в исходное состояние, при котором проводилась выставка
         buffer_matrix = tmp_matrix;        // Сохраним значения tmp_matrix в buffer_matrix, чтобы корректно перейти к i+1 состоянию
@@ -365,7 +365,7 @@ public:
         tmp_matrix *= rotation_matrix;     // Получили матрицу поворота в СК Земли из i-го состояния
 
         // Вычислим приращение координат за время period в СК Земли
-        tmp_matrix *= buffer_Data.Acc;     // Значение ускорений в СК Земли
+        buffer_Data.Acc *= tmp_matrix;     // Значение ускорений в СК Земли
 
         // Заполним данные о координатах и скоростях                
         for (index1 = 0; index1 < 3; index1++){

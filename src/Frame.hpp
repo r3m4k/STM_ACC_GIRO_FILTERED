@@ -1,6 +1,8 @@
 #ifndef __FRAME_HPP
 #define __FRAME_HPP
 
+#include "Matrix.hpp"
+
 extern float sqrt2;
 extern float gyro_multiplier;
 
@@ -90,6 +92,22 @@ public:
         else if (index == 1) return Y_coord;
         else if (index == 2) return Z_coord;
     } 
+
+    // ########################################################################
+    // Математические операции с Matrix
+
+    // Умножение frame на матрицу, как умножение вектора на матрицу, с сохранением результата в frame.frame_buffer
+    void operator*(Matrix &matrix){
+        frame_Buffer[0] = matrix[0] * X_coord + matrix[1] * Y_coord + matrix[2] * Z_coord;
+        frame_Buffer[1] = matrix[3] * X_coord + matrix[4] * Y_coord + matrix[5] * Z_coord;
+        frame_Buffer[2] = matrix[6] * X_coord + matrix[7] * Y_coord + matrix[8] * Z_coord;
+    }
+
+    // Умножение frame на матрицу, как умножение вектора на матрицу, с сохранением результата в frame
+    void operator*=(Matrix &matrix){
+        *this * matrix;
+        copying_from_buffer();
+    }
 
     // ########################################################################
     // Чтение данных с датчиков

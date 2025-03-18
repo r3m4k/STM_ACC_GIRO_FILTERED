@@ -20,8 +20,18 @@ public:
 
     float Temp, Temp_buffer, Temp_Previous;        // Значения температуры
 
-    float Acc_coeff[3] = {0.0f};         // Коэффициенты пропорциональности данных ускорений от изменения температуры
-    float Gyro_coeff[3] = {0.0f};        // Коэффициенты пропорциональности данных угловых скоростей от изменения температуры
+    // см. D:\Job\STM reading data\temp_coefficients.json
+    // d(u) = a(temp) * d(temp), a(temp) = Acc|Gyro_coeff[_][0] * temp + Acc|Gyro_coeff[_][1]
+    double Acc_coeff[3][2] = {
+        {-0.000012182535295, -0.000388057852213},
+        {-0.000004738017290, 0.001753094951160},
+        {0.000003711110736, 0.001713383764375}
+    };         // Коэффициенты изменения ускорений от изменения температуры
+    double Gyro_coeff[3][2] = {
+        {-0.000269236998542, 0.057015150088188},
+        {0.000162277323684, -0.015148759220088},
+        {0.000159065090423, -0.037555983340566}
+    };        // Коэффициенты изменения угловых скоростей от изменения температуры
 
     uint8_t i;  
 
@@ -130,12 +140,33 @@ public:
     }
 
     // ########################################################################
+    // Математические операции с Matrix
+
+    // Умножение data.Acc, data.Gyro на матрицу, поэлементно, как умножение векторов на матрицу, с сохранением 
+    // результата в data.Acc_Buffer, data.Gyro_Buffer
+    void operator*(Matrix &matrix){
+        Acc * matrix;
+        Acc_Buffer = Acc.frame_Buffer;
+
+        Gyro * matrix;
+        Gyro_Buffer = Gyro.frame_Buffer;
+    }
+
+    // Умножение data.Acc, data.Gyro на матрицу с изменением значений data.Acc, data.Gyro
+    // Сделано именно так, чтобы избежать повторного include из Data.h
+    // Более того, в Data.h не используется функционал из Matrix.h, поэтому делать include Matrix.h в Data.h нецелесообразно 
+    void operator*=(Matrix &matrix){
+        *this * matrix;
+
+        Acc = Acc_Buffer;
+        Gyro = Gyro_Buffer;
+    }
+    // ########################################################################
     // Чтение данных с датчиков
     void Read_Data()
     {
         Acc.Read_Acc();
         Gyro.Read_Gyro();
-
     }
 
     friend void ReadMagTemp(float *pfTData);
@@ -181,27 +212,19 @@ public:
         Temp_buffer = 0.0f;
     }
 
-    void update_zero_level(float temp_diff){
+    void update_zero_level(float temp_current, float temp_previous){
         for (i = 0; i < 3; i++){
-            Acc[i] -= Acc_coeff[i] * temp_diff;
-            Gyro[i] -= Gyro_coeff[i] * temp_diff;
+            Acc[i] -= (Acc_coeff[i][0] * (double)temp_current + Acc_coeff[i][1]) * (temp_current - temp_previous);
+            Gyro[i] -= (Gyro_coeff[i][0] * (double)temp_current + Gyro_coeff[i][1]) * (temp_current - temp_previous);
         }
     }
 
-    void update_zero_level_Buffer(float temp_diff){
+    void update_zero_level_Buffer(float temp_current, float temp_previous){
         for (i = 0; i < 3; i++){
-            Acc_Buffer[i] -= Acc_coeff[i] * temp_diff;
-            Gyro_Buffer[i] -= Gyro_coeff[i] * temp_diff;
+            Acc_Buffer[i] -= (Acc_coeff[i][0] * (double)temp_current + Acc_coeff[i][1]) * (temp_current - temp_previous);
+            Gyro_Buffer[i] -= (Gyro_coeff[i][0] * (double)temp_current + Gyro_coeff[i][1]) * (temp_current - temp_previous);
         }
     }
-
-    // friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
-    // // Отправка элементов Data по COM порту
-    // void sending_Usart()
-    // {
-    //     UsartSend(Acc.X_coord, Acc.Y_coord, Acc.Z_coord, Gyro.X_coord, Gyro.Y_coord, Gyro.Z_coord, 0, 0, 0, 0);
-    // }
-    
 };
 
 #endif /*    __DATA_HPP    */

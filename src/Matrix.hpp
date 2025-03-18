@@ -1,46 +1,17 @@
+#ifndef __MATRIX_HPP
+#define __MATRIX_HPP
+
 #include "Data.hpp"
 
 class Matrix{
-public:
     float matrix[9] = {0.0f};
     float matrix_Buffer[9] = {0.0f};
     short matrix_Index = 0;
 
+public:
+
     // ########################################################################
     // Перегрузка операторов
-
-    // Умножение frame на матрицу, как умножение вектора на матрицу, с сохранением результата в frame.frame_buffer
-    void operator*(Frame& frame){
-        frame.frame_Buffer[0] = matrix[0] * frame[0] + matrix[1] * frame[1] + matrix[2] * frame[2];
-        frame.frame_Buffer[1] = matrix[3] * frame[0] + matrix[4] * frame[1] + matrix[5] * frame[2];
-        frame.frame_Buffer[2] = matrix[6] * frame[0] + matrix[7] * frame[1] + matrix[8] * frame[2];
-    }
-
-    // Умножение frame на матрицу, как умножение вектора на матрицу, с сохранением результата в frame
-    void operator*=(Frame& frame){
-        *this * frame;
-        frame.copying_from_buffer();
-    }
-
-    // Умножение data.Acc, data.Gyro на матрицу, поэлементно, как умножение векторов на матрицу, с сохранением 
-    // результата в data.Acc_Buffer, data.Gyro_Buffer
-    void operator*(Data& data){
-        *this * data.Acc;
-        data.Acc_Buffer = data.Acc.frame_Buffer;
-
-        *this * data.Gyro;
-        data.Gyro_Buffer = data.Gyro.frame_Buffer;
-    }
-
-    // Умножение data.Acc, data.Gyro на матрицу с изменением значений data.Acc, data.Gyro
-    // Сделано именно так, чтобы избежать повторного include из Data.h
-    // Более того, в Data.h не используется функционал из Matrix.h, поэтому делать include Matrix.h в Data.h нецелесообразно 
-    void operator*=(Data& data){
-        *this * data;
-
-        data.Acc = data.Acc_Buffer;
-        data.Gyro = data.Gyro_Buffer;
-    }
 
     // Умножение матриц с сохранением информации в matrix_Buffer первой матрицы
     void operator*(Matrix& mult_matrix){
@@ -118,11 +89,6 @@ public:
         matrix[7] = 0;
         matrix[8] = 1;
     }
-
-    // ########################################################################
-    friend void UsartSend(uint16_t Value1, uint16_t Value2, uint16_t Value3, uint16_t maxValue1, uint16_t maxValue2, uint16_t maxValue3, uint16_t DPPValue1, uint16_t DPPValue2, uint16_t DPPValue3, uint16_t DPPValue4);
-
-    void sending_Usart() {
-        UsartSend(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], matrix[6], matrix[7], matrix[8], 0);
-    }
 };
+
+#endif /*   __MATRIX_HPP    */
