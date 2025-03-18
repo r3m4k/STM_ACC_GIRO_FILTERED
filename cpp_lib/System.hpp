@@ -9,17 +9,16 @@
 
 #include "RCC.hpp"
 
-/* Defines  ------------------------------------------------------------------*/
 
 class System
 {
 private:
-    RCC_ClocksTypeDef RCC_Clocks; // structure used for setting up the SysTick Interrupt
 
 public:
-    RCC_PERIPH RCC_Periph;
+    RCC_PERIPH RCC;
     System()
     {
+        RCC_ClocksTypeDef RCC_Clocks; // structure used for setting up the SysTick Interrupt
         __disable_irq();
         __enable_irq();
 
