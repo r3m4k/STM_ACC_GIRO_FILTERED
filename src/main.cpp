@@ -60,11 +60,6 @@ int main()
     // Начнём первоначальную выставку датчиков
     measure.initial_setting();
 
-
-    // // Включим прерывания от USART2
-    // USART_Cmd(USART2, ENABLE);
-    // Uart_irq_enable();
-
     // Включим зелёные светодиоды для указания корректной работы 
     LedOn(LED6);
     LedOn(LED7);
@@ -89,10 +84,6 @@ void InitAll(){
     // Инициализируем Virtual Com Port
     VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
     VCP_Init();        
-
-    // Инициализируем UART
-    // InitUart(115200);  
-    // InitDecoder();
 
     // Инициализируем датчики
     GYRO_INIT();

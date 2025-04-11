@@ -36,7 +36,7 @@ class COM_Port{
 
     typedef struct outbuf_type1
     {         
-        uint8_t Header[4] = {0x7E, 0x11, 0xFF, 0xC8};      // {126, 17, 255, 200}
+        uint8_t Header[4] = {0x7E, 0xE7, 0x10, 0xC8};      // {126, 17, 255, 200}
 
         uint8_t Time[2];
         Data_Struct data_struct;

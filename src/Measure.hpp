@@ -28,9 +28,8 @@
 
 /*  Отправка данных по com порту  */
 #define SENDING_BUFFER          TRUE
-// #define SEND_ALL_RAW_DATA
-#define SEND_SINGLE_RAW_DATA
-// #define SEND_MAIN_DATA       // Отправка исходных данных и полученные координаты со скоростью
+#define SEND_RAW_DATA
+// #define SEND_RAW_DATA_BUFFERED
 
 extern COM_Port COM_port;
 
@@ -147,73 +146,16 @@ public:
             buffer_Data.Read_Data();
 #endif      /* DATA_FILTERING */
 
-#ifdef USING_DPP
-            if (new_DPP_Flag){
-                // Начало обработки нового кода ДПП
-                /* 
-                Решим уравнение s**2 = (x-a)**2 + (y-a)**2 + (z-a)**2
-                где а - искомое смещение, обусловленное накапливаемой погрешностью акселерометра            ??? Как корректировать гироскоп
-                s = offset
-                x = displacement[0]
-                y = displacement[1]
-                z = displacement[2]
-                a = shift 
-
-                Решения этого уравнения: а = (x + y + z +- sqrt(-2*(x**2 + y**2 + z**2 - x*y - x*z - y*z) + 3*s**2) ) / 3
-                Возьмём бОльший корень уравнения (со знаком "+")
-                */
-
-                shift = (displacement[0] + displacement[1] + displacement[2] + \
-                            sqrt(-2*(displacement[0]*displacement[0] + displacement[1]*displacement[1] + displacement[2]*displacement[2] - \
-                            displacement[0] * displacement[1] - displacement[0] * displacement[2] - displacement[1] * displacement[2]) + \
-                            3 * offset*offset) ) / 3;
-
-                // Завершение обработки нового кода ДПП
-                for (index1 = 0; index1 < 3; index1++){
-                    displacement[index1] = 0;
-                }
-                new_DPP_Flag = FALSE;
-            }            
-#endif      /* USING_DPP */ 
-
             if (data_updated){
                 LedOn(LED8);
-
-#ifdef SEND_ALL_RAW_DATA
-                current_Data = buffer_Data;
-                current_Data - zero_Data;
-
-                current_Data.Acc * rotation_matrix;
-                current_Data.Acc.copying_from_buffer();
-
-                current_Data.Acc_Buffer * rotation_matrix;
-                current_Data.Acc_Buffer.copying_from_buffer();
-                
-                current_Data.Gyro * rotation_matrix;
-                current_Data.Gyro.copying_from_buffer();
-
-                current_Data.Gyro_Buffer * rotation_matrix;
-                current_Data.Gyro_Buffer.copying_from_buffer();
-
-                buffer_Data - zero_Data;
-
-                // Таким образом:
-                // buffer_Data - исходные данные
-                // buffer_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля
-                // current_Data - исходные данные в СК Земли
-                // current_Data.Acc|Gyro_Buffer - исходные данные с вычетом нуля в СК Земли
-
-                COM_port.sending_data(TickCounter, buffer_Data, current_Data, SENDING_BUFFER);
-#endif  /* SEND_ALL_RAW_DATA */
-
-#ifdef SEND_SINGLE_RAW_DATA
+#ifdef SEND_RAW_DATA_BUFFERED
                 buffer_Data - zero_Data;
                 COM_port.sending_data(TickCounter, buffer_Data, SENDING_BUFFER);
-#endif  /* SEND_SINGLE_RAW_DATA */
+#endif  /* SEND_RAW_DATA_BUFFERED */
 
-#ifdef SEND_MAIN_DATA
-                COM_port.sending_data(TickCounter, Coordinates, Velocity, buffer_Data);                
-#endif /* SEND_MAIN_DATA */
+#ifdef SEND_RAW_DATA
+                COM_port.sending_data(TickCounter, buffer_Data);
+#endif  /* SEND_RAW_DATA_BUFFERED */
                 LedOff(LED8);
                 data_updated = FALSE;
             }
@@ -266,11 +208,11 @@ private:
             buffer_Data.Gyro -= zero_Data.Gyro_Buffer;
             zero_Data += buffer_Data;
 
-            COM_port.sending_data(buffer_Data);
+            COM_port.sending_data(0, buffer_Data);
         }
 
         zero_Data /= FilterFrame_num;
-        COM_port.sending_data(zero_Data);
+        COM_port.sending_data(0, zero_Data);
     }
 
     // ########################################################################
