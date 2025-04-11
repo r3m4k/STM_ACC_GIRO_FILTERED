@@ -24,9 +24,6 @@ INCLUDES = \
 -I"system/USB_LIB/include"
 
 # общие флаги компиллятора
-# COMPILER_FLAGS = \
-# -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char \
-# -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra -g3
 COMPILER_FLAGS = \
 -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char \
 -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra -g3
@@ -38,7 +35,7 @@ DEFINES= \
 -DSTM32F30X \
 -DHSE_VALUE=8000000 \
 
-# флаги для gcc  - не перепутывать!!! только gnu11 разрешает пользоваться
+# флаги для gcc - не перепутывать!!! только gnu11 разрешает пользоваться
 # директивами встроенного ассемблера "asm" -они могут встречаться в стандартной библиотеке
 
 GCC_FLAGS = -std=gnu11 ${COMPILER_FLAGS} -c

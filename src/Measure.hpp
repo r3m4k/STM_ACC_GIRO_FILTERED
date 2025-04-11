@@ -1,8 +1,11 @@
 #include "Matrix.hpp"
 #include "COM_Port.hpp"
 
+#define PI 3.14159265358979f
+
+
 #define DATA_FILTERING
-#define DATA_PROCESSING
+// #define DATA_PROCESSING
 // #define USING_DPP
 // #define ERROR_CALCULATION
 
@@ -26,8 +29,8 @@
 /*  Отправка данных по com порту  */
 #define SENDING_BUFFER          TRUE
 // #define SEND_ALL_RAW_DATA
-// #define SEND_SINGLE_RAW_DATA
-#define SEND_MAIN_DATA       // Отправка исходных данных и полученные координаты со скоростью
+#define SEND_SINGLE_RAW_DATA
+// #define SEND_MAIN_DATA       // Отправка исходных данных и полученные координаты со скоростью
 
 extern COM_Port COM_port;
 
@@ -350,7 +353,7 @@ private:
         // Вычислим угол поворота за время period, опираясь на данные полученные только на части этого промежутка
         // При этом считаем, что за время period не произойдёт сильных изменений ни угловых скоростей, ни ускорений
         for (index1 = 0; index1 < 3; index1++){
-            Angles[index1] = buffer_Data.Gyro_Buffer[index1] * period;
+            Angles[index1] = buffer_Data.Gyro_Buffer[index1] * period * 1e-3 * PI / 180;    // Данные с гироскопа в mgps   
         }
         
         // Далее считаем, что tmp_matrix - матрица поворота от i-го состояния в i-1 состояние, соответствущее прошлой итерации обработки данных

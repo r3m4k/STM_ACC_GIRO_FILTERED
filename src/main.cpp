@@ -35,23 +35,6 @@ __IO uint32_t USBConnectTimeOut = 100;
 __IO uint32_t UserButtonPressed = 0;
 __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
-// ===============================================================================
-#define SyncroByte 0x53     // Флаг начала посылки от ДПП 
-#define MaxDataSize 25      // Максимальный размер данных передаваемый по RS232 (25 выбрали просто так)
-
-uint32_t stage, Index;
-bool MessageFound;
-
-enum { WantSyncro, WantSize, WantStatus, WantCommandCode, WantData, WantConsum};
-
-uint8_t  ConSummIn;        // Контрольная сумма полученных данных
-int32_t  DataSize, DataIndex;
-uint8_t  DppCode[MaxDataSize] = {0};
-uint8_t  DataBuffer[MaxDataSize] = {0};
-uint8_t  OldDppCode;
-uint32_t CurrentDppCode;
-uint32_t MCount = 0;
-int32_t  ViewTact = 0;
 // -------------------------------------------------------------------------------
 float gyro_multiplier = 0;             // Множитель для данных с гироскопа
 
@@ -120,70 +103,6 @@ void InitAll(){
     TimerInit();  
 }
 
-// -------------------------------------------------------------------------------
-// Настройка UART
-void InitDecoder()
-{
-    stage = WantSyncro;
-    Index = 0;
-    // OldDppCode = 0;
-    MessageFound = false;
-};
-
-extern "C" void ProcessInByte(unsigned char Bt) 
-{
-    LedOn(LED5);
-
-	switch (stage)
-	{
-	case WantSyncro:
-		if (Bt == SyncroByte)
-			{
-				stage=WantSize;
-				ConSummIn=Bt;
-                // LedOn(LED8);
-			}	
-		break;
-	case WantSize:
-		ConSummIn += Bt;
-		DataSize = Bt;
-		stage = WantData;
-        // LedOn(LED10);
-		break;
-	case WantData:
-        // LedOn(LED9);
-		if ((DataIndex < DataSize) && (DataIndex < MaxDataSize))
-			{
-				ConSummIn+=Bt;
-				DataBuffer[DataIndex]=Bt;
-			}
-		if (++DataIndex==DataSize) 
-			stage=WantConsum;
-		break;
-	case WantConsum:
-        // LedOn(LED4);
-        if (Bt == (ConSummIn))
-        {
-            for (int i = 0; i < DataSize; i++){
-                DppCode[i] = DataBuffer[i];
-            }               
-                
-        	// CurrentDppCode = (uint32_t)(DppCode[0] + (DppCode[1] << 8) + (DppCode[2] << 16) + (DppCode[3] << 24));
-            // CDC_Send_DATA((uint8_t *)(&DppCode[0]), 1);
-        }
-		MessageFound = true;	
-		ConSummIn = 0;
-		DataIndex=0;
-		stage = WantSyncro;
-		break;
-	}
-
-    LedOff(LED5);
-    // LedOff(LED8);
-    // LedOff(LED10);
-    // LedOff(LED9);
-    // LedOff(LED4);
-}
 // -------------------------------------------------------------------------------
 // Настройка светодиодов
 void LedsInit(void)
