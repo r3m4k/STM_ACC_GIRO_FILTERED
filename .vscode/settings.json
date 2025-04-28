@@ -16,7 +16,8 @@
         "new": "cpp",
         "*.tcc": "cpp",
         "typeinfo": "cpp",
-        "leds.h": "c"
+        "leds.h": "c",
+        "cstring": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "cortex-debug.openocdPath": "openocd",

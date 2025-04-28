@@ -44,7 +44,7 @@
 #define LEFT            2
 #define RIGHT           3
 #define UP              4
-
+#define USB_INT_DEFAULT
 
 
 /* Exported functions ------------------------------------------------------- */

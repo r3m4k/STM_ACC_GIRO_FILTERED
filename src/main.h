@@ -40,9 +40,17 @@ void LedOff(Led_TypeDef Led);
 
 void TimerInit(void);
 void TIM4_IRQHandler(void);
-	 
+
+void UserEP3_OUT_Callback(uint8_t *buffer);
+void start_InitialSetting(void);
+void start_Measuring(void);
+void stop_Measuring(void);
+void stop_CollectingData(void);
+void error_msg(void);
+
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
+
 
 #ifdef __cplusplus
 }
