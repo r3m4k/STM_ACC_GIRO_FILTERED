@@ -12,8 +12,8 @@
 #include "Frame.hpp"
 
 /* Defines -------------------------------------------------------------------*/
-#define ReceiveBuffer_Length    64      // Максимальная длина полученной команды
-#define MaxCommands_Num         16      // Максимальная длина очереди команд
+#define ReceiveBuffer_Length    8       // Обрабатываемая длина полученных сообщений
+#define MaxCommands_Num         8       // Максимальная длина очереди команд
 #define MaxCommand_Length       8       // Максимальная длина команды
 
 // -------------------------------------------------------------------------------
@@ -63,18 +63,9 @@ typedef struct Commands
 // Класс полученных сообщений по COM порту
 class Message
 {
-    uint8_t receive_Buffer[ReceiveBuffer_Length];   // Полученный массив данных
+    uint8_t receive_Buffer[ReceiveBuffer_Length];   // Полученное сообщение
 public:
-
-    Message(){
-        receive_Buffer[ReceiveBuffer_Length] = {0};
-    }
-
-    Message(const Message &obj){
-        memcpy(receive_Buffer, obj.receive_Buffer, ReceiveBuffer_Length);
-    }
-
-    void set_message(uint8_t *buffer){
+    void new_message(uint8_t *buffer){
         for (uint8_t i = 0; i < ReceiveBuffer_Length; i++){
             receive_Buffer[i] = buffer[i];
             buffer[i] = 0;  // Очистим входной буфер
@@ -85,12 +76,8 @@ public:
         return receive_Buffer;
     }
 
-    void copy_message(uint8_t *msg_buffer){
-        memcpy(msg_buffer, receive_Buffer, ReceiveBuffer_Length);
-    }
-
-    void operator=(Message msg){
-        copy_message(msg.receive_Buffer);
+    void set_message(uint8_t *buffer){
+        memcpy(receive_Buffer, buffer, ReceiveBuffer_Length);
     }
 };
 
@@ -102,7 +89,7 @@ class Command_Queue{
     Эта очередь инициализируется при инициализации класса COM_Port, поэтому она будет храниться в той же области памяти.
     */
     Message messages[MaxCommands_Num];     // Создадим массив команд, присланных по COM порту
-    uint8_t lastIndex = -1;                // Индекс последнего элемента в очереди. Если lastIndex == -1, то очередь пуста
+    int8_t lastIndex = -1;                // Индекс последнего элемента в очереди. Если lastIndex == -1, то очередь пуста
     Commands command_list;                 // Структура со всеми поддерживаемыми командами
 
     // Временные переменные для избежания их постоянной инициализации
@@ -131,7 +118,8 @@ class Command_Queue{
             return command_list.command_stop_CollectingData.command_function;
         }
 
-        // Если команда не распознана, то отправим ответ по COM порту, сообщающий данную проблему. И включим красный светодиод
+        // Если команда не распознана, то отправим ответ по COM порту, сообщающий данную проблему. И включим красные светодиод
+        LedsOff();
         LedOn(LED10); LedOn(LED3);
         return command_list.unknown_command.command_function;
     }
@@ -139,10 +127,10 @@ class Command_Queue{
 public:
     // Получение первого элемента очереди
     void (*get())(void){
-        tmp_message = messages[0];  // Скопируем первую команду во временную переменную
+        tmp_message.set_message(messages[0].get_message());  // Скопируем первую команду во временную переменную
         // Сместим все элементы очереди, тк мы скопировали первый элемент
         for (i = 1; i < MaxCommands_Num; i++){
-            messages[i-1] = messages[i];
+            messages[i-1].set_message(messages[i].get_message());
         }
         lastIndex--;
         return decode_msg(tmp_message);
@@ -156,9 +144,9 @@ public:
             // Если места нет, то поморгаем 3 раза красным светодиодом 
             for (i = 0; i < 3; i++){
                 LedOn(LED10);
-                Delay(1);
+                Delay(100);
                 LedOff(LED10);
-                Delay(1);
+                Delay(100);
             }
             return;
         }
@@ -179,8 +167,6 @@ public:
 // -------------------------------------------------------------------------------
 // Класс для работы с COM портом
 class COM_Port{
-
-    Command_Queue command_queue;
 
     int16_t tmp;
     uint8_t i;  
@@ -232,6 +218,8 @@ class COM_Port{
     //#############################################
     
 public:
+    Command_Queue command_queue;
+
     // Отправка посылки с одним пакетом измерений data
     void sending_data(uint32_t Ticks, Data &data){
 
@@ -262,6 +250,11 @@ public:
     // Отправка произвольного пакета данных
     void sending_package(uint8_t *package){
         CDC_Send_DATA(package, sizeof(package));
+    }
+
+    // Отправка пакета данных с заданной длиной
+    void sending_package(uint8_t *package, uint8_t size){
+        CDC_Send_DATA(package, size);
     }
 
     // Получение нового сообщения

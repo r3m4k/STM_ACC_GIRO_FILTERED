@@ -1,9 +1,9 @@
 #include "VCP_F3.h"
-#include "CBUFFER.h"
+// #include "CBUFFER.h"
 
-int VCP_PollingCounter = 0;
-#define VCP_PollingPeriod 100
-CBuffer<unsigned char> VCP_Buff;
+// int VCP_PollingCounter = 0;
+// #define VCP_PollingPeriod 100
+// CBuffer<unsigned char> VCP_Buff;
 
 /*********************************************************************************************
 Function name   : VCP_Init
@@ -134,21 +134,21 @@ void VCP_GetStr(char str[])
     Receive_length = 0;
 }
 
-bool __attribute__((weak)) ProcessInByteUSB(unsigned char Bt)
-{
-    return true;
-}
+// bool __attribute__((weak)) ProcessInByteUSB(unsigned char Bt)
+// {
+//     return true;
+// }
 
-void VCP_Polling()
-{
-    if ((VCP_PollingCounter++) % VCP_PollingPeriod)
-    {
-        if (VCP_Buff.DataSize)
-            ProcessInByteUSB(VCP_Buff.ReadFrom());
-        return;
-    }
-    for (int i = 0; i < Receive_length; i++)
-        VCP_Buff.WriteTo(Receive_Buffer[i]);
-    Receive_length = 0;
-    CDC_Receive_DATA();
-}
+// void VCP_Polling()
+// {
+//     if ((VCP_PollingCounter++) % VCP_PollingPeriod)
+//     {
+//         if (VCP_Buff.DataSize)
+//             ProcessInByteUSB(VCP_Buff.ReadFrom());
+//         return;
+//     }
+//     for (int i = 0; i < Receive_length; i++)
+//         VCP_Buff.WriteTo(Receive_Buffer[i]);
+//     Receive_length = 0;
+//     CDC_Receive_DATA();
+// }

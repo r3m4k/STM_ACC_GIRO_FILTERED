@@ -58,32 +58,41 @@ int main()
     InitAll();             
     
     // Поморгаем светодиодами после успешной инициализации
-    Toggle_Leds();      
-
-    // Начнём первоначальную выставку датчиков
-    measure.initial_setting();
-
-    // // Включим зелёные светодиоды для указания корректной работы 
-    LedOn(LED6);
-    LedOn(LED7);
-
-    // Запускаем таймер 
-    TIM_Cmd(TIM4, ENABLE);
-    // Начнём работу
-    measure.measuring();  
-
+    Toggle_Leds();
+   
+    // Основной цикл программы
     while (TRUE)
     {
+        // Вызов функции из очереди при заполненной очереди для отладки программы
+        // Потом изменить на isEmpty
+        if (!(COM_port.command_queue.isEmpty())){
+            COM_port.command_queue.get()();
+        }
+
         switch (stage)
         {
         case FooStage:
+            LedsOn();
             measure.foo_reading_data();
             break;
+
         case InitialSetting:
+            LedsOff();
+            // Начнём первоначальную выставку датчиков
             measure.initial_setting();
             break;
+
         case Measuring:
-            measure.measuring();
+            // // Включим зелёные светодиоды для указания корректной работы 
+            LedsOff();
+            LedOn(LED6);
+            LedOn(LED7);
+
+            // Запускаем таймер 
+            TIM_Cmd(TIM4, ENABLE);
+                        
+            // Начнём работу
+            measure.measuring();  
             break;
         }
     }
@@ -241,7 +250,8 @@ void stop_CollectingData(){
 }
 
 void error_msg(){
-    COM_port.sending_package(ErrorMsg);
+    COM_port.sending_package(ErrorMsg, MaxCommand_Length);
+    Delay(1000);
 }
 // -------------------------------------------------------------------------------
 
