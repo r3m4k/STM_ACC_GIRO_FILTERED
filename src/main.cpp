@@ -12,6 +12,7 @@
 #define TIM_PRESCALER      720      // При таком предделителе таймера получается один тик таймера на 10 мкс
 #define TIM_PERIOD         25000    // Количество тиков таймера с частотой 10 кГц перед вызовом прерывания --> 250 мс период
 
+uint8_t ErrorMsg[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xff, 0xff, 0x62, 0};
 // ----------------------------------------------------------------------------
 //
 // Standalone STM32F3 empty sample (trace via NONE).
@@ -37,6 +38,8 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // -------------------------------------------------------------------------------
 float gyro_multiplier = 0;             // Множитель для данных с гироскопа
+enum Stages{FooStage, InitialSetting, Measuring};
+unsigned int stage = FooStage;
 
 COM_Port COM_port;
 Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00001);
@@ -55,22 +58,44 @@ int main()
     InitAll();             
     
     // Поморгаем светодиодами после успешной инициализации
-    Toggle_Leds();      
+    Toggle_Leds();
+   
+    // Основной цикл программы
+    while (TRUE)
+    {
+        // Вызов функции из очереди при заполненной очереди для отладки программы
+        // Потом изменить на isEmpty
+        if (!(COM_port.command_queue.isEmpty())){
+            COM_port.command_queue.get()();
+        }
 
-    // Начнём первоначальную выставку датчиков
-    measure.initial_setting();
+        switch (stage)
+        {
+        case FooStage:
+            LedsOn();
+            measure.foo_reading_data();
+            break;
 
-    // Включим зелёные светодиоды для указания корректной работы 
-    LedOn(LED6);
-    LedOn(LED7);
+        case InitialSetting:
+            LedsOff();
+            // Начнём первоначальную выставку датчиков
+            measure.initial_setting();
+            break;
 
-    // Запускаем таймер 
-    TIM_Cmd(TIM4, ENABLE);
-    // Начнём работу
-    measure.measuring();  
+        case Measuring:
+            // // Включим зелёные светодиоды для указания корректной работы 
+            LedsOff();
+            LedOn(LED6);
+            LedOn(LED7);
 
-    while (1){  continue;   }   // Затычка на всякий случай
-
+            // Запускаем таймер 
+            TIM_Cmd(TIM4, ENABLE);
+                        
+            // Начнём работу
+            measure.measuring();  
+            break;
+        }
+    }
 }
 
 // -------------------------------------------------------------------------------
@@ -198,6 +223,35 @@ void TIM4_IRQHandler(void)
     
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
     LedOff(LED9);
+}
+
+// -------------------------------------------------------------------------------
+// Собственный callback для отработки поступления нового сообщения по com порту
+void UserEP3_OUT_Callback(uint8_t *buffer){
+    COM_port.new_message(buffer);
+}
+
+// Функции для обработки поступивших команд
+void start_InitialSetting(){
+    stage = InitialSetting;
+}
+
+void start_Measuring(){
+    stage = Measuring;
+}
+
+void stop_Measuring(){
+    stage = FooStage;
+}
+
+void stop_CollectingData(){
+    stage = FooStage;
+    measure.TickCounter = 0;
+}
+
+void error_msg(){
+    COM_port.sending_package(ErrorMsg, MaxCommand_Length);
+    Delay(1000);
 }
 // -------------------------------------------------------------------------------
 
