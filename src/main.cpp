@@ -38,11 +38,21 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // -------------------------------------------------------------------------------
 float gyro_multiplier = 0;             // Множитель для данных с гироскопа
+// Перечисление для стадии выполнения программы
 enum Stages{BeforeBeginning, FooStage, InitialSetting, Measuring};
 unsigned int stage = FooStage;
 unsigned int previous_stage = BeforeBeginning;
 
+// Перечисление, используемое при декодировании полученных сообщений по com порту
+enum DecodeStages{Want7E, WantE7, WantFormat, WantData, WantConSum};
+unsigned int decode_stage = Want7E;
+
+// -------------------------------------------------------------------------------
+// Создадим экземпляры классов системы STM в глобальной зоне видимости 
 COM_Port COM_port;
+
+// -------------------------------------------------------------------------------
+// Пользовательские экземпляры классов
 Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00001);
 // -------------------------------------------------------------------------------
 
@@ -242,7 +252,54 @@ void TIM4_IRQHandler(void)
 // -------------------------------------------------------------------------------
 // Собственный callback для отработки поступления нового сообщения по com порту
 void UserEP3_OUT_Callback(uint8_t *buffer){
-    COM_port.new_message(buffer);
+    uint8_t bt;                 // Текущий обрабатываемый байт сообщения
+    uint16_t con_sum = 0;       // Посчитанная контрольная сумма
+    uint8_t len;                // Длина данных в сообщении
+    uint8_t dataIndex = 0;      // Текущий индекс информации в сообщении 
+
+    for(uint8_t i = 0; i < 64; i++){        // hw_config.c --> len(buffer) = 64
+        bt = buffer[i];
+        switch (decode_stage)
+        {
+        case Want7E:
+            if (bt == 0x7e){
+                decode_stage = WantE7;
+                con_sum += bt;
+            } else    decode_stage = Want7E;
+            break;
+        case WantE7:
+            if (bt == 0xe7){
+                decode_stage = WantFormat;
+                con_sum += bt;
+            } else    decode_stage = Want7E;
+            break;
+        case WantFormat:
+            if (bt == 0xff){
+                decode_stage = WantData;
+                con_sum += bt;
+                len = 2;        // Количество байт данных в сообщении с форматом 0xff
+            } else    decode_stage = Want7E;
+            break;
+        case WantData:
+            if (dataIndex < len){
+                con_sum += bt;
+                dataIndex++;
+            }
+
+            if (dataIndex == len){
+                decode_stage = WantConSum; 
+            }
+            break;
+        
+        case WantConSum:
+            decode_stage = Want7E;
+            if (uint8_t(con_sum) == bt){
+                COM_port.new_message(buffer);
+                return;
+            }
+            break;
+        }
+    }
 }
 
 // Функции для обработки поступивших команд
