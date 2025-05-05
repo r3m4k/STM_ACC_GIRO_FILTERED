@@ -38,8 +38,9 @@ __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
 // -------------------------------------------------------------------------------
 float gyro_multiplier = 0;             // Множитель для данных с гироскопа
-enum Stages{FooStage, InitialSetting, Measuring};
+enum Stages{BeforeBeginning, FooStage, InitialSetting, Measuring};
 unsigned int stage = FooStage;
+unsigned int previous_stage = BeforeBeginning;
 
 COM_Port COM_port;
 Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00001);
@@ -72,25 +73,38 @@ int main()
         switch (stage)
         {
         case FooStage:
-            LedsOn();
+            if (previous_stage != FooStage){
+                previous_stage = FooStage;
+                TIM_Cmd(TIM4, DISABLE);
+                LedsOn();
+            }
+
             measure.foo_reading_data();
             break;
 
         case InitialSetting:
+            if (previous_stage != InitialSetting){
+                previous_stage = InitialSetting;
+            }
             LedsOff();
             // Начнём первоначальную выставку датчиков
             measure.initial_setting();
             break;
 
         case Measuring:
+            if (previous_stage != Measuring){
+                previous_stage = Measuring;
+
+                measure.TickCounter = 0;
+                // Запускаем таймер 
+                TIM_Cmd(TIM4, ENABLE);
+            }
+            
             // // Включим зелёные светодиоды для указания корректной работы 
             LedsOff();
             LedOn(LED6);
             LedOn(LED7);
-
-            // Запускаем таймер 
-            TIM_Cmd(TIM4, ENABLE);
-                        
+                       
             // Начнём работу
             measure.measuring();  
             break;
