@@ -168,8 +168,8 @@ public:
         LedOn(LED9);
 
         set_zero_Data();
-        set_rotationMatrix();
-        zero_Data * rotation_matrix;
+        // set_rotationMatrix();
+        // zero_Data * rotation_matrix;
             
         LedOff(LED4);
         LedOff(LED9);
@@ -181,6 +181,7 @@ public:
         current_Data.Read_Data();
         current_Data.Read_Temp();
     }
+
 private:
     // ########################################################################
     // Нахождение нулевых значений
@@ -193,7 +194,7 @@ private:
         buffer_Data.Temp_Previous  = zero_Data.Temp_Previous;
         current_Data.Temp_Previous = zero_Data.Temp_Previous;
 
-        int FilterFrame_num = pow(2, 10);
+        int FilterFrame_num = pow(2, 6);
         
         // В буфере zero_Data будем хранить смещение нуля из-за температурного нагрева
         // Поэтому в цикле ниже НЕ ИСПОЛЬЗОВАТЬ операции, которые могут изменить zero_Data.Acc|Gyro_Buffer 
@@ -213,11 +214,8 @@ private:
             buffer_Data.Gyro -= zero_Data.Gyro_Buffer;
             zero_Data += buffer_Data;
 
-            COM_port.sending_data(0, buffer_Data);
+            COM_port.sending_data(TickCounter++, buffer_Data);
         }
-
-        zero_Data /= FilterFrame_num;
-        COM_port.sending_data(0, zero_Data);
     }
 
     // ########################################################################

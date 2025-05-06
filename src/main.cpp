@@ -8,12 +8,6 @@
 #include "COM_Port.hpp"
 #include "Measure.hpp"
 
-#define PI 3.14159265358979f
-#define TIM_PRESCALER      720      // При таком предделителе таймера получается один тик таймера на 10 мкс
-#define TIM_PERIOD         25000    // Количество тиков таймера с частотой 10 кГц перед вызовом прерывания --> 250 мс период
-
-uint8_t ErrorMsg[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xff, 0xff, 0x62, 0};          // Сообщение, которое отправляется при получении неизвестного сообщения 
-uint8_t ConfirmMsg[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xaa, 0xaa, 0xb8, 0};        // Сообщение, которое отправляется при успешном получении сообщения
 // ----------------------------------------------------------------------------
 //
 // Standalone STM32F3 empty sample (trace via NONE).
@@ -37,8 +31,20 @@ __IO uint32_t USBConnectTimeOut = 100;
 __IO uint32_t UserButtonPressed = 0;
 __IO uint8_t PrevXferComplete = 1;
 __IO uint8_t buttonState;
+// ===============================================================================
+// Необходимые дефайны
+#define PI 3.14159265358979f
+#define TIM_PRESCALER      720      // При таком предделителе таймера получается один тик таймера на 10 мкс
+#define TIM_PERIOD         25000    // Количество тиков таймера с частотой 10 кГц перед вызовом прерывания --> 250 мс период
+
+// ----------------------------------------------------------------------------
+// Сообщения, которые будем отправлять в ответ по COM порту (определены в COM_Port.hpp)
+extern uint8_t ErrorMessage[MaxCommand_Length];
+extern uint8_t ConfirmMessage[MaxCommand_Length];
+extern uint8_t EndOfInitialSetting[MaxCommand_Length];
+
+float gyro_multiplier;             // Множитель для данных с гироскопа
 // -------------------------------------------------------------------------------
-float gyro_multiplier = 0;             // Множитель для данных с гироскопа
 // Перечисление для стадии выполнения программы
 enum Stages{BeforeBeginning, FooStage, InitialSetting, Measuring};
 unsigned int stage = FooStage;
@@ -55,6 +61,7 @@ COM_Port COM_port;
 // -------------------------------------------------------------------------------
 // Пользовательские экземпляры классов
 Measure measure(55.7522 * PI / 180, TIM_PERIOD * 0.00001);
+
 // -------------------------------------------------------------------------------
 
 int main()
@@ -96,10 +103,16 @@ int main()
         case InitialSetting:
             if (previous_stage != InitialSetting){
                 previous_stage = InitialSetting;
+                measure.TickCounter = 0;
+                LedsOff();
             }
-            LedsOff();
             // Начнём первоначальную выставку датчиков
             measure.initial_setting();
+            // Отправим сообщение об успешном завершении выставки датчиков
+            COM_port.sending_package(EndOfInitialSetting, MaxCommand_Length);
+            
+            stage = FooStage;
+
             break;
 
         case Measuring:
@@ -296,7 +309,7 @@ void UserEP3_OUT_Callback(uint8_t *buffer){
             decode_stage = Want7E;
             if (uint8_t(con_sum) == bt){
                 COM_port.new_message(buffer);
-                COM_port.sending_package(ConfirmMsg, MaxCommand_Length);
+                COM_port.sending_package(ConfirmMessage, MaxCommand_Length);
                 return;
             }
             break;
@@ -323,7 +336,7 @@ void stop_CollectingData(){
 }
 
 void error_msg(){
-    COM_port.sending_package(ErrorMsg, MaxCommand_Length);
+    COM_port.sending_package(ErrorMessage, MaxCommand_Length);
     Delay(1000);
 }
 // -------------------------------------------------------------------------------
