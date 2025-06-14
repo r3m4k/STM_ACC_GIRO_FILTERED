@@ -194,7 +194,7 @@ private:
         buffer_Data.Temp_Previous  = zero_Data.Temp_Previous;
         current_Data.Temp_Previous = zero_Data.Temp_Previous;
 
-        int FilterFrame_num = pow(2, 6);
+        int FilterFrame_num = pow(2, 10);
         
         // В буфере zero_Data будем хранить смещение нуля из-за температурного нагрева
         // Поэтому в цикле ниже НЕ ИСПОЛЬЗОВАТЬ операции, которые могут изменить zero_Data.Acc|Gyro_Buffer 

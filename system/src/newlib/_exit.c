@@ -38,7 +38,7 @@ _exit(int code __attribute__((unused)))
   __reset_hardware();
 #endif
 
-  // TODO: write on trace
+  // TO_DO: write on trace
   while (1)
     ;
 }

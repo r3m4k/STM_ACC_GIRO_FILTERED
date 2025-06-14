@@ -18,10 +18,17 @@
 
 // -------------------------------------------------------------------------------
 // Сообщения, которые будем отправлять в ответ по COM порту
-uint8_t ErrorMessage[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xff, 0xff, 0x62, 0};                  // Сообщение, которое отправляется при получении неизвестного сообщения 
-uint8_t ConfirmMessage[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xaa, 0xaa, 0xb8, 0};                // Сообщение, которое отправляется при успешном получении сообщения
-uint8_t EndOfInitialSetting[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xba, 0xab, 0xc9, 0};           // Сообщение, которое отправляется при успешном получении сообщения
+uint8_t ErrorMessage[MaxCommand_Length] =           {0x7e, 0xe7, 0xff, 0xff, 0xff, 0x62, 0};                  // Сообщение, которое отправляется при получении неизвестного сообщения 
+uint8_t ConfirmMessage[MaxCommand_Length] =         {0x7e, 0xe7, 0xff, 0xaa, 0xaa, 0xb8, 0};                // Сообщение, которое отправляется при успешном получении сообщения
+uint8_t EndOfInitialSetting[MaxCommand_Length] =    {0x7e, 0xe7, 0xff, 0xba, 0xab, 0xc9, 0};           // Сообщение, которое отправляется при успешном получении сообщения
 
+// Список обрабатываемых сообщений из COM порта
+uint8_t Restart_cmd[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xff, 0x00, 0x2c, 0};
+
+#define Start_InitialSetting        {0x7e, 0xe7, 0xff, 0xab, 0xba, 0xc9, 0}
+#define Start_Measuring             {0x7e, 0xe7, 0xff, 0xbc, 0xcb, 0xeb, 0}
+#define Stop_Measuring              {0x7e, 0xe7, 0xff, 0xcd, 0xdc, 0x0d, 0}
+#define Stop_CollectingData         {0x7e, 0xe7, 0xff, 0xde, 0xed, 0x2f, 0}
 // -------------------------------------------------------------------------------
 // Структура для описания команды
 typedef struct Command
@@ -35,25 +42,19 @@ typedef struct Commands
 {
     // Начало выставки датчиков
     Command command_start_InitialSetting = {
-        .command_code = {0x7e, 0xe7, 0xff, 0xab, 0xba, 0xc9, 0},
+        .command_code = Start_InitialSetting,
         .command_function = start_InitialSetting
     };
 
     // Начало измерений
     Command command_start_Measuring = {
-        .command_code = {0x7e, 0xe7, 0xff, 0xbc, 0xcb, 0xeb, 0},
+        .command_code = Start_Measuring,
         .command_function = start_Measuring
     };
 
     // Конец измерений
     Command command_stop_Measuring = {
-        .command_code = {0x7e, 0xe7, 0xff, 0xcd, 0xdc, 0x0d, 0},
-        .command_function = stop_CollectingData
-    };
-
-    // Конец работы
-    Command command_stop_CollectingData = {
-        .command_code = {0x7e, 0xe7, 0xff, 0xde, 0xed, 0x2f, 0},
+        .command_code = Stop_Measuring,
         .command_function = stop_CollectingData
     };
 
@@ -119,11 +120,6 @@ class Command_Queue{
             return command_list.command_stop_Measuring.command_function;
         }
         
-        // stop_CollectingData
-        if (!(memcmp(msg.get_message(), command_list.command_stop_CollectingData.command_code, MaxCommand_Length))){
-            return command_list.command_stop_CollectingData.command_function;
-        }
-
         // Если команда не распознана, то отправим ответ по COM порту, сообщающий данную проблему. И включим красные светодиод
         LedsOff();
         LedOn(LED10); LedOn(LED3);
@@ -144,6 +140,10 @@ public:
 
     // Добавление нового элемента в конец очереди
     void put(uint8_t *buffer){
+        if (!(memcmp(buffer, Restart_cmd, MaxCommand_Length))){
+            while (1);
+            NVIC_SystemReset();
+        }
 
         if (isFull()){
             // Проверим наличие свободного места

@@ -83,7 +83,6 @@ int main()
     while (TRUE)
     {
         // Вызов функции из очереди при заполненной очереди для отладки программы
-        // Потом изменить на isEmpty
         if (!(COM_port.command_queue.isEmpty())){
             COM_port.command_queue.get()();
         }
@@ -142,7 +141,7 @@ void InitAll(){
 
     // Инициализируем периферию
     LedsInit();
-    InitGPIO();
+    // Init.GPIO();
 
     // Инициализируем Virtual Com Port
     VCP_ResetPort();        // Подтянули ножку d+ к нулю для правильной идентификации
@@ -151,7 +150,7 @@ void InitAll(){
     // Инициализируем датчики
     GYRO_INIT();
     ACC_INIT();
-    MAG_INIT();
+    // MAG_INIT();
 
     // Инициализация таймера и его настройка
     TimerInit();  
