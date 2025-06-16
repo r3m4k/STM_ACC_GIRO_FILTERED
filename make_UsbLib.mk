@@ -44,3 +44,7 @@ STM32_USB_LIB:
 # 	@echo Compiling USB c-files
 # 	${CC} ${GPP_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
 # # ---------------------------
+
+# ---------------------------
+
+SUBDIRS_OBJ += ${USB_OBJ_DIR}
