@@ -7,14 +7,14 @@ PROGRAM_NAME = STM_ACC_GIRO_FILTERED
 BINARY = ${PROGRAM_NAME}.elf
 
 #GCC_PLACE=/home/mike/gcc-arm-none-eabi-8-2019-q3-update/
-GCC_PLACE="c:/SysGCC/arm-eabi/"
+GCC_PLACE="c:/SysGCC/arm-eabi"
 #исполняемый файл компиллятора-компоновщика
-CC = ${GCC_PLACE}bin/arm-none-eabi-gcc
-CP = ${GCC_PLACE}bin/arm-none-eabi-g++
+CC = ${GCC_PLACE}/bin/arm-none-eabi-gcc
+CP = ${GCC_PLACE}/bin/arm-none-eabi-g++
 
 #включаемые директории
 INCLUDES = \
--I"${GCC_PLACE}arm-none-eabi/include" \
+-I"${GCC_PLACE}/arm-none-eabi/include" \
 -I"include" \
 -I"src" \
 -I"system/include" \
@@ -103,9 +103,9 @@ ${BIN_PLACE}/user/COM_IO.opp
 ${BIN_PLACE}/$(BINARY) : $(OBJECTS)
 	echo "BUILD "${BIN_PLACE}/${BINARY}", MEMORY CARD "${BIN_PLACE}/${PROGRAM_NAME}.map
 	$(CC) ${LINK_FLAGS} -o ${BIN_PLACE}/$(BINARY) $(OBJECTS) ${LIBS} -lm
-	${GCC_PLACE}bin/arm-none-eabi-size --format=berkeley ${BIN_PLACE}/${BINARY}
+	${GCC_PLACE}/bin/arm-none-eabi-size --format=berkeley ${BIN_PLACE}/${BINARY}
 	@echo "FORMING "${BIN_PLACE}/${PROGRAM_NAME}.hex 
-	${GCC_PLACE}bin/arm-none-eabi-objcopy -O ihex ${BIN_PLACE}/${BINARY} ${BIN_PLACE}/${PROGRAM_NAME}.hex 
+	${GCC_PLACE}/bin/arm-none-eabi-objcopy -O ihex ${BIN_PLACE}/${BINARY} ${BIN_PLACE}/${PROGRAM_NAME}.hex 
 
 %.o:
 	echo "gcc "$<
