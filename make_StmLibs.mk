@@ -3,6 +3,16 @@
 # ---------------------------
 
 STM_STD_LIB_NAME = libstm_std_lib.a
+LIBS += -L./${BIN_PLACE} -lstm_std_lib
+
+SUBDIRS_OBJ += \
+${STM32_PERIPH_OBJ_DIR} \
+${CMSIS_OBJ_DIR} \
+${NEWLIB_OBJ_DIR} \
+${DIAG_OBJ_DIR} \
+${CORTEXM_OBJ_DIR}
+
+# ---------------------------
 
 STD_LIB_INCLUDES = \
 -I "${GCC_PLACE}/arm-none-eabi/include" \
@@ -101,9 +111,3 @@ STM32_STD_LIB: #STM_STD_LIB_OBJ
 	@echo "STM32_STD_LIB"
 # ---------------------------
 
-SUBDIRS_OBJ += \
-${STM32_PERIPH_OBJ_DIR} \
-${CMSIS_OBJ_DIR} \
-${NEWLIB_OBJ_DIR} \
-${DIAG_OBJ_DIR} \
-${CORTEXM_OBJ_DIR}

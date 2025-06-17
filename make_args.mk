@@ -12,6 +12,7 @@ BINARY = ${PROGRAM_NAME}.elf
 
 # ОС, на которой собирается проект
 # SYSTEM - переменная, задаваемая при запуске makefile
+SYSTEM := windows
 ifeq ($(SYSTEM), windows)
 	GCC_PLACE = "c:/SysGCC/arm-eabi"
 else ifeq ($(SYSTEM), linux)
@@ -57,5 +58,8 @@ LINK_FLAGS = ${COMPILER_FLAGS} \
 -L"${PROJ}ldscripts" \
 -nostartfiles -Xlinker --gc-sections -Wl,-Map,${BIN_PLACE}//${PROGRAM_NAME}.map # --specs=nano.specs 
 
-# Переменна, в которой будет храниться список используемых поддиректорий для сборки проекта
+# Список используемых поддиректорий для сборки проекта
 SUBDIRS_OBJ =
+
+# Используемые в проекте библиотеки
+LIBS = -L${GCC_PLACE}/arm-none-eabi/lib -lm
