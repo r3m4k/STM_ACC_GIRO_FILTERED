@@ -3,7 +3,7 @@
 # ---------------------------
 
 include make_args.mk
-include make_StmLibs.mk
+include make_StmLib.mk
 include make_UsbLib.mk
 
 # Включаемые директории в файлах пользователя
