@@ -4,7 +4,7 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include "Trace.h"
+#include "diag/Trace.h"
 #include "Sensors.h"
 
 

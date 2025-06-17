@@ -14,7 +14,7 @@ BINARY = ${PROGRAM_NAME}.elf
 # SYSTEM - переменная, задаваемая при запуске makefile
 SYSTEM := windows
 ifeq ($(SYSTEM), windows)
-	GCC_PLACE = "c:/SysGCC/arm-eabi"
+	GCC_PLACE = c:/SysGCC/arm-eabi
 else ifeq ($(SYSTEM), linux)
 	GCC_PLACE = /home/mike/gcc-arm-none-eabi-8-2019-q3-update/
 else
