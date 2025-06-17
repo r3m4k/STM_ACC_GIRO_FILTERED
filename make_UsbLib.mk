@@ -85,6 +85,6 @@ info_usb_lib:
 
 # ---------------------------
 clean_usb_lib:
-	rm -f ${USB_OBJ} ${STM_USB_LIB_NAME}
+	rm -f ${USB_OBJ} ${BIN_PLACE}/${STM_USB_LIB_NAME}
 
 # ---------------------------

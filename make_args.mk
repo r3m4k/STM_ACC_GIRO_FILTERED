@@ -62,4 +62,5 @@ LINK_FLAGS = ${COMPILER_FLAGS} \
 SUBDIRS_OBJ =
 
 # Используемые в проекте библиотеки
-LIBS = -L${GCC_PLACE}/arm-none-eabi/lib -lm
+# LIBS = -L${GCC_PLACE}/arm-none-eabi/lib -lm
+LIBS = -lm

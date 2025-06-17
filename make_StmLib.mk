@@ -159,6 +159,6 @@ info_stm_std_lib:
 
 # ---------------------------
 clean_stm_std_lib:
-	rm -f ${STM_STD_LIB_OBJ} ${STM_STD_LIB_NAME}
+	rm -f ${STM_STD_LIB_OBJ} ${BIN_PLACE}/${STM_STD_LIB_NAME}
 
 # ---------------------------
