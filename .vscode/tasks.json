@@ -2,39 +2,15 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "сборка проекта Win",
-            "command": "mingw32-make",
+            "label": "Полная пересборка проекта",
+            "command": "make",
             "args": [
-                "-s",
-                "-C",
-                "${workspaceFolder}",
-                "-j8",
-                "-f",
-                "MakefileWin.mk"
-            ],
-            "options": {
-                "cwd": "${fileDirname}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "detail": "имитатора ДПП"
-        },
-        {
-            "type": "cppbuild",
-            "label": "очистка проекта Win",
-            "command": "mingw32-make",
-            "args": [
-                "-s",
                 "-C",
                 "${workspaceFolder}",
                 "-f",
                 "MakefileWin.mk",
-                "clean"
+                "rebuild_all",
+                "SYSTEM=windows"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -46,7 +22,57 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "имитатора ДПП"
+            "detail": "Сбор данных"
+        },
+
+        {
+            "type": "cppbuild",
+            "label": "Пересборка файлов пользователя и линковка проекта",
+            "command": "make",
+            "args": [
+                "-C",
+                "${workspaceFolder}",
+                "-f",
+                "MakefileWin.mk",
+                "rebuild_user",
+                "SYSTEM=windows"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Сбор данных"
+        },
+
+        {
+            "type": "cppbuild",
+            "label": "Cборка файлов пользователя и линковка проекта",
+            "command": "make",
+            "args": [
+                "-C",
+                "${workspaceFolder}",
+                "-f",
+                "MakefileWin.mk",
+                "build_user",
+                "SYSTEM=windows"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Сбор данных"
         },
 
         {
@@ -62,7 +88,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "для stm32f4"
+            "detail": "Для stm32f3"
         },
 
     ],

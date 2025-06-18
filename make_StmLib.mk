@@ -118,8 +118,11 @@ rebuild_stm_std_lib: clean_stm_std_lib info_stm_std_lib STM32_STD_LIB
 
 # ---------------------------
 STM32_STD_LIB: ${STM_STD_LIB_OBJ}
+	@echo # ---------------------------
 	@echo Building static library ${STM_STD_LIB_NAME}
-	ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} ${STM_STD_LIB_OBJ}
+	@echo ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} $${STM_STD_LIB_OBJ}"
+	@ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} ${STM_STD_LIB_OBJ}
+	@echo # ---------------------------
 
 # ---------------------------
 ${STM32_PERIPH_OBJ_DIR}/%.o: ${STM32_PERIPH_DIR}/%.c
@@ -159,6 +162,9 @@ info_stm_std_lib:
 
 # ---------------------------
 clean_stm_std_lib:
-	rm -f ${STM_STD_LIB_OBJ} ${BIN_PLACE}/${STM_STD_LIB_NAME}
+	@echo # ---------------------------
+	@echo Deleting ${STM_STD_LIB_NAME} and its object files
+	@rm -f ${STM_STD_LIB_OBJ} ${BIN_PLACE}/${STM_STD_LIB_NAME}
+	@echo # ---------------------------
 
 # ---------------------------

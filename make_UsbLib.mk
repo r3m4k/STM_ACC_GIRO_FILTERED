@@ -60,8 +60,11 @@ rebuild_stm_usb_lib: clean_usb_lib info_usb_lib STM32_USB_LIB
 
 # ---------------------------
 STM32_USB_LIB: ${USB_OBJ}
+	@echo # ---------------------------
 	@echo Building static library ${STM_USB_LIB_NAME}
-	ar rcs ${BIN_PLACE}/${STM_USB_LIB_NAME} ${USB_OBJ}
+	@echo ar rcs ${BIN_PLACE}/${STM_USB_LIB_NAME} $${USB_OBJ}
+	@ar rcs ${BIN_PLACE}/${STM_USB_LIB_NAME} ${USB_OBJ}
+	@echo # ---------------------------
 	
 # ---------------------------
 ${USB_OBJ_DIR}/%.o: ${USB_SRC_DIR}/%.c
@@ -85,6 +88,9 @@ info_usb_lib:
 
 # ---------------------------
 clean_usb_lib:
-	rm -f ${USB_OBJ} ${BIN_PLACE}/${STM_USB_LIB_NAME}
+	@echo # ---------------------------
+	@echo Deleting ${STM_STD_LIB_NAME} and its object files
+	@rm -f ${USB_OBJ} ${BIN_PLACE}/${STM_USB_LIB_NAME}
+	@echo # ---------------------------
 
 # ---------------------------
