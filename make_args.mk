@@ -2,17 +2,25 @@
 # Используемые переменные в Makefile
 # ----------------------------------
 
-PROGRAM_NAME = STM_ACC_GIRO_FILTERED
+# ОС, на которой собирается проект
+# SYSTEM - переменная, задаваемая при запуске makefile
+# Зададим её тут, чтобы при запуске makefile из командной строки не задавать её
+SYSTEM := windows	
 
-# Место хранения полученных объектных файлов
-BIN_PLACE = Debug_Win
+PROGRAM_NAME = STM_ACC_GIRO_FILTERED
 
 # Название итогового исполняемого файла
 BINARY = ${PROGRAM_NAME}.elf
 
-# ОС, на которой собирается проект
-# SYSTEM - переменная, задаваемая при запуске makefile
-SYSTEM := windows
+# Место хранения полученных объектных файлов
+ifeq ($(SYSTEM), windows)
+	BIN_PLACE = Debug_Win
+else ifeq ($(SYSTEM), linux)
+	BIN_PLACE = Debug_Lin
+else
+    $(error The OS is not specified)
+endif
+
 ifeq ($(SYSTEM), windows)
 	GCC_PLACE = c:/SysGCC/arm-eabi
 else ifeq ($(SYSTEM), linux)
@@ -74,4 +82,5 @@ SUBDIRS_OBJ =
 # Используемые в проекте библиотеки
 LIBS = -L${GCC_PLACE}/arm-none-eabi/arm/v5te/hard -lm
 
+# Список всех объектных файлов проекта
 OBJECTS =
