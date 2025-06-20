@@ -9,7 +9,7 @@ include make_user.mk
 
 # ---------------------------
 
-build_all: create_dirs STM_LIBS build_user
+build_all: info create_dirs STM_LIBS build_user linking
 	@echo # ---------------------------
 	@echo The project building is completed
 	@echo # ---------------------------
@@ -18,6 +18,17 @@ clean_all: clean_user clean_libs
 	@echo The project has been cleared
 
 rebuild_all: clean_all build_all
+
+# ---------------------------
+
+linking:
+	@echo # ---------------------------
+	@echo BUILD "${BIN_PLACE}/${BINARY}", MEMORY CARD "${BIN_PLACE}/${PROGRAM_NAME}.map"
+	$(CC) ${LINK_FLAGS} -o ${BIN_PLACE}/$(BINARY) $(OBJECTS) ${LIBS}
+	${GCC_PLACE}/bin/arm-none-eabi-size --format=berkeley ${BIN_PLACE}/${BINARY}
+	@echo # ---------------------------
+	@echo FORMING "${BIN_PLACE}/${PROGRAM_NAME}.hex"
+	${GCC_PLACE}/bin/arm-none-eabi-objcopy -O ihex ${BIN_PLACE}/${BINARY} ${BIN_PLACE}/${PROGRAM_NAME}.hex 
 
 # ---------------------------
 
@@ -52,3 +63,19 @@ create_bin_dir:
 	$(call ensure_dir,Debug_Win)
 
 # --------------------------------
+
+info:
+	@echo # ---------------------------
+	@echo # Building information
+	@echo # ---------------------------
+	@echo DEFINES: ${DEFINES}
+	@echo User_Defines: ${USER_DEFINES}
+	@echo Includes: ${INCLUDES_USB_LIB}
+	@echo GCC_FLAGS: ${GCC_FLAGS}
+	@echo GPP_FLAGS: ${GPP_FLAGS}
+	@echo LINK_FLAGS: ${LINK_FLAGS}
+	@echo LIBS: ${LIBS}
+	@echo Obj dirs: ${SUBDIRS_OBJ}
+	@echo # ---------------------------
+
+# ---------------------------

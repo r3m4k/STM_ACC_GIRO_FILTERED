@@ -3,6 +3,7 @@
 # ---------------------------
 
 SUBDIRS_OBJ += ${USER_OBJ_DIR}
+OBJECTS += ${USER_OBJ}
 
 USER_INCLUDES = \
 -I"${GCC_PLACE}/arm-none-eabi/include" \
@@ -23,12 +24,13 @@ USER_DEFINES =
 USER_DIR = src
 
 USER_SRC_C = \
-${USER_DIR}/Sensors.c
+${USER_DIR}/Sensors.c \
+${USER_DIR}/_write.c
 
 USER_SRC_CPP = \
+${USER_DIR}/main.cpp \
 ${USER_DIR}/Drv_Gpio.cpp \
 ${USER_DIR}/Drv_Uart.cpp \
-${USER_DIR}/main.cpp \
 ${USER_DIR}/COM_IO.cpp
  
 # ----------------------------
@@ -44,40 +46,20 @@ $(patsubst ${USER_DIR}/%.cpp, ${USER_OBJ_DIR}/%.opp,${USER_SRC_CPP}) \
 
 ${USER_OBJ_DIR}/%.o: ${USER_DIR}/%.c
 	@echo Compiling $@ from $<
-	@${CC} ${GCC_FLAGS} ${DEFINES} ${USER_DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CC} ${GCC_FLAGS} ${DEFINES} ${USER_DEFINES} ${INCLUDES} $< -o $@
 
 ${USER_OBJ_DIR}/%.opp: ${USER_DIR}/%.cpp
 	@echo Compiling $@ from $<
-	@${CP} ${GPP_FLAGS} ${DEFINES} ${USER_DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CP} ${GPP_FLAGS} ${DEFINES} ${USER_DEFINES} ${INCLUDES} $< -o $@
 
 # ---------------------------
 
-build_user: ${USER_OBJ}
-	@echo # ---------------------------
-	@echo BUILD "${BIN_PLACE}/${BINARY}", MEMORY CARD "${BIN_PLACE}/${PROGRAM_NAME}.map"
-	$(CC) ${LINK_FLAGS} -o ${BIN_PLACE}/$(BINARY) $(USER_OBJ) ${LIBS}
-	${GCC_PLACE}/bin/arm-none-eabi-size --format=berkeley ${BIN_PLACE}/${BINARY}
-	@echo # ---------------------------
-	@echo FORMING "${BIN_PLACE}/${PROGRAM_NAME}.hex"
-	${GCC_PLACE}/bin/arm-none-eabi-objcopy -O ihex ${BIN_PLACE}/${BINARY} ${BIN_PLACE}/${PROGRAM_NAME}.hex 
+build_user: ${USER_OBJ} 
 
 clean_user:
 	@echo Deleting user's object files and generated files
 	@rm -f ${USER_OBJ} ${BIN_PLACE}/${BINARY} ${BIN_PLACE}/${PROGRAM_NAME}.hex ${BIN_PLACE}/${PROGRAM_NAME}.map
 
 rebuild_user: clean_user build_user
-
-# --------------------------------
-
-info_user:
-	@echo # ---------------------------
-	@echo # Building user files and linking project
-	@echo # ---------------------------
-	@echo Defines: ${DEFINES}
-	@echo User_DEFINES: ${USER_DEFINES}
-	@echo User_Includes: ${USER_INCLUDES}
-	@echo GCC_FLAGS: ${GCC_FLAGS}
-	@echo GPP_FLAGS: ${GPP_FLAGS}
-	@echo # ---------------------------
 
 # --------------------------------

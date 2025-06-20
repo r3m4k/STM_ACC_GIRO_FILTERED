@@ -50,17 +50,28 @@ GPP_FLAGS = -std=gnu++11 ${COMPILER_FLAGS} -c -fno-exceptions -fno-rtti -fno-use
 # C:\SysGCC\arm-eabi\arm-none-eabi\lib\libm.a
 # LIBS = -L${GCC_PLACE}arm-none-eabi/lib/arm/v5te/hard -lm 
 
+INCLUDES = \
+-I"${GCC_PLACE}arm-none-eabi/include" \
+-I"include" \
+-I"src" \
+-I"system/include" \
+-I"system/include/cmsis" \
+-I"system/include/stm32f3-stdperiph" \
+-I"system/include/additionally" \
+-I"system/USB_LIB/include"
+
 # флаги для линковщика
 LINK_FLAGS = ${COMPILER_FLAGS} \
 -T "ldscripts/mem.ld" \
 -T "ldscripts/libs.ld" \
 -T "ldscripts/sections.ld" \
 -L"${PROJ}ldscripts" \
--nostartfiles -Xlinker --gc-sections -Wl,-Map,${BIN_PLACE}//${PROGRAM_NAME}.map # --specs=nano.specs 
+-nostartfiles -Xlinker --gc-sections -Wl,-Map,${BIN_PLACE}/${PROGRAM_NAME}.map # --specs=nano.specs 
 
 # Список используемых поддиректорий для сборки проекта
 SUBDIRS_OBJ =
 
 # Используемые в проекте библиотеки
-# LIBS = -L${GCC_PLACE}/arm-none-eabi/lib -lm
-LIBS = -lm
+LIBS = -L${GCC_PLACE}/arm-none-eabi/arm/v5te/hard -lm
+
+OBJECTS =

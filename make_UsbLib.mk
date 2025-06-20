@@ -3,20 +3,11 @@
 # ---------------------------
 
 STM_USB_LIB_NAME = libstm_usb_lib.a
-LIBS += -L./${BIN_PLACE} -lstm_usb_lib
+# LIBS += -L./${BIN_PLACE} -lstm_usb_lib
+OBJECTS += ${USB_OBJ}
+
 
 SUBDIRS_OBJ += ${USB_OBJ_DIR}
-
-# ---------------------------
-
-INCLUDES_USB_LIB = \
--I "system/USB_LIB/include" \
--I "system/include" \
--I "system/include/stm32f3-stdperiph" \
--I "system/include/additionally" \
--I "system/include/cmsis" \
--I "include" \
--I "src"
 
 # ---------------------------
 # Исходные файлы
@@ -60,33 +51,23 @@ rebuild_stm_usb_lib: clean_usb_lib info_usb_lib STM32_USB_LIB
 
 # ---------------------------
 STM32_USB_LIB: ${USB_OBJ}
-	@echo # ---------------------------
-	@echo Building static library ${STM_USB_LIB_NAME}
-	@echo ar rcs ${BIN_PLACE}/${STM_USB_LIB_NAME} $${USB_OBJ}
-	@ar rcs ${BIN_PLACE}/${STM_USB_LIB_NAME} ${USB_OBJ}
-	@echo # ---------------------------
+# @echo # ---------------------------
+# @echo Building static library ${STM_USB_LIB_NAME}
+# @echo ar rcs ${BIN_PLACE}/${STM_USB_LIB_NAME} $${USB_OBJ}
+# @ar rcs ${BIN_PLACE}/${STM_USB_LIB_NAME} ${USB_OBJ}
+# @echo # ---------------------------
 	
 # ---------------------------
 ${USB_OBJ_DIR}/%.o: ${USB_SRC_DIR}/%.c
 	@echo Compiling $@ from $<
-	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 ${USB_OBJ_DIR}/%.opp: ${USB_SRC_DIR}/%.cpp
 	@echo Compiling $@ from $<
-	@${CP} ${GPP_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CP} ${GPP_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 # ---------------------------
-info_usb_lib:
-	@echo # ---------------------------
-	@echo # Building static library libstm_usb_lib.a
-	@echo # ---------------------------
-	@echo DEFINES: ${DEFINES}
-	@echo Includes: ${INCLUDES_USB_LIB}
-	@echo GCC_FLAGS: ${GCC_FLAGS}
-	@echo GPP_FLAGS: ${GPP_FLAGS}
-	@echo # ---------------------------
 
-# ---------------------------
 clean_usb_lib:
 	@echo # ---------------------------
 	@echo Deleting ${STM_STD_LIB_NAME} and its object files

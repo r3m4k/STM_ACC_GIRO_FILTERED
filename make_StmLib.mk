@@ -3,7 +3,8 @@
 # ---------------------------
 
 STM_STD_LIB_NAME = libstm_std_lib.a
-LIBS += -L./${BIN_PLACE} -lstm_std_lib
+# LIBS += -L./${BIN_PLACE} -lstm_std_lib
+OBJECTS += ${STM_STD_LIB_OBJ}
 
 SUBDIRS_OBJ += \
 ${STM32_PERIPH_OBJ_DIR} \
@@ -11,15 +12,6 @@ ${CMSIS_OBJ_DIR} \
 ${NEWLIB_OBJ_DIR} \
 ${DIAG_OBJ_DIR} \
 ${CORTEXM_OBJ_DIR}
-
-# ---------------------------
-
-INCLUDES_STD_LIB = \
--I "${GCC_PLACE}/arm-none-eabi/include" \
--I "system/include" \
--I "system/include/cmsis" \
--I "system/include/stm32f3-stdperiph" \
--I "system/include/additionally"
 
 # ---------------------------
 # Исходные файлы
@@ -111,54 +103,47 @@ $(patsubst ${CORTEXM_DIR}/%.c, ${CORTEXM_OBJ_DIR}/%.o,${CORTEXM_SRC})
 # ---------------------------
 # Правила
 # ---------------------------
+
 rebuild_stm_std_lib: clean_stm_std_lib info_stm_std_lib STM32_STD_LIB
 	@echo # ---------------------------
 	@echo Rebuilding ${STM_USB_LIB_NAME} completed successfully
 	@echo # ---------------------------
 
 # ---------------------------
+
 STM32_STD_LIB: ${STM_STD_LIB_OBJ}
-	@echo # ---------------------------
-	@echo Building static library ${STM_STD_LIB_NAME}
-	@echo ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} $${STM_STD_LIB_OBJ}"
-	@ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} ${STM_STD_LIB_OBJ}
-	@echo # ---------------------------
+
+# @echo # ---------------------------
+# @echo Building static library ${STM_STD_LIB_NAME}
+# @echo ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} $${STM_STD_LIB_OBJ}"
+# @ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} ${STM_STD_LIB_OBJ}
+# @echo # ---------------------------
 
 # ---------------------------
+
 ${STM32_PERIPH_OBJ_DIR}/%.o: ${STM32_PERIPH_DIR}/%.c
 	@echo Compiling $@ from $<
-	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 ${CMSIS_OBJ_DIR}/%.o: ${CMSIS_DIR}/%.c
 	@echo Compiling $@ from $<
-	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 ${NEWLIB_OBJ_DIR}/%.o: ${NEWLIB_DIR}/%.c
 	@echo Compiling $@ from $<
-	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 ${NEWLIB_OBJ_DIR}/%.opp: ${NEWLIB_DIR}/%.cpp
 	@echo Compiling $@ from $<
-	@${CP} ${GPP_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CP} ${GPP_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 ${DIAG_OBJ_DIR}/%.o: ${DIAG_DIR}/%.c
 	@echo Compiling $@ from $<
-	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
+	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 ${CORTEXM_OBJ_DIR}/%.o: ${CORTEXM_DIR}/%.c
 	@echo Compiling $@ from $<
-	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES_USB_LIB} $< -o $@
-
-# ---------------------------
-info_stm_std_lib:
-	@echo # ---------------------------
-	@echo # Building static library libstm_std_lib.a
-	@echo # ---------------------------
-	@echo DEFINES: ${DEFINES}
-	@echo Includes: ${INCLUDES_STD_LIB}
-	@echo GCC_FLAGS: ${GCC_FLAGS}
-	@echo GPP_FLAGS: ${GPP_FLAGS}
-	@echo # ---------------------------
+	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 # ---------------------------
 clean_stm_std_lib:
