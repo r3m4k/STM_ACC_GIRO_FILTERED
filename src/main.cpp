@@ -141,6 +141,7 @@ void InitAll(){
 
     // Инициализируем периферию
     LedsInit();
+    // TODO Инициализировать ножку для пересброса
     // Init.GPIO();
 
     // Инициализируем Virtual Com Port
@@ -307,8 +308,8 @@ void UserEP3_OUT_Callback(uint8_t *buffer){
         case WantConSum:
             decode_stage = Want7E;
             if (uint8_t(con_sum) == bt){
-                COM_port.new_message(buffer);
                 COM_port.sending_package(ConfirmMessage, MaxCommand_Length);
+                COM_port.new_message(buffer);
                 return;
             }
             break;
@@ -317,6 +318,13 @@ void UserEP3_OUT_Callback(uint8_t *buffer){
 }
 
 // Функции для обработки поступивших команд
+void restart(){
+    LedsOff();
+    LedOn(LED3);
+    LedOn(LED10);
+    // TODO в этом месте нужно подтянуть ножку пересброса к земле 
+}
+
 void start_InitialSetting(){
     stage = InitialSetting;
 }

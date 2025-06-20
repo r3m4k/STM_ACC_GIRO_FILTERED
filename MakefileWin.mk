@@ -9,7 +9,7 @@ include make_user.mk
 
 # ---------------------------
 
-build_all: info create_dirs STM_LIBS build_user linking
+build_all: info create_dirs STM_LIBS build_user
 	@echo # ---------------------------
 	@echo The project building is completed
 	@echo # ---------------------------

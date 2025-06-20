@@ -42,6 +42,7 @@ void TimerInit(void);
 void TIM4_IRQHandler(void);
 
 void UserEP3_OUT_Callback(uint8_t *buffer);
+void restart(void);
 void start_InitialSetting(void);
 void start_Measuring(void);
 void stop_Measuring(void);

@@ -18,8 +18,8 @@
 
 // -------------------------------------------------------------------------------
 // Сообщения, которые будем отправлять в ответ по COM порту
-uint8_t ErrorMessage[MaxCommand_Length] =           {0x7e, 0xe7, 0xff, 0xff, 0xff, 0x62, 0};                  // Сообщение, которое отправляется при получении неизвестного сообщения 
-uint8_t ConfirmMessage[MaxCommand_Length] =         {0x7e, 0xe7, 0xff, 0xaa, 0xaa, 0xb8, 0};                // Сообщение, которое отправляется при успешном получении сообщения
+uint8_t ErrorMessage[MaxCommand_Length] =           {0x7e, 0xe7, 0xff, 0xff, 0xff, 0x62, 0};           // Сообщение, которое отправляется при получении неизвестного сообщения 
+uint8_t ConfirmMessage[MaxCommand_Length] =         {0x7e, 0xe7, 0xff, 0xaa, 0xaa, 0xb8, 0};           // Сообщение, которое отправляется при успешном получении сообщения
 uint8_t EndOfInitialSetting[MaxCommand_Length] =    {0x7e, 0xe7, 0xff, 0xba, 0xab, 0xc9, 0};           // Сообщение, которое отправляется при успешном получении сообщения
 
 // Список обрабатываемых сообщений из COM порта
@@ -96,7 +96,7 @@ class Command_Queue{
     Эта очередь инициализируется при инициализации класса COM_Port, поэтому она будет храниться в той же области памяти.
     */
     Message messages[MaxCommands_Num];     // Создадим массив команд, присланных по COM порту
-    int8_t lastIndex = -1;                // Индекс последнего элемента в очереди. Если lastIndex == -1, то очередь пуста
+    int8_t lastIndex = -1;                 // Индекс последнего элемента в очереди. Если lastIndex == -1, то очередь пуста
     Commands command_list;                 // Структура со всеми поддерживаемыми командами
 
     // Временные переменные для избежания их постоянной инициализации
@@ -141,8 +141,7 @@ public:
     // Добавление нового элемента в конец очереди
     void put(uint8_t *buffer){
         if (!(memcmp(buffer, Restart_cmd, MaxCommand_Length))){
-            while (1);
-            NVIC_SystemReset();
+            restart();
         }
 
         if (isFull()){
