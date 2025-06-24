@@ -54,7 +54,7 @@ ${USER_OBJ_DIR}/%.opp: ${USER_DIR}/%.cpp
 
 # ---------------------------
 
-build_user: ${USER_OBJ} 
+build_user: ${USER_OBJ} linking
 
 clean_user:
 	@echo Deleting user's object files and generated files
