@@ -39,6 +39,10 @@
  #pragma system_include  /* treat file as system include file for MISRA check */
 #endif
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 #ifndef __CORE_CM4_H_GENERIC
 #define __CORE_CM4_H_GENERIC
 
@@ -48,10 +52,6 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
-#ifdef __cplusplus
- extern "C" {
 #endif
 
 /** \page CMSIS_MISRA_Exceptions  MISRA-C:2004 Compliance Exceptions

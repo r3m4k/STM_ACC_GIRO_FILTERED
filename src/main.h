@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "diag/Trace.h"
 #include "Sensors.h"
+#include "core_cm4.h"
 
 
 // ===============================================================================

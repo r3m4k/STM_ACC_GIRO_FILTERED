@@ -23,7 +23,7 @@ uint8_t ConfirmMessage[MaxCommand_Length] =         {0x7e, 0xe7, 0xff, 0xaa, 0xa
 uint8_t EndOfInitialSetting[MaxCommand_Length] =    {0x7e, 0xe7, 0xff, 0xba, 0xab, 0xc9, 0};           // Сообщение, которое отправляется при успешном получении сообщения
 
 // Список обрабатываемых сообщений из COM порта
-uint8_t Restart_cmd[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xff, 0x00, 0x2c, 0};
+uint8_t Restart_cmd[MaxCommand_Length] = {0x7e, 0xe7, 0xff, 0xff, 0x00, 0x63, 0};
 
 #define Start_InitialSetting        {0x7e, 0xe7, 0xff, 0xab, 0xba, 0xc9, 0}
 #define Start_Measuring             {0x7e, 0xe7, 0xff, 0xbc, 0xcb, 0xeb, 0}
@@ -142,6 +142,7 @@ public:
     void put(uint8_t *buffer){
         if (!(memcmp(buffer, Restart_cmd, MaxCommand_Length))){
             restart();
+            return;
         }
 
         if (isFull()){

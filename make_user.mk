@@ -5,16 +5,6 @@
 SUBDIRS_OBJ += ${USER_OBJ_DIR}
 OBJECTS += ${USER_OBJ}
 
-USER_INCLUDES = \
--I"${GCC_PLACE}/arm-none-eabi/include" \
--I"include" \
--I"src" \
--I"system/include" \
--I"system/include/cmsis" \
--I"system/include/stm32f3-stdperiph" \
--I"system/include/additionally" \
--I"system/USB_LIB/include"
-
 USER_DEFINES =
 
 # ----------------------------

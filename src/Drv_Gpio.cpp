@@ -2,6 +2,7 @@
 #include "Drv_Gpio.h"
 #include "stm32f30x_tim.h"
 
+
 bool pc8;
 
 /*
@@ -64,4 +65,23 @@ void InitGPIO()
     pc8 = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_8); // задает формат выдачи байта по UART см Drv_Uart.cpp, строка 66
 
     return;
+}
+
+/*
+Инициализация ножки PA1 для запуска аппаратного перезапуска платы, путём подтяжки ножки к земле в нужный момент.
+Нормально ножка в состоянии GPIO_PuPd_UP. Данная ножка должна быть соединена через диод к 5-ой ножке модуля SWD.
+При переводе в состояние GPIO_PuPd_DOWN, инициируется сигнал NRST на SWD, что запускает аппаратный перезапуск платы
+*/
+void InitResetPin(){
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+
+    GPIO_InitStructure.GPIO_Pin = ResetPin;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_SetBits(GPIOA, ResetPin);
 }
