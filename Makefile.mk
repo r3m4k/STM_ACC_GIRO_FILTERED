@@ -21,14 +21,16 @@ rebuild_all: clean_all build_all
 
 # ---------------------------
 
-linking:
+linking: info
+	@echo Building "${BIN_PLACE}/${BINARY}", Memory card "${BIN_PLACE}/${PROGRAM_NAME}.map"
+	@$(CC) ${LINK_FLAGS} -o ${BIN_PLACE}/$(BINARY) $(OBJECTS) ${LIBS}
+	@echo $(CC) LINK_FLAGS -o ${BIN_PLACE}/$(BINARY) OBJECTS LIBS
 	@echo # ---------------------------
-	@echo BUILD "${BIN_PLACE}/${BINARY}", MEMORY CARD "${BIN_PLACE}/${PROGRAM_NAME}.map"
-	$(CC) ${LINK_FLAGS} -o ${BIN_PLACE}/$(BINARY) $(OBJECTS) ${LIBS}
-	${GCC_PLACE}/bin/arm-none-eabi-size --format=berkeley ${BIN_PLACE}/${BINARY}
+	@echo ${BIN_PLACE}/${BINARY} info:
+	@${GCC_PLACE}/bin/arm-none-eabi-size --format=berkeley ${BIN_PLACE}/${BINARY}
 	@echo # ---------------------------
-	@echo FORMING "${BIN_PLACE}/${PROGRAM_NAME}.hex"
-	${GCC_PLACE}/bin/arm-none-eabi-objcopy -O ihex ${BIN_PLACE}/${BINARY} ${BIN_PLACE}/${PROGRAM_NAME}.hex 
+	@echo Forming "${BIN_PLACE}/${PROGRAM_NAME}.hex"
+	@${GCC_PLACE}/bin/arm-none-eabi-objcopy -O ihex ${BIN_PLACE}/${BINARY} ${BIN_PLACE}/${PROGRAM_NAME}.hex 
 
 # ---------------------------
 
@@ -70,7 +72,7 @@ info:
 	@echo # ---------------------------
 	@echo DEFINES: ${DEFINES}
 	@echo User_Defines: ${USER_DEFINES}
-	@echo Includes: ${INCLUDES_USB_LIB}
+	@echo Includes: ${INCLUDES}
 	@echo GCC_FLAGS: ${GCC_FLAGS}
 	@echo GPP_FLAGS: ${GPP_FLAGS}
 	@echo LINK_FLAGS: ${LINK_FLAGS}

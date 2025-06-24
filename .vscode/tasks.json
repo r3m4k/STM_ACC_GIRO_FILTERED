@@ -8,7 +8,7 @@
                 "-C",
                 "${workspaceFolder}",
                 "-f",
-                "MakefileWin.mk",
+                "Makefile.mk",
                 "rebuild_all",
                 "SYSTEM=windows"
             ],
@@ -33,7 +33,7 @@
                 "-C",
                 "${workspaceFolder}",
                 "-f",
-                "MakefileWin.mk",
+                "Makefile.mk",
                 "rebuild_user",
                 "SYSTEM=windows"
             ],
@@ -58,7 +58,7 @@
                 "-C",
                 "${workspaceFolder}",
                 "-f",
-                "MakefileWin.mk",
+                "Makefile.mk",
                 "build_user",
                 "SYSTEM=windows"
             ],
